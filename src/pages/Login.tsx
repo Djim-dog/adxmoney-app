@@ -6,30 +6,21 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { Loader2, Lock, Mail, User as UserIcon, ShieldCheck, Sparkles } from "lucide-react";
+import { Loader2, Lock, Mail, ShieldAlert } from "lucide-react";
 
 const Login: React.FC = () => {
   const { session, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
-  // Login Form State
-  const [loginEmail, setLoginEmail] = useState("");
-  const [loginPassword, setLoginPassword] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [isLoggingIn, setIsLoggingIn] = useState(false);
-
-  // Sign Up Form State
-  const [signUpFirstName, setSignUpFirstName] = useState("");
-  const [signUpLastName, setSignUpLastName] = useState("");
-  const [signUpEmail, setSignUpEmail] = useState("");
-  const [signUpPassword, setSignUpPassword] = useState("");
-  const [isSigningUp, setIsSigningUp] = useState(false);
 
   if (authLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      <div className="min-h-screen flex items-center justify-center bg-slate-900">
+        <Loader2 className="w-8 h-8 animate-spin text-emerald-500" />
       </div>
     );
   }
@@ -40,267 +31,129 @@ const Login: React.FC = () => {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!loginEmail || !loginPassword) {
-      toast.error("Por favor, preencha todos os campos.");
+    if (!email.trim() || !password) {
+      toast.error("Por favor, preencha o e-mail e a senha de acesso.");
       return;
     }
 
     setIsLoggingIn(true);
     try {
       const { error } = await supabase.auth.signInWithPassword({
-        email: loginEmail,
-        password: loginPassword,
+        email: email.trim(),
+        password,
       });
 
       if (error) {
         if (error.message.includes("Invalid login credentials")) {
-          toast.error("E-mail ou senha incorretos.");
+          toast.error("Credenciais inválidas. Verifique seu e-mail e senha.");
         } else {
           toast.error(error.message);
         }
       } else {
-        toast.success("Login efetuado com sucesso!");
+        toast.success("Autenticação realizada com sucesso!");
         navigate("/");
       }
-    } catch (err: unknown) {
-      toast.error("Erro inesperado ao realizar login.");
+    } catch (err) {
+      toast.error("Erro inesperado ao autenticar.");
     } finally {
       setIsLoggingIn(false);
     }
   };
 
-  const handleSignUp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!signUpEmail || !signUpPassword) {
-      toast.error("Por favor, preencha o e-mail e a senha.");
-      return;
-    }
-
-    if (signUpPassword.length < 6) {
-      toast.error("A senha deve conter pelo menos 6 caracteres.");
-      return;
-    }
-
-    setIsSigningUp(true);
-    try {
-      const { error, data } = await supabase.auth.signUp({
-        email: signUpEmail,
-        password: signUpPassword,
-        options: {
-          data: {
-            first_name: signUpFirstName,
-            last_name: signUpLastName,
-          },
-        },
-      });
-
-      if (error) {
-        toast.error(error.message);
-      } else {
-        if (data.session) {
-          toast.success("Conta criada e autenticada com sucesso!");
-          navigate("/");
-        } else {
-          toast.success("Conta criada! Por favor, verifique a confirmação em seu e-mail caso necessário.");
-        }
-      }
-    } catch (err: unknown) {
-      toast.error("Erro ao criar conta.");
-    } finally {
-      setIsSigningUp(false);
-    }
-  };
-
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 via-slate-50 to-blue-50 p-4 sm:p-6 md:p-8">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-6">
-          <div className="inline-flex items-center justify-center p-3 bg-indigo-600 text-white rounded-2xl shadow-lg shadow-indigo-200 mb-3">
-            <Sparkles className="w-7 h-7" />
+    <div className="min-h-screen flex flex-col justify-center items-center bg-slate-950 px-4 py-8 text-slate-100 selection:bg-emerald-500 selection:text-white">
+      {/* Background Decorators */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(16,185,129,0.06)_0,transparent_70%)] pointer-events-none" />
+
+      <div className="w-full max-w-md relative z-10">
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-bold text-2xl shadow-lg shadow-emerald-950 mb-4 tracking-wider">
+            ADX
           </div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">
-            Acesse sua Conta
-          </h1>
-          <p className="text-sm text-slate-500 mt-1">
-            Entre ou registre-se para gerenciar seus dados com segurança
+          <h1 className="text-2xl font-bold tracking-tight text-white">ADXmoney App</h1>
+          <p className="text-xs text-slate-400 mt-1 uppercase tracking-widest font-semibold">
+            Plataforma Operacional Segura
           </p>
         </div>
 
-        <Card className="border-border/60 shadow-xl shadow-slate-200/50 backdrop-blur rounded-2xl">
-          <Tabs defaultValue="login" className="w-full">
-            <div className="px-6 pt-6">
-              <TabsList className="grid w-full grid-cols-2 rounded-xl p-1 bg-slate-100">
-                <TabsTrigger value="login" className="rounded-lg text-sm font-medium">
-                  Entrar
-                </TabsTrigger>
-                <TabsTrigger value="register" className="rounded-lg text-sm font-medium">
-                  Criar Conta
-                </TabsTrigger>
-              </TabsList>
-            </div>
-
-            {/* TAB LOGIN */}
-            <TabsContent value="login">
-              <form onSubmit={handleLogin}>
-                <CardHeader className="pb-3 pt-4">
-                  <CardTitle className="text-lg">Login</CardTitle>
-                  <CardDescription>
-                    Digite seu e-mail e senha para acessar o sistema.
-                  </CardDescription>
-                </CardHeader>
-
-                <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="login-email">E-mail</Label>
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
-                      <Input
-                        id="login-email"
-                        type="email"
-                        placeholder="seu.email@exemplo.com"
-                        className="pl-9 rounded-xl"
-                        value={loginEmail}
-                        onChange={(e) => setLoginEmail(e.target.value)}
-                        required
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <Label htmlFor="login-password">Senha</Label>
-                    </div>
-                    <div className="relative">
-                      <Lock className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
-                      <Input
-                        id="login-password"
-                        type="password"
-                        placeholder="••••••••"
-                        className="pl-9 rounded-xl"
-                        value={loginPassword}
-                        onChange={(e) => setLoginPassword(e.target.value)}
-                        required
-                      />
-                    </div>
-                  </div>
-                </CardContent>
-
-                <CardFooter className="pt-2">
-                  <Button
-                    type="submit"
-                    className="w-full rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-5 shadow-md shadow-indigo-100"
+        <Card className="bg-slate-900/90 border-slate-800 text-slate-100 shadow-2xl backdrop-blur-sm">
+          <CardHeader className="space-y-1 pb-4">
+            <CardTitle className="text-xl font-semibold text-white">Entrar na Conta</CardTitle>
+            <CardDescription className="text-slate-400 text-xs">
+              Acesso restrito para usuários cadastrados e administradores da plataforma.
+            </CardDescription>
+          </CardHeader>
+          <form onSubmit={handleLogin}>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="email" className="text-xs font-medium text-slate-300">
+                  E-mail de Acesso
+                </Label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="seu.email@exemplo.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="pl-9 bg-slate-950 border-slate-800 text-slate-100 placeholder:text-slate-600 focus-visible:ring-emerald-500"
                     disabled={isLoggingIn}
-                  >
-                    {isLoggingIn ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Acessando...
-                      </>
-                    ) : (
-                      "Entrar"
-                    )}
-                  </Button>
-                </CardFooter>
-              </form>
-            </TabsContent>
+                    autoComplete="email"
+                    required
+                  />
+                </div>
+              </div>
 
-            {/* TAB CADASTRO */}
-            <TabsContent value="register">
-              <form onSubmit={handleSignUp}>
-                <CardHeader className="pb-3 pt-4">
-                  <CardTitle className="text-lg">Criar uma Nova Conta</CardTitle>
-                  <CardDescription>
-                    Preencha as informações abaixo para começar.
-                  </CardDescription>
-                </CardHeader>
+              <div className="space-y-2">
+                <Label htmlFor="password" className="text-xs font-medium text-slate-300">
+                  Senha
+                </Label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                  <Input
+                    id="password"
+                    type="password"
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="pl-9 bg-slate-950 border-slate-800 text-slate-100 placeholder:text-slate-600 focus-visible:ring-emerald-500"
+                    disabled={isLoggingIn}
+                    autoComplete="current-password"
+                    required
+                  />
+                </div>
+              </div>
 
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="space-y-2">
-                      <Label htmlFor="signup-firstname">Nome</Label>
-                      <div className="relative">
-                        <UserIcon className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
-                        <Input
-                          id="signup-firstname"
-                          type="text"
-                          placeholder="João"
-                          className="pl-9 rounded-xl"
-                          value={signUpFirstName}
-                          onChange={(e) => setSignUpFirstName(e.target.value)}
-                        />
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="signup-lastname">Sobrenome</Label>
-                      <Input
-                        id="signup-lastname"
-                        type="text"
-                        placeholder="Silva"
-                        className="rounded-xl"
-                        value={signUpLastName}
-                        onChange={(e) => setSignUpLastName(e.target.value)}
-                      />
-                    </div>
-                  </div>
+              <div className="p-3 bg-slate-950/60 rounded-xl border border-slate-800/80 flex items-start gap-2.5 text-xs text-slate-400">
+                <ShieldAlert className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                <span>
+                  O cadastro de novos usuários é gerenciado pela administração. Utilize as credenciais fornecidas para autenticação.
+                </span>
+              </div>
+            </CardContent>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-email">E-mail</Label>
-                    <div className="relative">
-                      <Mail className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
-                      <Input
-                        id="signup-email"
-                        type="email"
-                        placeholder="seu.email@exemplo.com"
-                        className="pl-9 rounded-xl"
-                        value={signUpEmail}
-                        onChange={(e) => setSignUpEmail(e.target.value)}
-                        required
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="signup-password">Senha (mínimo 6 caracteres)</Label>
-                    <div className="relative">
-                      <Lock className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
-                      <Input
-                        id="signup-password"
-                        type="password"
-                        placeholder="••••••••"
-                        className="pl-9 rounded-xl"
-                        value={signUpPassword}
-                        onChange={(e) => setSignUpPassword(e.target.value)}
-                        required
-                        minLength={6}
-                      />
-                    </div>
-                  </div>
-                </CardContent>
-
-                <CardFooter className="pt-2">
-                  <Button
-                    type="submit"
-                    className="w-full rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-5 shadow-md shadow-indigo-100"
-                    disabled={isSigningUp}
-                  >
-                    {isSigningUp ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Criando conta...
-                      </>
-                    ) : (
-                      "Cadastrar"
-                    )}
-                  </Button>
-                </CardFooter>
-              </form>
-            </TabsContent>
-          </Tabs>
+            <CardFooter className="pt-2">
+              <Button
+                type="submit"
+                className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-medium py-2.5 rounded-xl shadow-lg shadow-emerald-950 transition-colors"
+                disabled={isLoggingIn}
+              >
+                {isLoggingIn ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Autenticando...
+                  </>
+                ) : (
+                  "Acessar ADXmoney"
+                )}
+              </Button>
+            </CardFooter>
+          </form>
         </Card>
 
-        <div className="flex items-center justify-center gap-2 mt-6 text-xs text-slate-500">
-          <ShieldCheck className="w-4 h-4 text-emerald-600" />
-          <span>Autenticação segura via Supabase Auth & RLS</span>
+        <div className="mt-8 text-center text-xs text-slate-500">
+          ADXmoney System • Arquitetura Segura &amp; Ledger Financeiro Auditado
         </div>
       </div>
     </div>

@@ -498,3 +498,112 @@ BEGIN
   );
 END;
 $$;
+
+-- 6. Admin Create User RPC (Secure backend-only provisioning)
+CREATE OR REPLACE FUNCTION public.admin_create_user(
+  p_email text,
+  p_password text,
+  p_name text,
+  p_phone text DEFAULT NULL,
+  p_role text DEFAULT 'user'
+)
+RETURNS jsonb
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, auth, pg_temp
+AS $$
+DECLARE
+  v_admin_id UUID;
+  v_admin_role TEXT;
+  v_new_user_id UUID;
+  v_encrypted_pw TEXT;
+BEGIN
+  v_admin_id := auth.uid();
+  IF v_admin_id IS NULL THEN
+    RAISE EXCEPTION 'Não autenticado';
+  END IF;
+
+  SELECT role INTO v_admin_role FROM public.profiles WHERE id = v_admin_id;
+  IF v_admin_role != 'admin' THEN
+    RAISE EXCEPTION 'Acesso negado: apenas administradores podem criar usuários.';
+  END IF;
+
+  IF p_email IS NULL OR length(trim(p_email)) < 5 THEN
+    RAISE EXCEPTION 'E-mail inválido.';
+  END IF;
+
+  IF p_password IS NULL OR length(p_password) < 6 THEN
+    RAISE EXCEPTION 'A senha deve conter no mínimo 6 caracteres.';
+  END IF;
+
+  IF EXISTS (SELECT 1 FROM auth.users WHERE lower(email) = lower(trim(p_email))) THEN
+    RAISE EXCEPTION 'Já existe um usuário cadastrado com este e-mail.';
+  END IF;
+
+  v_new_user_id := gen_random_uuid();
+  v_encrypted_pw := crypt(p_password, gen_salt('bf'));
+
+  INSERT INTO auth.users (
+    id,
+    instance_id,
+    email,
+    encrypted_password,
+    email_confirmed_at,
+    raw_app_meta_data,
+    raw_user_meta_data,
+    created_at,
+    updated_at,
+    role,
+    aud
+  ) VALUES (
+    v_new_user_id,
+    '00000000-0000-0000-0000-000000000000',
+    lower(trim(p_email)),
+    v_encrypted_pw,
+    NOW(),
+    '{"provider":"email","providers":["email"]}'::jsonb,
+    jsonb_build_object('name', p_name, 'first_name', split_part(p_name, ' ', 1), 'phone', p_phone, 'role', p_role),
+    NOW(),
+    NOW(),
+    'authenticated',
+    'authenticated'
+  );
+
+  INSERT INTO public.profiles (
+    id, name, email, phone, role, first_login, is_active
+  ) VALUES (
+    v_new_user_id,
+    trim(p_name),
+    lower(trim(p_email)),
+    trim(p_phone),
+    COALESCE(p_role, 'user'),
+    true,
+    true
+  )
+  ON CONFLICT (id) DO UPDATE
+  SET name = EXCLUDED.name,
+      email = EXCLUDED.email,
+      phone = EXCLUDED.phone,
+      role = EXCLUDED.role,
+      first_login = true,
+      is_active = true;
+
+  INSERT INTO public.wallets (user_id, balance, reserved_balance)
+  VALUES (v_new_user_id, 0.00, 0.00)
+  ON CONFLICT (user_id) DO NOTHING;
+
+  INSERT INTO public.activity_logs (user_id, action_type, title, details)
+  VALUES (
+    v_admin_id,
+    'USER_CREATED',
+    'Novo usuário cadastrado pelo Admin',
+    'Usuário: ' || p_email || ' | Perfil: ' || p_role
+  );
+
+  RETURN jsonb_build_object(
+    'success', true,
+    'user_id', v_new_user_id,
+    'email', lower(trim(p_email))
+  );
+END;
+$$;
