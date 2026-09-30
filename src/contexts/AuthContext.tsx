@@ -55,11 +55,42 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (error) {
         console.error("[AuthContext] Erro ao carregar perfil:", error.message);
-        return null;
       }
-      const loadedProfile = data as Profile | null;
-      setProfile(loadedProfile);
-      return loadedProfile;
+
+      if (data) {
+        const loadedProfile = data as Profile;
+        setProfile(loadedProfile);
+        return loadedProfile;
+      }
+
+      // Self-healing: Se o perfil não existir na tabela public.profiles, autocria
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
+      const fallbackProfile: Profile = {
+        id: userId,
+        email: currentUser?.email || "",
+        name: currentUser?.user_metadata?.name || currentUser?.email?.split("@")[0] || "Operador",
+        role: (currentUser?.user_metadata?.role as "user" | "admin") || "user",
+        first_login: true,
+        is_active: true,
+      };
+
+      await supabase.from("profiles").upsert({
+        id: userId,
+        email: fallbackProfile.email,
+        name: fallbackProfile.name,
+        role: fallbackProfile.role,
+        first_login: true,
+        is_active: true,
+      });
+
+      await supabase.from("wallets").upsert({
+        user_id: userId,
+        balance: 0.00,
+        reserved_balance: 0.00,
+      });
+
+      setProfile(fallbackProfile);
+      return fallbackProfile;
     } catch (err) {
       console.error("[AuthContext] Erro inesperado no perfil:", err);
       return null;
