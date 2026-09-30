@@ -4,10 +4,16 @@ import { supabase } from "@/integrations/supabase/client";
 
 export interface Profile {
   id: string;
+  name: string | null;
   first_name: string | null;
   last_name: string | null;
+  email: string | null;
+  phone: string | null;
   avatar_url: string | null;
   role: "admin" | "user" | string;
+  first_login: boolean;
+  is_active: boolean;
+  created_at: string | null;
   updated_at: string | null;
 }
 
