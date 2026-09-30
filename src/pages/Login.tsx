@@ -54,11 +54,13 @@ const Login: React.FC = () => {
       });
 
       if (error) {
-        if (error.message.includes("Invalid login credentials")) {
-          toast.error("Credenciais inválidas. Verifique seu e-mail e senha.");
+        console.error("[Login] Erro de autenticação:", error);
+        if (error.message.includes("Invalid login credentials") || error.status === 400 || error.status === 500) {
+          toast.error("Credenciais inválidas ou erro no servidor de autenticação. Verifique seu e-mail e senha.");
         } else {
           toast.error(error.message);
         }
+        setIsLoggingIn(false);
         return;
       }
 
@@ -90,6 +92,7 @@ const Login: React.FC = () => {
         }
       }
     } catch (err: unknown) {
+      console.error("[Login] Erro inesperado:", err);
       toast.error("Erro inesperado ao conectar ao servidor de autenticação.");
     } finally {
       setIsLoggingIn(false);
