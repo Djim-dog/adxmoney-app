@@ -47,24 +47,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const fetchProfile = async (userId: string): Promise<Profile | null> => {
     try {
-      // Buscar na tabela profiles ignorando RLS
-      const { data, error } = await supabase
+      // 1. Tenta buscar o perfil
+      const { data: profileData, error: profileError } = await supabase
         .from("profiles")
         .select("id, name, first_name, last_name, email, phone, avatar_url, role, first_login, is_active, created_at, updated_at")
         .eq("id", userId)
         .maybeSingle();
 
-      if (error) {
-        console.error("[AuthContext] Erro ao carregar perfil:", error.message);
+      if (profileData) {
+        setProfile(profileData as Profile);
+        return profileData as Profile;
       }
 
-      if (data) {
-        const loadedProfile = data as Profile;
-        setProfile(loadedProfile);
-        return loadedProfile;
-      }
-
-      // Self-healing: Se o perfil não existir na tabela public.profiles, autocria
+      // 2. Se não encontrou, tenta criar (self-healing)
       const { data: { user: currentUser } } = await supabase.auth.getUser();
       if (!currentUser) return null;
 
@@ -72,45 +67,35 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const email = currentUser.email || "";
       const name = currentUser.user_metadata?.name || email.split("@")[0] || "Operador";
 
-      const { error: insertError } = await supabase.from("profiles").upsert({
-        id: userId,
-        email: email,
-        name: name,
-        role: role,
-        first_login: true,
-        is_active: true,
-      });
+      const { data: newProfile, error: upsertError } = await supabase
+        .from("profiles")
+        .upsert({
+          id: userId,
+          email,
+          name,
+          role,
+          first_login: true,
+          is_active: true,
+        })
+        .select()
+        .single();
 
-      if (insertError) {
-         console.error("[AuthContext] Erro ao autocriar perfil:", insertError.message);
-         return null;
+      if (upsertError) {
+        console.error("[AuthContext] Erro ao autocriar perfil:", upsertError);
+        return null;
       }
 
+      // Garante carteira
       await supabase.from("wallets").upsert({
         user_id: userId,
         balance: 0.00,
         reserved_balance: 0.00,
       });
 
-      const newProfile: Profile = {
-        id: userId,
-        email,
-        name,
-        first_name: null,
-        last_name: null,
-        phone: null,
-        avatar_url: null,
-        role,
-        first_login: true,
-        is_active: true,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      };
-
-      setProfile(newProfile);
-      return newProfile;
+      setProfile(newProfile as Profile);
+      return newProfile as Profile;
     } catch (err) {
-      console.error("[AuthContext] Erro inesperado no perfil:", err);
+      console.error("[AuthContext] Erro fatal ao carregar perfil:", err);
       return null;
     }
   };

@@ -54,70 +54,43 @@ export const UserAppPage: React.FC = () => {
     if (!user) return;
     setLoading(true);
     try {
-      // 1. Carteira
-      const { data: wData } = await supabase
-        .from("wallets")
-        .select("*")
-        .eq("user_id", user.id)
-        .maybeSingle();
-      if (wData) setWallet(wData);
-
-      // 2. Transações
-      const { data: tData } = await supabase
-        .from("wallet_transactions")
-        .select("*")
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: false });
-      if (tData) setTransactions(tData);
-
-      // 3. Campanhas
-      const { data: cAssignments } = await supabase
-        .from("campaign_assignments")
-        .select(`
-          id,
-          status,
-          completed_at,
-          campaign_id,
+      // 1. Tenta carregar dados em paralelo para agilizar
+      const [walletRes, transactionsRes, campaignRes, affiliateRes] = await Promise.all([
+        supabase.from("wallets").select("*").eq("user_id", user.id).maybeSingle(),
+        supabase.from("wallet_transactions").select("*").eq("user_id", user.id).order("created_at", { ascending: false }),
+        supabase.from("campaign_assignments").select(`
+          id, status, completed_at, campaign_id,
           campaigns:campaign_id (
-            id,
-            title,
-            description,
-            platform,
-            target_url,
-            instructions,
-            reward_amount,
-            status
+            id, title, description, platform, target_url, instructions, reward_amount, status
           )
-        `)
-        .eq("user_id", user.id);
+        `).eq("user_id", user.id),
+        supabase.from("affiliate_profiles").select("*").eq("user_id", user.id).maybeSingle()
+      ]);
 
-      if (cAssignments) {
-        const list = cAssignments
-          .filter((a: any) => a.campaigns && (a.campaigns.status === "ACTIVE" || a.status === "COMPLETED"))
+      if (walletRes.data) setWallet(walletRes.data);
+      if (transactionsRes.data) setTransactions(transactionsRes.data);
+      if (affiliateRes.data) setAffiliate(affiliateRes.data);
+
+      if (campaignRes.data) {
+        const list = campaignRes.data
+          .filter((a: any) => a.campaigns)
           .map((a: any) => ({
-            id: a.campaigns ? a.campaigns.id : a.campaign_id,
-            title: a.campaigns?.title || "Campanha",
-            description: a.campaigns?.description || "",
-            platform: a.campaigns?.platform || "Geral",
-            target_url: a.campaigns?.target_url || "#",
-            instructions: a.campaigns?.instructions || "",
-            reward_amount: a.campaigns ? Number(a.campaigns.reward_amount) : 0,
+            id: a.campaigns.id,
+            title: a.campaigns.title,
+            description: a.campaigns.description,
+            platform: a.campaigns.platform,
+            target_url: a.campaigns.target_url,
+            instructions: a.campaigns.instructions,
+            reward_amount: Number(a.campaigns.reward_amount),
             assignment_id: a.id,
             assignment_status: a.status,
             completed_at: a.completed_at,
           }));
         setCampaigns(list);
       }
-
-      // 4. Afiliado
-      const { data: affData } = await supabase
-        .from("affiliate_profiles")
-        .select("*")
-        .eq("user_id", user.id)
-        .maybeSingle();
-      if (affData) setAffiliate(affData);
     } catch (err) {
-      console.error("[UserApp] Erro ao carregar dados:", err);
+      console.error("[UserApp] Erro crítico ao carregar dados:", err);
+      toast.error("Erro ao carregar seus dados. Tente recarregar.");
     } finally {
       setLoading(false);
     }
