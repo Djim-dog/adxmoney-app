@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { FirstAccessModal } from "@/components/FirstAccessModal";
+import { ChangePasswordModal } from "@/components/ChangePasswordModal";
 import { WithdrawalModal } from "@/components/WithdrawalModal";
 import { toast } from "sonner";
 import {
