@@ -494,8 +494,8 @@ const Index = () => {
       {/* Header Superior */}
       <header className="sticky top-0 z-30 border-b border-slate-800/80 bg-slate-900/90 backdrop-blur-md px-4 lg:px-8 py-3 flex items-center justify-between shadow-lg shadow-black/20">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-700 flex items-center justify-center font-black text-white text-lg tracking-wider shadow-md shadow-emerald-950">
-            ADX
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-700 flex items-center justify-center font-black text-white text-lg tracking-wider shadow-md shadow-emerald-950 overflow-hidden">
+            <img src="/logo.png" alt="ADXmoney" className="w-full h-full object-cover" />
           </div>
           <div>
             <div className="flex items-center gap-2">

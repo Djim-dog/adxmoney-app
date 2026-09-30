@@ -67,8 +67,8 @@ const Login: React.FC = () => {
 
       <div className="w-full max-w-md relative z-10">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-bold text-2xl shadow-lg shadow-emerald-950 mb-4 tracking-wider">
-            ADX
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-slate-900 border border-slate-800 text-emerald-400 font-bold text-2xl shadow-xl shadow-emerald-950/20 mb-4 overflow-hidden">
+            <img src="/logo.png" alt="ADXmoney" className="w-full h-full object-cover" />
           </div>
           <h1 className="text-2xl font-bold tracking-tight text-white">ADXmoney App</h1>
           <p className="text-xs text-slate-400 mt-1 uppercase tracking-widest font-semibold">
