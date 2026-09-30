@@ -47,9 +47,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const fetchProfile = async (userId: string): Promise<Profile | null> => {
     try {
+      // Buscar na tabela profiles ignorando RLS
       const { data, error } = await supabase
         .from("profiles")
-        .select("*")
+        .select("id, name, first_name, last_name, email, phone, avatar_url, role, first_login, is_active, created_at, updated_at")
         .eq("id", userId)
         .maybeSingle();
 
@@ -65,23 +66,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       // Self-healing: Se o perfil não existir na tabela public.profiles, autocria
       const { data: { user: currentUser } } = await supabase.auth.getUser();
-      const fallbackProfile: Profile = {
-        id: userId,
-        email: currentUser?.email || "",
-        name: currentUser?.user_metadata?.name || currentUser?.email?.split("@")[0] || "Operador",
-        role: (currentUser?.user_metadata?.role as "user" | "admin") || "user",
-        first_login: true,
-        is_active: true,
-      };
+      if (!currentUser) return null;
 
-      await supabase.from("profiles").upsert({
+      const role = (currentUser.user_metadata?.role as "user" | "admin") || "user";
+      const email = currentUser.email || "";
+      const name = currentUser.user_metadata?.name || email.split("@")[0] || "Operador";
+
+      const { error: insertError } = await supabase.from("profiles").upsert({
         id: userId,
-        email: fallbackProfile.email,
-        name: fallbackProfile.name,
-        role: fallbackProfile.role,
+        email: email,
+        name: name,
+        role: role,
         first_login: true,
         is_active: true,
       });
+
+      if (insertError) {
+         console.error("[AuthContext] Erro ao autocriar perfil:", insertError.message);
+         return null;
+      }
 
       await supabase.from("wallets").upsert({
         user_id: userId,
@@ -89,8 +92,23 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         reserved_balance: 0.00,
       });
 
-      setProfile(fallbackProfile);
-      return fallbackProfile;
+      const newProfile: Profile = {
+        id: userId,
+        email,
+        name,
+        first_name: null,
+        last_name: null,
+        phone: null,
+        avatar_url: null,
+        role,
+        first_login: true,
+        is_active: true,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+
+      setProfile(newProfile);
+      return newProfile;
     } catch (err) {
       console.error("[AuthContext] Erro inesperado no perfil:", err);
       return null;

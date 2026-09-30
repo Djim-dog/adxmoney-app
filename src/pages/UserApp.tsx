@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { FirstAccessModal } from "@/components/FirstAccessModal";
-import { ChangePasswordModal } from "@/components/ChangePasswordModal";
 import { WithdrawalModal } from "@/components/WithdrawalModal";
 import { toast } from "sonner";
 import {
@@ -15,13 +14,8 @@ import {
   RefreshCw,
   Loader2,
   ArrowUpRight,
-  TrendingUp,
-  Play,
   CheckCircle2,
-  Share2,
   Copy,
-  Clock,
-  KeyRound,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -33,7 +27,7 @@ export const UserAppPage: React.FC = () => {
   const { user, profile, signOut, refreshProfile } = useAuth();
   const [activeSection, setActiveSection] = useState<"home" | "campaigns" | "wallet" | "history" | "profile">("home");
 
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [wallet, setWallet] = useState<{ id: string; balance: number; reserved_balance: number } | null>(null);
   const [campaigns, setCampaigns] = useState<any[]>([]);
   const [transactions, setTransactions] = useState<any[]>([]);
@@ -43,39 +37,41 @@ export const UserAppPage: React.FC = () => {
   const [executingId, setExecutingId] = useState<string | null>(null);
   const [confirmingId, setConfirmingId] = useState<string | null>(null);
 
-  // Perfil / Troca de Senha
   const [profileName, setProfileName] = useState(profile?.name || "");
   const [profilePhone, setProfilePhone] = useState(profile?.phone || "");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [updatingProfile, setUpdatingProfile] = useState(false);
 
+  useEffect(() => {
+    if (profile) {
+      if (profile.name) setProfileName(profile.name);
+      if (profile.phone) setProfilePhone(profile.phone);
+    }
+  }, [profile]);
+
   const loadUserData = async () => {
     if (!user) return;
     setLoading(true);
     try {
       // 1. Carteira
-      const { data: wData, error: wErr } = await supabase
+      const { data: wData } = await supabase
         .from("wallets")
         .select("*")
         .eq("user_id", user.id)
         .maybeSingle();
-      
-      if (wErr) console.error("Erro ao carregar carteira:", wErr);
       if (wData) setWallet(wData);
 
       // 2. Transações
-      const { data: tData, error: tErr } = await supabase
+      const { data: tData } = await supabase
         .from("wallet_transactions")
         .select("*")
         .eq("user_id", user.id)
         .order("created_at", { ascending: false });
-        
-      if (tErr) console.error("Erro ao carregar transações:", tErr);
       if (tData) setTransactions(tData);
 
-      // 3. Campanhas Atribuídas
-      const { data: cAssignments, error: cErr } = await supabase
+      // 3. Campanhas
+      const { data: cAssignments } = await supabase
         .from("campaign_assignments")
         .select(`
           id,
@@ -95,7 +91,6 @@ export const UserAppPage: React.FC = () => {
         `)
         .eq("user_id", user.id);
 
-      if (cErr) console.error("Erro ao carregar campanhas:", cErr);
       if (cAssignments) {
         const list = cAssignments
           .filter((a: any) => a.campaigns && (a.campaigns.status === "ACTIVE" || a.status === "COMPLETED"))
@@ -114,7 +109,7 @@ export const UserAppPage: React.FC = () => {
         setCampaigns(list);
       }
 
-      // 4. Perfil de Afiliado
+      // 4. Afiliado
       const { data: affData } = await supabase
         .from("affiliate_profiles")
         .select("*")
@@ -132,7 +127,6 @@ export const UserAppPage: React.FC = () => {
     loadUserData();
   }, [user]);
 
-  // Executar Campanha
   const handleExecuteCampaign = (campaign: any) => {
     window.open(campaign.target_url, "_blank", "noopener,noreferrer");
     setConfirmingId(campaign.id);
@@ -142,7 +136,7 @@ export const UserAppPage: React.FC = () => {
   const handleConfirmCompletion = async (campaign: any) => {
     setExecutingId(campaign.id);
     try {
-      const { data, error } = await supabase.rpc("complete_campaign_execution", {
+      const { error } = await supabase.rpc("complete_campaign_execution", {
         p_campaign_id: campaign.id,
       });
 
@@ -158,7 +152,6 @@ export const UserAppPage: React.FC = () => {
     }
   };
 
-  // Atualizar Perfil
   const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
@@ -207,18 +200,12 @@ export const UserAppPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col selection:bg-emerald-500 selection:text-white">
-      {loading && (
-        <div className="fixed inset-0 bg-slate-950/80 z-50 flex items-center justify-center">
-          <Loader2 className="w-8 h-8 animate-spin text-emerald-500" />
-        </div>
-      )}
-
       {/* Modal de Primeiro Acesso Obrigatório */}
       {profile?.first_login && user && (
         <FirstAccessModal
-          isOpen={profile.first_login}
+          isOpen={true}
           userEmail={user.email || ""}
-          initialName={profile.name}
+          initialName={profile.name || ""}
           onSuccess={async () => {
             await refreshProfile();
             await loadUserData();
@@ -271,7 +258,7 @@ export const UserAppPage: React.FC = () => {
       </header>
 
       <div className="flex-1 flex flex-col md:flex-row">
-        {/* Navegação do Usuário */}
+        {/* Navegação */}
         <aside className="w-full md:w-56 border-r border-slate-800 bg-slate-900/50 p-3 space-y-1 shrink-0">
           <nav className="space-y-1">
             <button
@@ -336,9 +323,8 @@ export const UserAppPage: React.FC = () => {
           </nav>
         </aside>
 
-        {/* Conteúdo Principal do Usuário */}
+        {/* Conteúdo Principal */}
         <main className="flex-1 p-6 space-y-6 overflow-y-auto max-w-5xl">
-          {/* SEÇÃO: INÍCIO */}
           {activeSection === "home" && (
             <div className="space-y-6">
               <div>
@@ -346,7 +332,6 @@ export const UserAppPage: React.FC = () => {
                 <p className="text-xs text-slate-400">Resumo da sua conta e tarefas disponíveis.</p>
               </div>
 
-              {/* Cards Financeiros */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 <Card className="bg-slate-900 border-slate-800">
                   <CardHeader className="pb-2">
@@ -407,7 +392,6 @@ export const UserAppPage: React.FC = () => {
                 </Card>
               </div>
 
-              {/* Lista Resumida de Tarefas */}
               <div className="space-y-3">
                 <h3 className="text-sm font-bold text-slate-200">Tarefas Pendentes de Execução</h3>
                 {campaigns.filter((c) => c.assignment_status !== "COMPLETED").length === 0 ? (
@@ -460,7 +444,6 @@ export const UserAppPage: React.FC = () => {
             </div>
           )}
 
-          {/* SEÇÃO: CAMPANHAS */}
           {activeSection === "campaigns" && (
             <div className="space-y-4">
               <div>
@@ -527,7 +510,6 @@ export const UserAppPage: React.FC = () => {
             </div>
           )}
 
-          {/* SEÇÃO: CARTEIRA */}
           {activeSection === "wallet" && (
             <div className="space-y-4">
               <div>
@@ -570,7 +552,6 @@ export const UserAppPage: React.FC = () => {
             </div>
           )}
 
-          {/* SEÇÃO: HISTÓRICO */}
           {activeSection === "history" && (
             <div className="space-y-4">
               <div>
@@ -608,7 +589,6 @@ export const UserAppPage: React.FC = () => {
             </div>
           )}
 
-          {/* SEÇÃO: PERFIL */}
           {activeSection === "profile" && (
             <div className="space-y-4 max-w-md">
               <div>
