@@ -55,7 +55,7 @@ const Login: React.FC = () => {
 
       if (error) {
         console.error("[Login] Erro de autenticação:", error);
-        toast.error(error.message || "Erro ao autenticar. Verifique suas credenciais.");
+        toast.error("Solicite uma conta através do portal ADXmoney");
         setIsLoggingIn(false);
         return;
       }
