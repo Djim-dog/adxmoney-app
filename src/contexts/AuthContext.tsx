@@ -22,6 +22,7 @@ interface AuthContextType {
   user: User | null;
   profile: Profile | null;
   isAdmin: boolean;
+  isActive: boolean;
   loading: boolean;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
@@ -32,6 +33,7 @@ const AuthContext = createContext<AuthContextType>({
   user: null,
   profile: null,
   isAdmin: false,
+  isActive: true,
   loading: true,
   signOut: async () => {},
   refreshProfile: async () => {},
@@ -43,7 +45,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchProfile = async (userId: string) => {
+  const fetchProfile = async (userId: string): Promise<Profile | null> => {
     try {
       const { data, error } = await supabase
         .from("profiles")
@@ -52,29 +54,50 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         .maybeSingle();
 
       if (error) {
-        console.error("Erro ao carregar perfil:", error.message);
-      } else {
-        setProfile(data as Profile);
+        console.error("[AuthContext] Erro ao carregar perfil:", error.message);
+        return null;
       }
+      const loadedProfile = data as Profile | null;
+      setProfile(loadedProfile);
+      return loadedProfile;
     } catch (err) {
-      console.error("Erro inesperado no perfil:", err);
+      console.error("[AuthContext] Erro inesperado no perfil:", err);
+      return null;
     }
   };
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
-      setSession(currentSession);
-      setUser(currentSession?.user ?? null);
-      if (currentSession?.user) {
-        fetchProfile(currentSession.user.id);
+    let isMounted = true;
+
+    const initAuth = async () => {
+      try {
+        const { data: { session: initialSession } } = await supabase.auth.getSession();
+        if (!isMounted) return;
+
+        setSession(initialSession);
+        setUser(initialSession?.user ?? null);
+
+        if (initialSession?.user) {
+          await fetchProfile(initialSession.user.id);
+        }
+      } catch (err) {
+        console.error("[AuthContext] Erro ao obter sessão:", err);
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
       }
-      setLoading(false);
-    });
+    };
+
+    initAuth();
 
     const { data: authListener } = supabase.auth.onAuthStateChange(
-      async (_event, newSession) => {
+      async (event, newSession) => {
+        if (!isMounted) return;
+
         setSession(newSession);
         setUser(newSession?.user ?? null);
+
         if (newSession?.user) {
           await fetchProfile(newSession.user.id);
         } else {
@@ -85,15 +108,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     );
 
     return () => {
+      isMounted = false;
       authListener?.subscription.unsubscribe();
     };
   }, []);
 
   const signOut = async () => {
-    await supabase.auth.signOut();
-    setSession(null);
-    setUser(null);
-    setProfile(null);
+    try {
+      await supabase.auth.signOut();
+    } catch (err) {
+      console.error("[AuthContext] Erro no logout:", err);
+    } finally {
+      setSession(null);
+      setUser(null);
+      setProfile(null);
+    }
   };
 
   const refreshProfile = async () => {
@@ -103,6 +132,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const isAdmin = profile?.role === "admin";
+  const isActive = profile ? profile.is_active !== false : true;
 
   return (
     <AuthContext.Provider
@@ -111,6 +141,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         user,
         profile,
         isAdmin,
+        isActive,
         loading,
         signOut,
         refreshProfile,
