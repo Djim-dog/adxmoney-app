@@ -81,6 +81,7 @@ export const UserAppPage: React.FC = () => {
           id,
           status,
           completed_at,
+          campaign_id,
           campaigns:campaign_id (
             id,
             title,
@@ -97,15 +98,15 @@ export const UserAppPage: React.FC = () => {
       if (cErr) console.error("Erro ao carregar campanhas:", cErr);
       if (cAssignments) {
         const list = cAssignments
-          .filter((a: any) => a.campaigns && a.campaigns.status === "ACTIVE")
+          .filter((a: any) => a.campaigns && (a.campaigns.status === "ACTIVE" || a.status === "COMPLETED"))
           .map((a: any) => ({
-            id: a.campaigns.id,
-            title: a.campaigns.title,
-            description: a.campaigns.description,
-            platform: a.campaigns.platform,
-            target_url: a.campaigns.target_url,
-            instructions: a.campaigns.instructions,
-            reward_amount: Number(a.campaigns.reward_amount),
+            id: a.campaigns ? a.campaigns.id : a.campaign_id,
+            title: a.campaigns?.title || "Campanha",
+            description: a.campaigns?.description || "",
+            platform: a.campaigns?.platform || "Geral",
+            target_url: a.campaigns?.target_url || "#",
+            instructions: a.campaigns?.instructions || "",
+            reward_amount: a.campaigns ? Number(a.campaigns.reward_amount) : 0,
             assignment_id: a.id,
             assignment_status: a.status,
             completed_at: a.completed_at,

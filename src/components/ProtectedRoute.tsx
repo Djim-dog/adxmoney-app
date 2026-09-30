@@ -5,10 +5,15 @@ import { Loader2 } from 'lucide-react';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
+  requiredRole?: "admin" | "user";
   adminOnly?: boolean;
 }
 
-export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, adminOnly = false }) => {
+export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
+  children,
+  requiredRole,
+  adminOnly = false
+}) => {
   const { user, profile, loading } = useAuth();
   const location = useLocation();
 
@@ -25,7 +30,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, adminO
     return <Navigate to="/login" replace state={{ from: location }} />;
   }
 
-  // Se o usuário estiver logado mas o perfil demorar um instante, mostra loading amigável em vez de tela branca
+  // Se o usuário estiver logado mas o perfil demorar um instante, mostra loading amigável
   if (!profile) {
     return (
       <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center text-slate-400 gap-3">
@@ -43,9 +48,20 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, adminO
     return <Navigate to="/app" replace />;
   }
 
-  // Proteção de Rota Admin
-  if (adminOnly && profile.role !== 'admin') {
+  // Validação estrita de perfil/role
+  const effectiveRole = profile.role || 'user';
+
+  if (adminOnly && effectiveRole !== 'admin') {
     return <Navigate to="/app" replace />;
+  }
+
+  if (requiredRole === 'admin' && effectiveRole !== 'admin') {
+    return <Navigate to="/app" replace />;
+  }
+
+  if (requiredRole === 'user' && effectiveRole === 'admin') {
+    // Se um admin acessar /app diretamente, redireciona ao Admin Dashboard
+    return <Navigate to="/admin" replace />;
   }
 
   return <>{children}</>;
