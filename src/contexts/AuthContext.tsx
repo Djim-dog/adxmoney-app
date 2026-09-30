@@ -47,10 +47,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const fetchProfile = async (userId: string): Promise<Profile | null> => {
     try {
-      // 1. Tenta buscar o perfil
-      const { data: profileData, error: profileError } = await supabase
+      const { data: profileData } = await supabase
         .from("profiles")
-        .select("id, name, first_name, last_name, email, phone, avatar_url, role, first_login, is_active, created_at, updated_at")
+        .select("*")
         .eq("id", userId)
         .maybeSingle();
 
@@ -59,43 +58,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return profileData as Profile;
       }
 
-      // 2. Se não encontrou, tenta criar (self-healing)
-      const { data: { user: currentUser } } = await supabase.auth.getUser();
-      if (!currentUser) return null;
+      // Fallback seguro se não existir perfil
+      const fallback: Profile = {
+        id: userId,
+        email: user?.email || "",
+        name: user?.email?.split("@")[0] || "Operador",
+        role: "user",
+        first_login: true,
+        is_active: true,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
 
-      const role = (currentUser.user_metadata?.role as "user" | "admin") || "user";
-      const email = currentUser.email || "";
-      const name = currentUser.user_metadata?.name || email.split("@")[0] || "Operador";
-
-      const { data: newProfile, error: upsertError } = await supabase
-        .from("profiles")
-        .upsert({
-          id: userId,
-          email,
-          name,
-          role,
-          first_login: true,
-          is_active: true,
-        })
-        .select()
-        .single();
-
-      if (upsertError) {
-        console.error("[AuthContext] Erro ao autocriar perfil:", upsertError);
-        return null;
-      }
-
-      // Garante carteira
-      await supabase.from("wallets").upsert({
-        user_id: userId,
-        balance: 0.00,
-        reserved_balance: 0.00,
-      });
-
-      setProfile(newProfile as Profile);
-      return newProfile as Profile;
+      setProfile(fallback);
+      return fallback;
     } catch (err) {
-      console.error("[AuthContext] Erro fatal ao carregar perfil:", err);
+      console.error("[AuthContext] Erro ao buscar perfil:", err);
       return null;
     }
   };
