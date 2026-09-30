@@ -100,7 +100,14 @@ const Login: React.FC = () => {
     <div className="min-h-screen flex flex-col justify-center items-center bg-slate-950 px-4 py-8 text-slate-100">
       <div className="w-full max-w-sm">
         <div className="text-center mb-6">
-          <h1 className="text-xl font-bold tracking-tight text-white font-mono">ADXmoney</h1>
+          <div className="flex justify-center mb-4">
+            <img 
+              src="/logo.png" 
+              alt="ADXmoney Logo" 
+              className="w-20 h-20 object-contain rounded-2xl shadow-2xl border border-slate-800/50 bg-slate-900/40 p-1.5" 
+            />
+          </div>
+          <h1 className="text-xl font-bold tracking-tight text-white font-mono uppercase">ADXmoney</h1>
           <p className="text-xs text-slate-400 mt-1">
             Acesso Operacional ao Sistema
           </p>
