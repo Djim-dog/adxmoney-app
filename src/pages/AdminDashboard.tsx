@@ -66,13 +66,27 @@ export const AdminDashboardPage: React.FC = () => {
   const [isCreateCampaignOpen, setIsCreateCampaignOpen] = useState(false);
   const [isAssignCampaignOpen, setIsAssignCampaignOpen] = useState(false);
   const [isUserCreatedSuccessOpen, setIsUserCreatedSuccessOpen] = useState(false);
-  const [createdUserData, setCreatedUserData] = useState<{ name: string; email: string; password: string; phone: string } | null>(null);
+  const [createdUserData, setCreatedUserData] = useState<{
+    name: string;
+    email: string;
+    password: string;
+    phone: string;
+    primaryLink?: string;
+    tiktok?: string;
+    instagram?: string;
+    youtube?: string;
+    country?: string;
+  } | null>(null);
 
   // Forms
   const [newEmail, setNewEmail] = useState("");
-  const [newPassword, setNewPassword] = useState("");
   const [newName, setNewName] = useState("");
   const [newPhone, setNewPhone] = useState("");
+  const [newPrimaryLink, setNewPrimaryLink] = useState("");
+  const [newTiktok, setNewTiktok] = useState("");
+  const [newInstagram, setNewInstagram] = useState("");
+  const [newYoutube, setNewYoutube] = useState("");
+  const [newCountry, setNewCountry] = useState("Angola");
   const [newRole, setNewRole] = useState("user");
 
   const [newTitle, setNewTitle] = useState("");
@@ -184,53 +198,116 @@ export const AdminDashboardPage: React.FC = () => {
     loadAdminData();
   }, []);
 
-  // Criar Usuário (RPC Segura)
+  // Criar Usuário (RPC Segura - Com senha pré-definida vinculada ao e-mail)
   const handleCreateUser = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newEmail || !newName) {
-      toast.error("Preencha todos os campos obrigatórios.");
+    if (!newEmail || !newName || !newPhone || !newPrimaryLink) {
+      toast.error("Preencha os campos obrigatórios: Nome, E-mail, Telefone e Link Principal.");
       return;
     }
 
-    // Gerar senha se estiver vazia
-    const finalPassword = newPassword || Math.random().toString(36).slice(-8) + "!";
+    // Gerar senha pré-definida vinculada ao e-mail do usuário (ex: User@4921!)
+    const cleanEmailPrefix = (newEmail.split("@")[0] || "Adx").replace(/[^a-zA-Z0-9]/g, "");
+    const prefixFormatted = cleanEmailPrefix.charAt(0).toUpperCase() + cleanEmailPrefix.slice(1, 5);
+    const randomDigits = Math.floor(1000 + Math.random() * 9000);
+    const predefinedPassword = `${prefixFormatted}@${randomDigits}!`;
 
     setSubmitting(true);
     try {
       const { data, error } = await supabase.rpc("admin_create_user", {
         p_email: newEmail.trim(),
-        p_password: finalPassword,
+        p_password: predefinedPassword,
         p_name: newName.trim(),
         p_phone: newPhone.trim() || null,
         p_role: newRole,
+        p_primary_link: newPrimaryLink.trim() || null,
+        p_tiktok: newTiktok.trim() || null,
+        p_instagram: newInstagram.trim() || null,
+        p_youtube: newYoutube.trim() || null,
+        p_country: newCountry.trim() || "Angola",
       });
 
       if (error) throw error;
 
-      // Armazenar dados para o modal de sucesso
+      // Armazenar dados para o modal de comprovativo de criação
       setCreatedUserData({
         name: newName.trim(),
         email: newEmail.trim(),
-        password: finalPassword,
+        password: predefinedPassword,
         phone: newPhone.trim(),
+        primaryLink: newPrimaryLink.trim(),
+        tiktok: newTiktok.trim(),
+        instagram: newInstagram.trim(),
+        youtube: newYoutube.trim(),
+        country: newCountry.trim() || "Angola",
       });
 
-      toast.success("Usuário criado com sucesso no sistema.");
+      toast.success("Usuário criado com sucesso com senha pré-definida!");
       setIsCreateUserOpen(false);
       setIsUserCreatedSuccessOpen(true);
-      
+
       // Limpar formulário
       setNewEmail("");
-      setNewPassword("");
       setNewName("");
       setNewPhone("");
+      setNewPrimaryLink("");
+      setNewTiktok("");
+      setNewInstagram("");
+      setNewYoutube("");
+      setNewCountry("Angola");
       setNewRole("user");
+
       await loadAdminData();
     } catch (err: any) {
       toast.error(err.message || "Falha ao criar usuário.");
     } finally {
       setSubmitting(false);
     }
+  };
+
+  // Enviar Dados de Adesão via WhatsApp
+  const handleSendAdesaoWhatsApp = () => {
+    if (!createdUserData) return;
+
+    let cleanPhone = (createdUserData.phone || "").replace(/\D/g, "");
+    if (!cleanPhone) {
+      toast.error("O número de telefone/WhatsApp é inválido.");
+      return;
+    }
+
+    // Se tiver 9 dígitos e começar com 9 (Angola), adiciona DDI 244
+    if (cleanPhone.length === 9 && cleanPhone.startsWith("9")) {
+      cleanPhone = "244" + cleanPhone;
+    }
+
+    const loginUrl = `${window.location.origin}/login`;
+
+    let msg = `🎉 *DADOS DE ADESÃO - ADX MONEY* 🎉\n\n`;
+    msg += `Olá *${createdUserData.name}*, sua conta de operador foi criada e ativada com sucesso!\n\n`;
+    msg += `📋 *INFORMAÇÕES DE CADASTRO E ACESSO:*\n`;
+    msg += `👤 *Nome:* ${createdUserData.name}\n`;
+    msg += `📧 *E-mail:* ${createdUserData.email}\n`;
+    msg += `🔑 *Senha Pré-definida:* \`${createdUserData.password}\`\n`;
+    msg += `📱 *Telefone/WhatsApp:* ${createdUserData.phone}\n`;
+    msg += `🌍 *País:* ${createdUserData.country || "Angola"}\n`;
+    msg += `🔗 *Link Principal:* ${createdUserData.primaryLink || "Não informado"}\n`;
+
+    if (createdUserData.tiktok) {
+      msg += `🎵 *TikTok:* ${createdUserData.tiktok}\n`;
+    }
+    if (createdUserData.instagram) {
+      msg += `📸 *Instagram:* ${createdUserData.instagram}\n`;
+    }
+    if (createdUserData.youtube) {
+      msg += `▶️ *YouTube:* ${createdUserData.youtube}\n`;
+    }
+
+    msg += `\n🌐 *Acesse o painel por aqui:* ${loginUrl}\n\n`;
+    msg += `💡 *Instrução:* Ao acessar pela primeira vez, você pode atualizar sua senha nas configurações do seu perfil para maior segurança.\n\n`;
+    msg += `Seja bem-vindo(a) à nossa equipa! 🚀`;
+
+    const encoded = encodeURIComponent(msg);
+    window.open(`https://wa.me/${cleanPhone}?text=${encoded}`, "_blank");
   };
 
   // Criar Campanha
@@ -977,14 +1054,14 @@ export const AdminDashboardPage: React.FC = () => {
           <DialogHeader>
             <DialogTitle className="text-base font-bold text-white">Criar Novo Usuário</DialogTitle>
             <DialogDescription className="text-xs text-slate-400">
-              Crie as credenciais de acesso para um operador da plataforma.
+              Crie as credenciais de acesso para um operador da plataforma com senha gerada automaticamente.
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleCreateUser} className="space-y-3 mt-2">
             <div className="space-y-1">
-              <Label className="text-xs text-slate-300">Nome *</Label>
+              <Label className="text-xs text-slate-300">Nome Completo *</Label>
               <Input
-                placeholder="Nome completo"
+                placeholder="Ex: João Silva"
                 value={newName}
                 onChange={(e) => setNewName(e.target.value)}
                 className="bg-slate-950 border-slate-800 text-slate-100 text-xs"
@@ -995,7 +1072,7 @@ export const AdminDashboardPage: React.FC = () => {
               <Label className="text-xs text-slate-300">E-mail *</Label>
               <Input
                 type="email"
-                placeholder="email@adxmoney.ao"
+                placeholder="Ex: joao@gmail.com"
                 value={newEmail}
                 onChange={(e) => setNewEmail(e.target.value)}
                 className="bg-slate-950 border-slate-800 text-slate-100 text-xs"
@@ -1003,24 +1080,66 @@ export const AdminDashboardPage: React.FC = () => {
               />
             </div>
             <div className="space-y-1">
-              <Label className="text-xs text-slate-300">Senha Provisória *</Label>
+              <Label className="text-xs text-slate-300">Telefone / WhatsApp *</Label>
               <Input
-                type="password"
-                placeholder="Mínimo 6 caracteres"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
+                placeholder="Ex: 923456789 ou +244..."
+                value={newPhone}
+                onChange={(e) => setNewPhone(e.target.value)}
                 className="bg-slate-950 border-slate-800 text-slate-100 text-xs"
                 required
               />
             </div>
             <div className="space-y-1">
-              <Label className="text-xs text-slate-300">Telefone (opcional)</Label>
+              <Label className="text-xs text-slate-300">Link Principal *</Label>
               <Input
-                placeholder="+244 9..."
-                value={newPhone}
-                onChange={(e) => setNewPhone(e.target.value)}
+                type="url"
+                placeholder="Ex: https://perfilprincipal.com"
+                value={newPrimaryLink}
+                onChange={(e) => setNewPrimaryLink(e.target.value)}
                 className="bg-slate-950 border-slate-800 text-slate-100 text-xs"
+                required
               />
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <div className="space-y-1">
+                <Label className="text-xs text-slate-300">TikTok (opcional)</Label>
+                <Input
+                  placeholder="@usuario"
+                  value={newTiktok}
+                  onChange={(e) => setNewTiktok(e.target.value)}
+                  className="bg-slate-950 border-slate-800 text-slate-100 text-xs"
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs text-slate-300">Instagram (opcional)</Label>
+                <Input
+                  placeholder="@usuario"
+                  value={newInstagram}
+                  onChange={(e) => setNewInstagram(e.target.value)}
+                  className="bg-slate-950 border-slate-800 text-slate-100 text-xs"
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <div className="space-y-1">
+                <Label className="text-xs text-slate-300">YouTube (opcional)</Label>
+                <Input
+                  placeholder="Canal ou @usuario"
+                  value={newYoutube}
+                  onChange={(e) => setNewYoutube(e.target.value)}
+                  className="bg-slate-950 border-slate-800 text-slate-100 text-xs"
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs text-slate-300">País *</Label>
+                <Input
+                  placeholder="Ex: Angola"
+                  value={newCountry}
+                  onChange={(e) => setNewCountry(e.target.value)}
+                  className="bg-slate-950 border-slate-800 text-slate-100 text-xs"
+                  required
+                />
+              </div>
             </div>
             <div className="space-y-1">
               <Label className="text-xs text-slate-300">Nível / Role</Label>
@@ -1048,7 +1167,7 @@ export const AdminDashboardPage: React.FC = () => {
                 disabled={submitting}
                 className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-medium"
               >
-                {submitting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "Salvar Usuário"}
+                {submitting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "Criar Usuário"}
               </Button>
             </div>
           </form>
@@ -1229,7 +1348,7 @@ export const AdminDashboardPage: React.FC = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Modal Gerenciar Afiliado */}
+            {/* Modal Gerenciar Afiliado */}
       <Dialog open={isAffiliateModalOpen} onOpenChange={setIsAffiliateModalOpen}>
         <DialogContent className="max-w-sm bg-slate-900 border-slate-800 text-slate-100 sm:rounded-2xl p-6">
           <DialogHeader>
@@ -1273,6 +1392,104 @@ export const AdminDashboardPage: React.FC = () => {
               </Button>
             </div>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal Comprovativo de Criação do Usuário & Envio de Dados via WhatsApp */}
+      <Dialog open={isUserCreatedSuccessOpen} onOpenChange={setIsUserCreatedSuccessOpen}>
+        <DialogContent className="max-w-md bg-slate-900 border-slate-800 text-slate-100 sm:rounded-2xl p-6">
+          <DialogHeader>
+            <div className="w-10 h-10 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mb-1 text-emerald-400 mx-auto">
+              <Check className="w-5 h-5" />
+            </div>
+            <DialogTitle className="text-center text-base font-bold text-white">Usuário Criado com Sucesso!</DialogTitle>
+            <DialogDescription className="text-center text-xs text-slate-400">
+              A senha pré-definida foi gerada e vinculada ao e-mail cadastrado.
+            </DialogDescription>
+          </DialogHeader>
+
+          {createdUserData && (
+            <div className="space-y-3 mt-2">
+              <div className="p-3.5 bg-slate-950 rounded-xl border border-slate-800 space-y-2 text-xs">
+                <div className="flex justify-between">
+                  <span className="text-slate-400">Nome:</span>
+                  <span className="font-medium text-white">{createdUserData.name}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-400">E-mail:</span>
+                  <span className="font-medium text-emerald-400">{createdUserData.email}</span>
+                </div>
+                <div className="flex justify-between items-center bg-emerald-950/30 p-2 rounded-lg border border-emerald-800/30">
+                  <span className="text-emerald-300 font-medium">Senha Pré-definida:</span>
+                  <div className="flex items-center gap-2">
+                    <code className="bg-slate-900 px-2 py-0.5 rounded text-emerald-400 font-mono text-xs font-bold">
+                      {createdUserData.password}
+                    </code>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-6 w-6 p-0 text-slate-300 hover:text-white hover:bg-slate-800"
+                      onClick={() => {
+                        navigator.clipboard.writeText(createdUserData.password);
+                        toast.success("Senha copiada para a área de transferência!");
+                      }}
+                    >
+                      <Copy className="w-3.5 h-3.5" />
+                    </Button>
+                  </div>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-400">WhatsApp:</span>
+                  <span className="font-medium text-white">{createdUserData.phone}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-400">País:</span>
+                  <span className="font-medium text-white">{createdUserData.country || "Angola"}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-400">Link Principal:</span>
+                  <span className="font-medium text-sky-400 truncate max-w-[200px]" title={createdUserData.primaryLink}>
+                    {createdUserData.primaryLink || "N/A"}
+                  </span>
+                </div>
+                {createdUserData.tiktok && (
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">TikTok:</span>
+                    <span className="font-medium text-white">{createdUserData.tiktok}</span>
+                  </div>
+                )}
+                {createdUserData.instagram && (
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">Instagram:</span>
+                    <span className="font-medium text-white">{createdUserData.instagram}</span>
+                  </div>
+                )}
+                {createdUserData.youtube && (
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">YouTube:</span>
+                    <span className="font-medium text-white">{createdUserData.youtube}</span>
+                  </div>
+                )}
+              </div>
+
+              <div className="pt-2 flex flex-col gap-2">
+                <Button
+                  onClick={handleSendAdesaoWhatsApp}
+                  className="w-full bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold h-10 flex items-center justify-center gap-2 shadow-lg shadow-emerald-900/20"
+                >
+                  <MessageSquare className="w-4 h-4" />
+                  Enviar Dados de Adesão (WhatsApp)
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => setIsUserCreatedSuccessOpen(false)}
+                  className="w-full border-slate-800 text-slate-300 hover:bg-slate-800 text-xs h-9"
+                >
+                  Fechar Comprovativo
+                </Button>
+              </div>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </div>
