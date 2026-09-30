@@ -40,6 +40,7 @@ export const UserAppPage: React.FC = () => {
 
   const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false);
   const [executingId, setExecutingId] = useState<string | null>(null);
+  const [confirmingId, setConfirmingId] = useState<string | null>(null);
 
   // Perfil / Troca de Senha
   const [profileName, setProfileName] = useState(profile?.name || "");
@@ -125,11 +126,15 @@ export const UserAppPage: React.FC = () => {
   }, [user]);
 
   // Executar Campanha
-  const handleExecuteCampaign = async (campaign: any) => {
+  const handleExecuteCampaign = (campaign: any) => {
+    window.open(campaign.target_url, "_blank", "noopener,noreferrer");
+    setConfirmingId(campaign.id);
+    toast.info("Link aberto! Clique em 'Confirmar Conclusão' após realizar a tarefa.");
+  };
+
+  const handleConfirmCompletion = async (campaign: any) => {
     setExecutingId(campaign.id);
     try {
-      window.open(campaign.target_url, "_blank", "noopener,noreferrer");
-
       const { data, error } = await supabase.rpc("complete_campaign_execution", {
         p_campaign_id: campaign.id,
       });
@@ -137,6 +142,7 @@ export const UserAppPage: React.FC = () => {
       if (error) throw error;
 
       toast.success(`Tarefa concluída! ${campaign.reward_amount.toLocaleString("pt-AO")} Kz creditados na carteira.`);
+      setConfirmingId(null);
       await loadUserData();
     } catch (err: any) {
       toast.error(err.message || "Erro ao concluir campanha.");
@@ -414,14 +420,24 @@ export const UserAppPage: React.FC = () => {
                             <CardTitle className="text-sm font-bold text-white mt-1">{c.title}</CardTitle>
                           </CardHeader>
                           <CardContent className="pt-0">
-                            <Button
-                              size="sm"
-                              onClick={() => handleExecuteCampaign(c)}
-                              disabled={executingId === c.id}
-                              className="w-full bg-emerald-600 hover:bg-emerald-500 text-white text-xs h-8 rounded-lg"
-                            >
-                              {executingId === c.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "Executar Tarefa"}
-                            </Button>
+                            {confirmingId === c.id ? (
+                              <Button
+                                size="sm"
+                                onClick={() => handleConfirmCompletion(c)}
+                                disabled={executingId === c.id}
+                                className="w-full bg-amber-600 hover:bg-amber-500 text-white text-xs h-8 rounded-lg animate-pulse"
+                              >
+                                {executingId === c.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "Confirmar Conclusão"}
+                              </Button>
+                            ) : (
+                              <Button
+                                size="sm"
+                                onClick={() => handleExecuteCampaign(c)}
+                                className="w-full bg-emerald-600 hover:bg-emerald-500 text-white text-xs h-8 rounded-lg"
+                              >
+                                Executar Tarefa
+                              </Button>
+                            )}
                           </CardContent>
                         </Card>
                       ))}
@@ -447,6 +463,8 @@ export const UserAppPage: React.FC = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {campaigns.map((c) => {
                     const isDone = c.assignment_status === "COMPLETED";
+                    const isConfirming = confirmingId === c.id;
+
                     return (
                       <Card key={c.id} className={`bg-slate-900 border ${isDone ? "border-slate-800 opacity-60" : "border-slate-700"}`}>
                         <CardHeader className="pb-2">
@@ -469,14 +487,22 @@ export const UserAppPage: React.FC = () => {
                             <div className="flex items-center justify-center gap-1 text-xs text-emerald-400 py-1.5 font-medium">
                               <CheckCircle2 className="w-4 h-4" /> Concluída
                             </div>
+                          ) : isConfirming ? (
+                            <Button
+                              size="sm"
+                              onClick={() => handleConfirmCompletion(c)}
+                              disabled={executingId === c.id}
+                              className="w-full bg-amber-600 hover:bg-amber-500 text-white text-xs h-8 rounded-lg animate-pulse"
+                            >
+                              {executingId === c.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "Confirmar Conclusão"}
+                            </Button>
                           ) : (
                             <Button
                               size="sm"
                               onClick={() => handleExecuteCampaign(c)}
-                              disabled={executingId === c.id}
                               className="w-full bg-emerald-600 hover:bg-emerald-500 text-white text-xs h-8 rounded-lg"
                             >
-                              {executingId === c.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "Iniciar e Concluir"}
+                              Iniciar e Concluir
                             </Button>
                           )}
                         </CardContent>

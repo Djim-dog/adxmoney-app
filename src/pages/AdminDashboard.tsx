@@ -55,6 +55,7 @@ export const AdminDashboardPage: React.FC = () => {
   const [campaignsList, setCampaignsList] = useState<any[]>([]);
   const [withdrawalsList, setWithdrawalsList] = useState<any[]>([]);
   const [assignmentsList, setAssignmentsList] = useState<any[]>([]);
+  const [affiliatesList, setAffiliatesList] = useState<any[]>([]);
   const [activityLogs, setActivityLogs] = useState<any[]>([]);
 
   // Modais de Criação
@@ -78,6 +79,11 @@ export const AdminDashboardPage: React.FC = () => {
 
   const [selectedCampaignId, setSelectedCampaignId] = useState<string | null>(null);
   const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
+
+  // Modal Afiliado
+  const [isAffiliateModalOpen, setIsAffiliateModalOpen] = useState(false);
+  const [selectedAffiliateUser, setSelectedAffiliateUser] = useState<any | null>(null);
+  const [customAffiliateCode, setCustomAffiliateCode] = useState("");
 
   const [updatePassword, setUpdatePassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -118,7 +124,14 @@ export const AdminDashboardPage: React.FC = () => {
       const withdrawals = withData || [];
       setWithdrawalsList(withdrawals);
 
-      // 5. Histórico / Logs
+      // 5. Afiliados
+      const { data: affData } = await supabase
+        .from("affiliate_profiles")
+        .select("*, profiles:user_id(name, email)")
+        .order("created_at", { ascending: false });
+      setAffiliatesList(affData || []);
+
+      // 6. Histórico / Logs
       const { data: logsData } = await supabase
         .from("activity_logs")
         .select("*")
@@ -284,6 +297,28 @@ export const AdminDashboardPage: React.FC = () => {
     }
   };
 
+  // Gerenciar Afiliado
+  const handleToggleAffiliate = async (userId: string, isActive: boolean, customCode?: string) => {
+    setSubmitting(true);
+    try {
+      const { error } = await supabase.rpc("admin_toggle_affiliate", {
+        p_user_id: userId,
+        p_is_active: isActive,
+        p_custom_code: customCode || null,
+      });
+
+      if (error) throw error;
+
+      toast.success(`Status de afiliado alterado para ${isActive ? "ATIVO" : "INATIVO"}.`);
+      setIsAffiliateModalOpen(false);
+      await loadAdminData();
+    } catch (err: any) {
+      toast.error(err.message || "Erro ao gerenciar afiliado.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   // Atualizar Senha Admin
   const handleUpdatePassword = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -396,6 +431,18 @@ export const AdminDashboardPage: React.FC = () => {
             >
               <CheckCircle2 className="w-4 h-4" />
               <span>Participações ({assignmentsList.length})</span>
+            </button>
+
+            <button
+              onClick={() => setActiveSection("affiliates")}
+              className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium transition-colors ${
+                activeSection === "affiliates"
+                  ? "bg-emerald-600 text-white"
+                  : "text-slate-400 hover:text-white hover:bg-slate-800/60"
+              }`}
+            >
+              <Share2 className="w-4 h-4" />
+              <span>Afiliados ({affiliatesList.length})</span>
             </button>
 
             <button
@@ -574,10 +621,73 @@ export const AdminDashboardPage: React.FC = () => {
                                   {Number(bal).toLocaleString("pt-AO", { minimumFractionDigits: 2 })} Kz
                                 </span>
                               </div>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => {
+                                  setSelectedAffiliateUser(u);
+                                  const existingAff = affiliatesList.find((a) => a.user_id === u.id);
+                                  setCustomAffiliateCode(existingAff?.affiliate_code || "");
+                                  setIsAffiliateModalOpen(true);
+                                }}
+                                className="h-8 w-8 p-0 text-slate-400 hover:text-white"
+                              >
+                                <Share2 className="w-4 h-4" />
+                              </Button>
                             </div>
                           </div>
                         );
                       })}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
+          {/* SEÇÃO: AFILIADOS */}
+          {activeSection === "affiliates" && (
+            <div className="space-y-4">
+              <div>
+                <h2 className="text-base font-bold text-white">Rede de Afiliados</h2>
+                <p className="text-xs text-slate-400">Gerenciamento de convites e bônus.</p>
+              </div>
+
+              <Card className="bg-slate-900 border-slate-800">
+                <CardContent className="p-0">
+                  {affiliatesList.length === 0 ? (
+                    <div className="text-center py-10 text-xs text-slate-500">Nenhum afiliado registrado.</div>
+                  ) : (
+                    <div className="divide-y divide-slate-800">
+                      {affiliatesList.map((a) => (
+                        <div key={a.id} className="p-4 flex flex-col md:flex-row md:items-center justify-between gap-3 hover:bg-slate-800/30">
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs font-bold text-white">{a.profiles?.name || a.profiles?.email}</span>
+                              <Badge className={`text-[10px] ${a.is_active ? "bg-emerald-500/10 text-emerald-400" : "bg-slate-800 text-slate-400"}`}>
+                                {a.affiliate_code}
+                              </Badge>
+                              {!a.is_active && <Badge className="text-[9px] bg-rose-500/10 text-rose-400">INATIVO</Badge>}
+                            </div>
+                            <p className="text-[11px] text-slate-400 mt-0.5">
+                              {a.total_referrals} indicações • Total ganho: {Number(a.total_earned).toLocaleString("pt-AO")} Kz
+                            </p>
+                          </div>
+
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                              setSelectedAffiliateUser({ id: a.user_id, name: a.profiles?.name });
+                              setCustomAffiliateCode(a.affiliate_code);
+                              setIsAffiliateModalOpen(true);
+                            }}
+                            className="border-slate-800 text-slate-400 hover:text-white text-[11px] h-7"
+                          >
+                            Editar Status
+                          </Button>
+                        </div>
+                      ))}
                     </div>
                   )}
                 </CardContent>
@@ -708,7 +818,7 @@ export const AdminDashboardPage: React.FC = () => {
                                     : w.status === "PAID"
                                     ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30"
                                     : "bg-rose-500/10 text-rose-400 border-rose-500/30"
-                                raid}`}
+                                }`}
                               >
                                 {w.status}
                               </Badge>
@@ -1092,6 +1202,53 @@ export const AdminDashboardPage: React.FC = () => {
                 className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-medium"
               >
                 {submitting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "Confirmar Distribuição"}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal Gerenciar Afiliado */}
+      <Dialog open={isAffiliateModalOpen} onOpenChange={setIsAffiliateModalOpen}>
+        <DialogContent className="max-w-sm bg-slate-900 border-slate-800 text-slate-100 sm:rounded-2xl p-6">
+          <DialogHeader>
+            <DialogTitle className="text-base font-bold text-white">Status de Afiliado</DialogTitle>
+            <DialogDescription className="text-xs text-slate-400">
+              Gerencie a capacidade deste usuário de indicar novos membros.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 mt-2">
+            <div className="p-3 bg-slate-950 rounded-lg border border-slate-800">
+              <p className="text-[11px] text-slate-500">Usuário:</p>
+              <p className="text-xs font-bold text-white">{selectedAffiliateUser?.name || selectedAffiliateUser?.email}</p>
+            </div>
+
+            <div className="space-y-1">
+              <Label className="text-xs text-slate-300">Código de Afiliado (opcional)</Label>
+              <Input
+                placeholder="Ex: CONVITE10"
+                value={customAffiliateCode}
+                onChange={(e) => setCustomAffiliateCode(e.target.value.toUpperCase())}
+                className="bg-slate-950 border-slate-800 text-slate-100 text-xs"
+              />
+              <p className="text-[10px] text-slate-500">Deixe em branco para gerar automaticamente.</p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+              <Button
+                onClick={() => handleToggleAffiliate(selectedAffiliateUser.id, true, customAffiliateCode)}
+                disabled={submitting}
+                className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs h-9"
+              >
+                {submitting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "Ativar"}
+              </Button>
+              <Button
+                onClick={() => handleToggleAffiliate(selectedAffiliateUser.id, false)}
+                disabled={submitting}
+                variant="outline"
+                className="border-slate-800 text-rose-400 hover:bg-rose-950/20 text-xs h-9"
+              >
+                {submitting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "Desativar"}
               </Button>
             </div>
           </div>
