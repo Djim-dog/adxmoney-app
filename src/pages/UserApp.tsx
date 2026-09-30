@@ -55,23 +55,27 @@ export const UserAppPage: React.FC = () => {
     setLoading(true);
     try {
       // 1. Carteira
-      const { data: wData } = await supabase
+      const { data: wData, error: wErr } = await supabase
         .from("wallets")
         .select("*")
         .eq("user_id", user.id)
         .maybeSingle();
+      
+      if (wErr) console.error("Erro ao carregar carteira:", wErr);
       if (wData) setWallet(wData);
 
       // 2. Transações
-      const { data: tData } = await supabase
+      const { data: tData, error: tErr } = await supabase
         .from("wallet_transactions")
         .select("*")
         .eq("user_id", user.id)
         .order("created_at", { ascending: false });
+        
+      if (tErr) console.error("Erro ao carregar transações:", tErr);
       if (tData) setTransactions(tData);
 
       // 3. Campanhas Atribuídas
-      const { data: cAssignments } = await supabase
+      const { data: cAssignments, error: cErr } = await supabase
         .from("campaign_assignments")
         .select(`
           id,
@@ -90,6 +94,7 @@ export const UserAppPage: React.FC = () => {
         `)
         .eq("user_id", user.id);
 
+      if (cErr) console.error("Erro ao carregar campanhas:", cErr);
       if (cAssignments) {
         const list = cAssignments
           .filter((a: any) => a.campaigns && a.campaigns.status === "ACTIVE")
@@ -201,6 +206,12 @@ export const UserAppPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col selection:bg-emerald-500 selection:text-white">
+      {loading && (
+        <div className="fixed inset-0 bg-slate-950/80 z-50 flex items-center justify-center">
+          <Loader2 className="w-8 h-8 animate-spin text-emerald-500" />
+        </div>
+      )}
+
       {/* Modal de Primeiro Acesso Obrigatório */}
       {profile?.first_login && user && (
         <FirstAccessModal
