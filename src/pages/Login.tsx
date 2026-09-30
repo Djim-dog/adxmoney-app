@@ -55,37 +55,17 @@ const Login: React.FC = () => {
 
       if (error) {
         console.error("[Login] Erro de autenticação:", error);
-        if (error.message.includes("Invalid login credentials") || error.status === 400 || error.status === 500) {
-          toast.error("Credenciais inválidas ou erro no servidor de autenticação. Verifique seu e-mail e senha.");
-        } else {
-          toast.error(error.message);
-        }
+        toast.error(error.message || "Erro ao autenticar. Verifique suas credenciais.");
         setIsLoggingIn(false);
         return;
       }
 
       if (authData.user) {
-        // Consultar o perfil e role diretamente no banco para redirecionamento imediato e seguro
-        const { data: userProfile, error: profileErr } = await supabase
-          .from("profiles")
-          .select("role, is_active")
-          .eq("id", authData.user.id)
-          .maybeSingle();
-
-        if (profileErr || !userProfile) {
-          toast.error("Perfil do usuário não localizado no sistema.");
-          return;
-        }
-
-        if (userProfile.is_active === false) {
-          toast.error("Sua conta está inativa. Contacte a administração.");
-          await supabase.auth.signOut();
-          return;
-        }
-
+        // Redirecionamento baseado nos metadados ou na sessão direta sem travar se o profile demorar
+        const userRole = authData.user.user_metadata?.role || "user";
         toast.success("Autenticação realizada com sucesso.");
 
-        if (userProfile.role === "admin") {
+        if (userRole === "admin") {
           navigate("/admin", { replace: true });
         } else {
           navigate("/app", { replace: true });
