@@ -48,33 +48,30 @@ const Login: React.FC = () => {
 
     setIsLoggingIn(true);
     try {
-      const { data: authData, error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email: cleanEmail,
         password,
       });
 
       if (error) {
         console.error("[Login] Erro de autenticação:", error);
-        toast.error("Solicite uma conta através do portal ADXmoney");
+        toast.error("E-mail ou senha incorretos.");
         setIsLoggingIn(false);
         return;
       }
 
-      if (authData.user) {
-        // Redirecionamento baseado nos metadados ou na sessão direta sem travar se o profile demorar
-        const userRole = authData.user.user_metadata?.role || "user";
-        toast.success("Autenticação realizada com sucesso.");
-
-        if (userRole === "admin") {
-          navigate("/admin", { replace: true });
-        } else {
-          navigate("/app", { replace: true });
-        }
+      toast.success("Autenticação realizada com sucesso.");
+      // O AuthContext tratará o redirecionamento automaticamente via `useEffect` no Login
+      // caso o usuário esteja autenticado, mas o `navigate` aqui serve como fallback imediato
+      const role = data.user.user_metadata?.role || "user";
+      if (role === "admin") {
+        navigate("/admin", { replace: true });
+      } else {
+        navigate("/app", { replace: true });
       }
     } catch (err: unknown) {
       console.error("[Login] Erro inesperado:", err);
       toast.error("Erro inesperado ao conectar ao servidor de autenticação.");
-    } finally {
       setIsLoggingIn(false);
     }
   };

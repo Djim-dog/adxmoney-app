@@ -45,7 +45,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchProfile = async (userId: string): Promise<Profile | null> => {
+  const fetchProfile = async (userId: string, currentUser?: User | null): Promise<Profile | null> => {
     try {
       const { data: profileData } = await supabase
         .from("profiles")
@@ -54,27 +54,69 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         .maybeSingle();
 
       if (profileData) {
-        setProfile(profileData as Profile);
-        return profileData as Profile;
+        const loaded = profileData as Profile;
+        setProfile(loaded);
+        return loaded;
       }
 
-      // Fallback seguro se não existir perfil
-      const fallback: Profile = {
+      // Se não encontrou na tabela profiles mas temos o user do auth, cria instantaneamente em memória e no banco
+      const targetUser = currentUser || user;
+      const metaRole = (targetUser?.user_metadata?.role as string) || "user";
+      const metaName = (targetUser?.user_metadata?.name as string) || targetUser?.email?.split("@")[0] || "Operador";
+      const userEmail = targetUser?.email || "";
+
+      const newProfile: Profile = {
         id: userId,
-        email: user?.email || "",
-        name: user?.email?.split("@")[0] || "Operador",
-        role: "user",
+        email: userEmail,
+        name: metaName,
+        first_name: null,
+        last_name: null,
+        phone: null,
+        avatar_url: null,
+        role: metaRole,
         first_login: true,
         is_active: true,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       };
 
-      setProfile(fallback);
-      return fallback;
+      // Tenta gravar na tabela profiles em segundo plano (sem bloquear)
+      supabase.from("profiles").upsert({
+        id: userId,
+        email: userEmail,
+        name: metaName,
+        role: metaRole,
+        first_login: true,
+        is_active: true,
+      }).then();
+
+      supabase.from("wallets").upsert({
+        user_id: userId,
+        balance: 0.00,
+        reserved_balance: 0.00,
+      }).then();
+
+      setProfile(newProfile);
+      return newProfile;
     } catch (err) {
       console.error("[AuthContext] Erro ao buscar perfil:", err);
-      return null;
+      // Fallback supremo para nunca dar tela branca
+      const emergencyProfile: Profile = {
+        id: userId,
+        email: user?.email || "",
+        name: "Operador",
+        first_name: null,
+        last_name: null,
+        phone: null,
+        avatar_url: null,
+        role: "user",
+        first_login: true,
+        is_active: true,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+      setProfile(emergencyProfile);
+      return emergencyProfile;
     }
   };
 
@@ -90,7 +132,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(initialSession?.user ?? null);
 
         if (initialSession?.user) {
-          await fetchProfile(initialSession.user.id);
+          await fetchProfile(initialSession.user.id, initialSession.user);
         }
       } catch (err) {
         console.error("[AuthContext] Erro ao obter sessão:", err);
@@ -111,7 +153,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(newSession?.user ?? null);
 
         if (newSession?.user) {
-          await fetchProfile(newSession.user.id);
+          await fetchProfile(newSession.user.id, newSession.user);
         } else {
           setProfile(null);
         }

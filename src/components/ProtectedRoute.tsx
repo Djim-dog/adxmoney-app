@@ -28,24 +28,18 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     return <Navigate to="/login" replace state={{ from: location }} />;
   }
 
-  if (!profile) {
-    return (
-      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center text-slate-400 gap-3">
-        <Loader2 className="w-8 h-8 animate-spin text-emerald-500" />
-        <p className="text-xs font-medium text-slate-200">Configurando perfil...</p>
-      </div>
-    );
-  }
+  // Obter papel com fallback imediato baseado no metadata do Supabase Auth para evitar qualquer bloqueio
+  const effectiveRole = profile?.role || (user.user_metadata?.role as string) || 'user';
 
   if (location.pathname === '/') {
-    return profile.role === 'admin' ? <Navigate to="/admin" replace /> : <Navigate to="/app" replace />;
+    return effectiveRole === 'admin' ? <Navigate to="/admin" replace /> : <Navigate to="/app" replace />;
   }
 
-  if (requiredRole === 'admin' && profile.role !== 'admin') {
+  if (requiredRole === 'admin' && effectiveRole !== 'admin') {
     return <Navigate to="/app" replace />;
   }
 
-  if (requiredRole === 'user' && profile.role === 'admin') {
+  if (requiredRole === 'user' && effectiveRole === 'admin') {
     return <Navigate to="/admin" replace />;
   }
 
