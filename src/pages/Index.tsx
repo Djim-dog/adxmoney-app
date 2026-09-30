@@ -25,6 +25,8 @@ import {
   UserPlus,
   Play,
   Share2,
+  Settings,
+  KeyRound,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -135,6 +137,7 @@ const Index = () => {
   const [isCreateUserOpen, setIsCreateUserOpen] = useState(false);
   const [isCreateCampaignOpen, setIsCreateCampaignOpen] = useState(false);
   const [isAssignCampaignOpen, setIsAssignCampaignOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [selectedCampaignForAssign, setSelectedCampaignForAssign] = useState<string | null>(null);
   const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
 
@@ -152,6 +155,10 @@ const Index = () => {
   const [newTargetUrl, setNewTargetUrl] = useState("");
   const [newInstructions, setNewInstructions] = useState("");
   const [newReward, setNewReward] = useState("150");
+
+  // Formulário Alterar Senha
+  const [updatePassword, setUpdatePassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
   const [submittingAction, setSubmittingAction] = useState(false);
 
@@ -459,6 +466,40 @@ const Index = () => {
     }
   };
 
+  // Alterar Senha do Admin
+  const handleUpdatePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!updatePassword || updatePassword.length < 6) {
+      toast.error("A senha deve ter no mínimo 6 caracteres.");
+      return;
+    }
+    if (updatePassword !== confirmPassword) {
+      toast.error("As senhas não coincidem.");
+      return;
+    }
+
+    setSubmittingAction(true);
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password: updatePassword,
+      });
+
+      if (error) {
+        toast.error(error.message);
+        return;
+      }
+
+      toast.success("Senha alterada com sucesso!");
+      setIsSettingsOpen(false);
+      setUpdatePassword("");
+      setConfirmPassword("");
+    } catch (err) {
+      toast.error("Erro ao alterar senha.");
+    } finally {
+      setSubmittingAction(false);
+    }
+  };
+
   const copyToClipboard = (text: string, label: string) => {
     navigator.clipboard.writeText(text);
     toast.success(`${label} copiado para a área de transferência!`);
@@ -494,8 +535,8 @@ const Index = () => {
       {/* Header Superior */}
       <header className="sticky top-0 z-30 border-b border-slate-800/80 bg-slate-900/90 backdrop-blur-md px-4 lg:px-8 py-3 flex items-center justify-between shadow-lg shadow-black/20">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-700 flex items-center justify-center font-black text-white text-lg tracking-wider shadow-md shadow-emerald-950 overflow-hidden">
-            <img src="/logo.png" alt="ADXmoney" className="w-full h-full object-cover" />
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-emerald-500 to-emerald-700 flex items-center justify-center font-black text-white text-lg tracking-wider shadow-md shadow-emerald-950">
+            ADX
           </div>
           <div>
             <div className="flex items-center gap-2">
@@ -825,6 +866,14 @@ const Index = () => {
                 </div>
                 <div className="flex flex-wrap gap-2">
                   <Button
+                    onClick={() => setIsSettingsOpen(true)}
+                    variant="outline"
+                    className="border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700 text-xs h-9 rounded-xl gap-1.5"
+                  >
+                    <Settings className="w-3.5 h-3.5" />
+                    Configurações Avançadas
+                  </Button>
+                  <Button
                     onClick={() => setIsCreateUserOpen(true)}
                     className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs h-9 rounded-xl gap-1.5"
                   >
@@ -1036,6 +1085,72 @@ const Index = () => {
         </Tabs>
       </main>
 
+      {/* MODAL: CONFIGURAÇÕES AVANÇADAS (ADMIN) */}
+      <Dialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
+        <DialogContent className="max-w-md bg-slate-900 border-slate-800 text-slate-100 sm:rounded-2xl p-6">
+          <DialogHeader>
+            <div className="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 mb-2">
+              <Settings className="w-6 h-6" />
+            </div>
+            <DialogTitle className="text-lg font-bold text-white">Configurações Avançadas</DialogTitle>
+            <DialogDescription className="text-xs text-slate-400">
+              Gerenciamento de segurança e preferências da conta administrativa.
+            </DialogDescription>
+          </DialogHeader>
+
+          <form onSubmit={handleUpdatePassword} className="space-y-4 mt-2">
+            <div className="p-4 bg-slate-950 rounded-xl border border-slate-800 space-y-3">
+              <div className="flex items-center gap-2 text-xs font-bold text-amber-400 uppercase tracking-wider">
+                <KeyRound className="w-3.5 h-3.5" />
+                <span>Alterar Senha Administrativa</span>
+              </div>
+              
+              <div className="space-y-1.5">
+                <Label className="text-xs text-slate-300">Nova Senha</Label>
+                <Input
+                  type="password"
+                  placeholder="Mínimo 6 caracteres"
+                  value={updatePassword}
+                  onChange={(e) => setUpdatePassword(e.target.value)}
+                  className="bg-slate-900 border-slate-800 text-slate-100 text-xs focus-visible:ring-amber-500"
+                  required
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label className="text-xs text-slate-300">Confirmar Nova Senha</Label>
+                <Input
+                  type="password"
+                  placeholder="Repita a nova senha"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  className="bg-slate-900 border-slate-800 text-slate-100 text-xs focus-visible:ring-amber-500"
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="pt-2 flex gap-3">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setIsSettingsOpen(false)}
+                className="flex-1 border-slate-800 text-slate-400 text-xs h-10"
+              >
+                Cancelar
+              </Button>
+              <Button
+                type="submit"
+                disabled={submittingAction}
+                className="flex-1 bg-amber-600 hover:bg-amber-500 text-white text-xs font-medium h-10 shadow-lg shadow-amber-950"
+              >
+                {submittingAction ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "Atualizar Senha"}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+
       {/* MODAL: CRIAR USUÁRIO (ADMIN) */}
       <Dialog open={isCreateUserOpen} onOpenChange={setIsCreateUserOpen}>
         <DialogContent className="max-w-md bg-slate-900 border-slate-800 text-slate-100 sm:rounded-2xl p-6">
@@ -1236,7 +1351,7 @@ const Index = () => {
                 <SelectTrigger className="bg-slate-950 border-slate-800 text-slate-100 text-xs">
                   <SelectValue placeholder="Escolha a campanha" />
                 </SelectTrigger>
-                <SelectContent className="bg-slate-900 border-slate-800 text-slate-100 text-xs">
+                <SelectContent className="bg-gradient-to-b from-slate-900 to-slate-950 border-slate-800 text-slate-100 text-xs">
                   {adminCampaigns.map((c) => (
                     <SelectItem key={c.id} value={c.id}>
                       {c.title} ({c.platform} - {Number(c.reward_amount).toLocaleString("pt-AO")} Kz)
