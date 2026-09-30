@@ -47,6 +47,8 @@ const Login: React.FC = () => {
     }
 
     setIsLoggingIn(true);
+    console.log("[Login] Tentando autenticar:", cleanEmail);
+
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
         email: cleanEmail,
@@ -54,15 +56,15 @@ const Login: React.FC = () => {
       });
 
       if (error) {
-        console.error("[Login] Erro de autenticação:", error);
-        toast.error("E-mail ou senha incorretos.");
+        console.error("[Login] Erro do Supabase Auth:", error);
+        toast.error(`Erro: ${error.message}`);
         setIsLoggingIn(false);
         return;
       }
 
+      console.log("[Login] Sucesso:", data);
       toast.success("Autenticação realizada com sucesso.");
-      // O AuthContext tratará o redirecionamento automaticamente via `useEffect` no Login
-      // caso o usuário esteja autenticado, mas o `navigate` aqui serve como fallback imediato
+
       const role = data.user.user_metadata?.role || "user";
       if (role === "admin") {
         navigate("/admin", { replace: true });
@@ -73,6 +75,8 @@ const Login: React.FC = () => {
       console.error("[Login] Erro inesperado:", err);
       toast.error("Erro inesperado ao conectar ao servidor de autenticação.");
       setIsLoggingIn(false);
+    } finally {
+      setIsLoggingIn(false);
     }
   };
 
@@ -80,32 +84,21 @@ const Login: React.FC = () => {
     <div className="min-h-screen flex flex-col justify-center items-center bg-slate-950 px-4 py-8 text-slate-100">
       <div className="w-full max-w-sm">
         <div className="text-center mb-6">
-          <div className="flex justify-center mb-4">
-            <img 
-              src="/logo.png" 
-              alt="ADXmoney Logo" 
-              className="w-20 h-20 object-contain rounded-2xl shadow-2xl border border-slate-800/50 bg-slate-900/40 p-1.5" 
-            />
-          </div>
           <h1 className="text-xl font-bold tracking-tight text-white font-mono uppercase">ADXmoney</h1>
-          <p className="text-xs text-slate-400 mt-1">
-            Acesso Operacional ao Sistema
-          </p>
+          <p className="text-xs text-slate-400 mt-1">Acesso Operacional ao Sistema</p>
         </div>
 
         <Card className="bg-slate-900 border-slate-800 text-slate-100 shadow-xl rounded-2xl">
           <CardHeader className="space-y-1 pb-4">
             <CardTitle className="text-base font-semibold text-white">Login</CardTitle>
             <CardDescription className="text-slate-400 text-xs">
-              Insira os dados da sua conta para acessar o painel correspondente.
+              Insira seus dados para acessar o painel.
             </CardDescription>
           </CardHeader>
           <form onSubmit={handleLogin}>
             <CardContent className="space-y-4">
               <div className="space-y-1.5">
-                <Label htmlFor="login-email" className="text-xs font-medium text-slate-300">
-                  E-mail
-                </Label>
+                <Label htmlFor="login-email" className="text-xs font-medium text-slate-300">E-mail</Label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
                   <Input
@@ -114,18 +107,15 @@ const Login: React.FC = () => {
                     placeholder="email@exemplo.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="pl-9 bg-slate-950 border-slate-800 text-slate-100 text-xs placeholder:text-slate-600 focus-visible:ring-emerald-500"
+                    className="pl-9 bg-slate-950 border-slate-800 text-slate-100 text-xs"
                     disabled={isLoggingIn}
-                    autoComplete="email"
                     required
                   />
                 </div>
               </div>
 
               <div className="space-y-1.5">
-                <Label htmlFor="login-password" className="text-xs font-medium text-slate-300">
-                  Senha
-                </Label>
+                <Label htmlFor="login-password" className="text-xs font-medium text-slate-300">Senha</Label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
                   <Input
@@ -134,9 +124,8 @@ const Login: React.FC = () => {
                     placeholder="••••••••"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="pl-9 bg-slate-950 border-slate-800 text-slate-100 text-xs placeholder:text-slate-600 focus-visible:ring-emerald-500"
+                    className="pl-9 bg-slate-950 border-slate-800 text-slate-100 text-xs"
                     disabled={isLoggingIn}
-                    autoComplete="current-password"
                     required
                   />
                 </div>
@@ -146,25 +135,14 @@ const Login: React.FC = () => {
             <CardFooter className="pt-2">
               <Button
                 type="submit"
-                className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-xs py-2.5 rounded-xl shadow-lg transition-colors"
+                className="w-full bg-emerald-600 hover:bg-emerald-500 text-white text-xs py-2.5 rounded-xl"
                 disabled={isLoggingIn}
               >
-                {isLoggingIn ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Entrando...
-                  </>
-                ) : (
-                  "Entrar"
-                )}
+                {isLoggingIn ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Entrando...</> : "Entrar"}
               </Button>
             </CardFooter>
           </form>
         </Card>
-
-        <div className="mt-8 text-center text-[11px] text-slate-500">
-          Autenticação criptografada • Verificação estrita de permissões
-        </div>
       </div>
     </div>
   );
