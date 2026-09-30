@@ -20,11 +20,14 @@ import {
   XCircle,
   ExternalLink,
   KeyRound,
+  Check,
+  Copy,
+  MessageSquare,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -62,6 +65,8 @@ export const AdminDashboardPage: React.FC = () => {
   const [isCreateUserOpen, setIsCreateUserOpen] = useState(false);
   const [isCreateCampaignOpen, setIsCreateCampaignOpen] = useState(false);
   const [isAssignCampaignOpen, setIsAssignCampaignOpen] = useState(false);
+  const [isUserCreatedSuccessOpen, setIsUserCreatedSuccessOpen] = useState(false);
+  const [createdUserData, setCreatedUserData] = useState<{ name: string; email: string; password: string; phone: string } | null>(null);
 
   // Forms
   const [newEmail, setNewEmail] = useState("");
@@ -182,15 +187,19 @@ export const AdminDashboardPage: React.FC = () => {
   // Criar Usuário (RPC Segura)
   const handleCreateUser = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newEmail || !newPassword || !newName) {
+    if (!newEmail || !newName) {
       toast.error("Preencha todos os campos obrigatórios.");
       return;
     }
+
+    // Gerar senha se estiver vazia
+    const finalPassword = newPassword || Math.random().toString(36).slice(-8) + "!";
+
     setSubmitting(true);
     try {
       const { data, error } = await supabase.rpc("admin_create_user", {
         p_email: newEmail.trim(),
-        p_password: newPassword,
+        p_password: finalPassword,
         p_name: newName.trim(),
         p_phone: newPhone.trim() || null,
         p_role: newRole,
@@ -198,8 +207,19 @@ export const AdminDashboardPage: React.FC = () => {
 
       if (error) throw error;
 
+      // Armazenar dados para o modal de sucesso
+      setCreatedUserData({
+        name: newName.trim(),
+        email: newEmail.trim(),
+        password: finalPassword,
+        phone: newPhone.trim(),
+      });
+
       toast.success("Usuário criado com sucesso no sistema.");
       setIsCreateUserOpen(false);
+      setIsUserCreatedSuccessOpen(true);
+      
+      // Limpar formulário
       setNewEmail("");
       setNewPassword("");
       setNewName("");
