@@ -28,70 +28,82 @@ serve(async (req) => {
 
     const { email, password, name, phone, role, first_login, primary_link, tiktok, instagram, youtube, country } = await req.json()
 
-    console.log(`[admin-create-user] Tentando criar usuário: ${email}`);
+    const cleanEmail = email ? email.trim().toLowerCase() : '';
+    const cleanPhone = phone ? phone.trim() : '';
 
-    // 1. Criar usuário no Auth (Admin API) com tratamento robusto para e-mail já existente
-    let userData;
+    console.log(`[admin-create-user] Tentando criar usuário: ${cleanEmail}`);
+
+    if (!cleanEmail) {
+      return new Response(JSON.stringify({ error: 'O e-mail é obrigatório.' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
+    // 1. Verificar se o e-mail já existe na tabela profiles
+    const { data: existingProfileByEmail, error: emailCheckError } = await supabaseAdmin
+      .from('profiles')
+      .select('id, email')
+      .ilike('email', cleanEmail)
+      .maybeSingle();
+
+    if (existingProfileByEmail) {
+      return new Response(JSON.stringify({ error: 'Este e-mail já está associado a outra conta no sistema.' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
+
+    // 2. Verificar se o número de telefone já existe na tabela profiles (se informado)
+    if (cleanPhone) {
+      const { data: existingProfileByPhone, error: phoneCheckError } = await supabaseAdmin
+        .from('profiles')
+        .select('id, phone')
+        .eq('phone', cleanPhone)
+        .maybeSingle();
+
+      if (existingProfileByPhone) {
+        return new Response(JSON.stringify({ error: 'Este número de telefone já está associado a outra conta no sistema.' }), {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
+      }
+    }
+
+    // 3. Criar usuário no Auth (Admin API)
     const { data: createdData, error: userError } = await supabaseAdmin.auth.admin.createUser({
-      email: email.trim(),
+      email: cleanEmail,
       password: password,
       email_confirm: true,
       user_metadata: { 
         name, 
         role, 
-        phone,
+        phone: cleanPhone,
         first_login: first_login ?? true 
       },
     })
 
     if (userError) {
-      console.log("[admin-create-user] Erro ao criar auth user (pode já existir no auth):", userError.message);
+      console.error("[admin-create-user] Erro ao criar auth user:", userError.message);
       if (userError.message.includes("already registered") || userError.message.includes("already exists")) {
-        // Localizar o utilizador existente no auth para atualizar a senha e reativá-lo
-        const { data: listData, error: listError } = await supabaseAdmin.auth.admin.listUsers();
-        if (listError) {
-          throw listError;
-        }
-        const existingAuthUser = listData?.users?.find(u => u.email?.toLowerCase() === email.trim().toLowerCase());
-        
-        if (existingAuthUser) {
-          const { data: updatedAuthData, error: updateAuthError } = await supabaseAdmin.auth.admin.updateUserById(existingAuthUser.id, {
-            password: password,
-            user_metadata: { 
-              name, 
-              role, 
-              phone,
-              first_login: first_login ?? true 
-            }
-          });
-          if (updateAuthError) {
-            throw updateAuthError;
-          }
-          userData = { user: updatedAuthData.user };
-          console.log(`[admin-create-user] Utilizador já existia no Auth. Senha e metadados atualizados para ID: ${existingAuthUser.id}`);
-        } else {
-          return new Response(JSON.stringify({ error: "Este e-mail já está registado no sistema de autenticação." }), {
-            status: 400,
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          });
-        }
-      } else {
-        throw userError;
+        return new Response(JSON.stringify({ error: 'Este e-mail já está associado a outra conta no sistema.' }), {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        })
       }
-    } else {
-      userData = createdData;
+      throw userError
     }
 
-    const userId = userData.user.id
+    const userId = createdData.user.id
 
-    // 2. Criar ou atualizar perfil na tabela public.profiles
+    // 4. Criar perfil na tabela public.profiles
     const { error: profileError } = await supabaseAdmin
       .from('profiles')
-      .upsert({
+      .insert({
         id: userId,
-        email: email.trim(),
+        email: cleanEmail,
         name: name.trim(),
-        phone: phone ? phone.trim() : null,
+        phone: cleanPhone || null,
         role: role || 'user',
         first_login: first_login ?? true,
         primary_link: primary_link ? primary_link.trim() : null,
@@ -101,14 +113,16 @@ serve(async (req) => {
         country: country || 'Angola',
         is_active: true,
         updated_at: new Date().toISOString()
-      }, { onConflict: 'id' })
+      })
 
     if (profileError) {
-      console.error("[admin-create-user] Erro ao atualizar perfil:", profileError.message);
-      throw profileError
+      console.error("[admin-create-user] Erro ao criar perfil:", profileError.message);
+      // Limpar auth user se falhar perfil
+      await supabaseAdmin.auth.admin.deleteUser(userId);
+      throw new Error("Erro ao criar perfil do usuário: " + profileError.message);
     }
 
-    // 3. Garantir carteira
+    // 5. Garantir carteira
     const { error: walletError } = await supabaseAdmin
       .from('wallets')
       .insert({ user_id: userId, balance: 0, reserved_balance: 0 })
@@ -118,9 +132,9 @@ serve(async (req) => {
       console.error("[admin-create-user] Erro ao criar carteira:", walletError.message);
     }
 
-    console.log(`[admin-create-user] Usuário ${email} processado com sucesso. ID: ${userId}`);
+    console.log(`[admin-create-user] Usuário ${cleanEmail} criado com sucesso. ID: ${userId}`);
 
-    return new Response(JSON.stringify({ message: 'Usuário criado/atualizado com sucesso', user: userData.user }), {
+    return new Response(JSON.stringify({ message: 'Usuário criado com sucesso', user: createdData.user }), {
       status: 200,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
