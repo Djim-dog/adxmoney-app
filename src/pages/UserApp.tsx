@@ -39,6 +39,34 @@ import { UserCampaignsHub } from "@/components/user/UserCampaignsHub";
 export default function UserAppPage() {
   const { user, profile, signOut, refreshProfile } = useAuth();
   const navigate = useNavigate();
+  useEffect(() => {
+    const checkSuspension = async () => {
+      if (!user) return;
+
+      const { data: profileData } = await supabase
+        .from("profiles")
+        .select("suspended_until, is_active")
+        .eq("id", user.id)
+        .single();
+
+      if (profileData) {
+        const now = new Date();
+        const suspendedUntil = profileData.suspended_until ? new Date(profileData.suspended_until) : null;
+
+        if (suspendedUntil && suspendedUntil > now) {
+          toast.error("Conta suspensa temporariamente por violação de diretrizes.", {
+            duration: 10000,
+          });
+        } else if (suspendedUntil && suspendedUntil <= now && !profileData.is_active) {
+            await supabase.from("profiles").update({ is_active: true, suspended_until: null }).eq("id", user.id);
+            toast.success("Sua conta foi reativada após o período de suspensão.");
+            await refreshProfile();
+        }
+      }
+    };
+    checkSuspension();
+  }, [user]);
+
   const [activeTab, setActiveTab] = useState<"home" | "tasks" | "campaigns" | "wallet" | "account">("home");
 
   const [loading, setLoading] = useState(false);

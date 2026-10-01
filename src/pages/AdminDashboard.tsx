@@ -66,6 +66,18 @@ export const AdminDashboardPage: React.FC = () => {
 
   // Modais de Criação
   const [isCreateUserOpen, setIsCreateUserOpen] = useState(false);
+  const [isEditUserOpen, setIsEditUserOpen] = useState(false);
+  const [selectedEditUser, setSelectedEditUser] = useState<any | null>(null);
+  const [editName, setEditName] = useState("");
+  const [editPhone, setEditPhone] = useState("");
+  const [editPrimaryLink, setEditPrimaryLink] = useState("");
+  const [editTiktok, setEditTiktok] = useState("");
+  const [editInstagram, setEditInstagram] = useState("");
+  const [editYoutube, setEditYoutube] = useState("");
+  const [editCountry, setEditCountry] = useState("Angola");
+  const [editRole, setEditRole] = useState("user");
+  const [editIsActive, setEditIsActive] = useState(true);
+
   const [isCreateCampaignOpen, setIsCreateCampaignOpen] = useState(false);
   const [isAssignCampaignOpen, setIsAssignCampaignOpen] = useState(false);
   const [isUserCreatedSuccessOpen, setIsUserCreatedSuccessOpen] = useState(false);
@@ -210,6 +222,131 @@ export const AdminDashboardPage: React.FC = () => {
   useEffect(() => {
     loadAdminData();
   }, []);
+
+  // Excluir Usuário via Admin Edge Function
+  const handleDeleteUser = async (userId: string, userEmail: string) => {
+    if (!window.confirm(`Tem certeza que deseja eliminar o usuário ${userEmail}? Esta ação é irreversível e removerá todos os dados vinculados.`)) {
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("admin-delete-user", {
+        body: { user_id: userId },
+      });
+
+      if (error) {
+        let msg = "Erro ao eliminar usuário.";
+        try {
+          const body = await error.context.json();
+          msg = body.error || msg;
+        } catch (e) {
+          msg = error.message || msg;
+        }
+        throw new Error(msg);
+      }
+
+      if (data && data.error) {
+        throw new Error(data.error);
+      }
+
+      toast.success("Usuário eliminado com sucesso.");
+      await loadAdminData();
+    } catch (err: any) {
+      toast.error(err.message || "Falha ao eliminar usuário.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  // Salvar Edição de Usuário
+  const handleUpdateUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedEditUser) return;
+
+    setSubmitting(true);
+    try {
+      const { error } = await supabase
+        .from("profiles")
+        .update({
+          name: editName.trim(),
+          phone: editPhone.trim() || null,
+          primary_link: editPrimaryLink.trim() || null,
+          tiktok: editTiktok.trim() || null,
+          instagram: editInstagram.trim() || null,
+          youtube: editYoutube.trim() || null,
+          country: editCountry.trim() || "Angola",
+          role: editRole,
+          is_active: editIsActive,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", selectedEditUser.id);
+
+      if (error) throw error;
+
+      toast.success("Dados do usuário atualizados com sucesso!");
+      setIsEditUserOpen(false);
+      setSelectedEditUser(null);
+      await loadAdminData();
+    } catch (err: any) {
+      toast.error(err.message || "Erro ao atualizar usuário.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  // Enviar Notificação Pré-definida de Denúncias / Violação de Diretrizes / Suspensão (3 dias úteis)
+  const handleSendNotification = async (user: any, type: "DENUNCIA" | "SUSPENSAO") => {
+    let title = "";
+    let message = "";
+    let cleanPhone = (user.phone || "").replace(/\D/g, "");
+
+    if (cleanPhone.length === 9 && cleanPhone.startsWith("9")) {
+      cleanPhone = "244" + cleanPhone;
+    }
+
+    if (type === "DENUNCIA") {
+      title = "Aviso de Denúncia Registrada - ADX Money";
+      message = `Olá *${user.name || "Operador"}*,\n\nRecebemos uma denúncia formal referente a atividades em sua conta na ADX Money. Solicitamos a verificação imediata dos links e diretrizes de engajamento para evitar penalidades em seu perfil.\n\nAtenciosamente,\nSuporte ADX Money`;
+    } else {
+      title = "Aviso Prévio de Suspensão (3 Dias Úteis) - Violação de Diretrizes";
+      message = `🚨 *AVISO DE SUSPENSÃO TEMPORÁRIA* 🚨\n\nOlá *${user.name || "Operador"}*,\n\nIdentificamos uma infração às diretrizes de uso da plataforma ADX Money em sua conta.\n\n⚠️ *Sua conta estará suspensa temporariamente por 3 (três) dias úteis* a partir de agora.\n\nDurante este período, o acesso a novas campanhas e saques ficará temporariamente retido para auditoria. Caso tenha dúvidas ou queira recorrer, entre em contacto com o suporte.\n\nAtenciosamente,\nEquipe de Conformidade ADX Money`;
+
+      // Aplicar Suspensão no Banco de Dados
+      setSubmitting(true);
+      try {
+        // Calcular 3 dias a partir de agora (simplificado para 72h)
+        const suspendedUntil = new Date();
+        suspendedUntil.setDate(suspendedUntil.getDate() + 3);
+
+        const { error } = await supabase
+          .from("profiles")
+          .update({
+            is_active: false,
+            suspended_until: suspendedUntil.toISOString(),
+            suspension_reason: "Violação de Diretrizes (Suspensão de 3 dias úteis)",
+          })
+          .eq("id", user.id);
+
+        if (error) throw error;
+        toast.success("Usuário suspenso no sistema por 3 dias.");
+        await loadAdminData();
+      } catch (err: any) {
+        toast.error("Erro ao aplicar suspensão no banco: " + err.message);
+      } finally {
+        setSubmitting(false);
+      }
+    }
+
+    // Opcional: Registrar notificação no banco de dados se houver tabela de notificações, ou enviar direto via WhatsApp
+    if (cleanPhone) {
+      const encoded = encodeURIComponent(message);
+      window.open(`https://wa.me/${cleanPhone}?text=${encoded}`, "_blank");
+      toast.success(`Notificação de ${type === "DENUNCIA" ? "denúncia" : "suspensão"} enviada via WhatsApp!`);
+    } else {
+      toast.error("O usuário não possui telefone/WhatsApp válido cadastrado.");
+    }
+  };
 
   // Criar Usuário (RPC Segura - Com senha pré-definida vinculada ao e-mail)
   const handleCreateUser = async (e: React.FormEvent) => {
@@ -781,6 +918,11 @@ export const AdminDashboardPage: React.FC = () => {
                                     1º Acesso Pendente
                                   </Badge>
                                 )}
+                                {u.suspended_until && new Date(u.suspended_until) > new Date() && (
+                                  <Badge className="text-[9px] bg-orange-500/10 text-orange-400 border-orange-500/30">
+                                    Suspenso até {new Date(u.suspended_until).toLocaleDateString()}
+                                  </Badge>
+                                )}
                               </div>
                               <p className="text-xs text-slate-400 mt-0.5">{u.email} {u.phone && `• ${u.phone}`}</p>
                             </div>
@@ -792,19 +934,75 @@ export const AdminDashboardPage: React.FC = () => {
                                   {Number(bal).toLocaleString("pt-AO", { minimumFractionDigits: 2 })} Kz
                                 </span>
                               </div>
-                              <Button
-                                size="sm"
-                                variant="ghost"
-                                onClick={() => {
-                                  setSelectedAffiliateUser(u);
-                                  const existingAff = affiliatesList.find((a) => a.user_id === u.id);
-                                  setCustomAffiliateCode(existingAff?.affiliate_code || "");
-                                  setIsAffiliateModalOpen(true);
-                                }}
-                                className="h-8 w-8 p-0 text-slate-400 hover:text-white"
-                              >
-                                <Share2 className="w-4 h-4" />
-                              </Button>
+
+                              <div className="flex items-center gap-1">
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  title="Editar Usuário"
+                                  onClick={() => {
+                                    setSelectedEditUser(u);
+                                    setEditName(u.name || "");
+                                    setEditPhone(u.phone || "");
+                                    setEditPrimaryLink(u.primary_link || "");
+                                    setEditTiktok(u.tiktok || "");
+                                    setEditInstagram(u.instagram || "");
+                                    setEditYoutube(u.youtube || "");
+                                    setEditCountry(u.country || "Angola");
+                                    setEditRole(u.role || "user");
+                                    setEditIsActive(u.is_active !== false);
+                                    setIsEditUserOpen(true);
+                                  }}
+                                  className="h-8 w-8 p-0 text-slate-400 hover:text-white"
+                                >
+                                  <Settings className="w-4 h-4" />
+                                </Button>
+
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  title="Enviar Notificação de Denúncia"
+                                  onClick={() => handleSendNotification(u, "DENUNCIA")}
+                                  className="h-8 w-8 p-0 text-amber-400 hover:text-amber-300"
+                                >
+                                  <MessageSquare className="w-4 h-4" />
+                                </Button>
+
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  title="Suspender por 3 dias úteis (Violação de Diretrizes)"
+                                  onClick={() => handleSendNotification(u, "SUSPENSAO")}
+                                  className="h-8 w-8 p-0 text-orange-400 hover:text-orange-300"
+                                >
+                                  <Clock className="w-4 h-4" />
+                                </Button>
+
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  title="Eliminar Usuário"
+                                  onClick={() => handleDeleteUser(u.id, u.email)}
+                                  className="h-8 w-8 p-0 text-rose-400 hover:text-rose-300"
+                                >
+                                  <XCircle className="w-4 h-4" />
+                                </Button>
+
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  title="Gerenciar Afiliado"
+                                  onClick={() => {
+                                    setSelectedAffiliateUser(u);
+                                    const existingAff = affiliatesList.find((a) => a.user_id === u.id);
+                                    setCustomAffiliateCode(existingAff?.affiliate_code || "");
+                                    setIsAffiliateModalOpen(true);
+                                  }}
+                                  className="h-8 w-8 p-0 text-slate-400 hover:text-white"
+                                >
+                                  <Share2 className="w-4 h-4" />
+                                </Button>
+                              </div>
                             </div>
                           </div>
                         );
@@ -1209,6 +1407,135 @@ export const AdminDashboardPage: React.FC = () => {
       </div>
 
       {/* MODAIS DO ADMIN */}
+      {/* Modal Editar Usuário */}
+      <Dialog open={isEditUserOpen} onOpenChange={setIsEditUserOpen}>
+        <DialogContent className="max-w-md bg-slate-900 border-slate-800 text-slate-100 sm:rounded-2xl p-6">
+          <DialogHeader>
+            <DialogTitle className="text-base font-bold text-white">Editar Dados do Utilizador</DialogTitle>
+            <DialogDescription className="text-xs text-slate-400">
+              Atualize as informações cadastrais e o status operacional.
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleUpdateUser} className="space-y-3 mt-2">
+            <div className="space-y-1">
+              <Label className="text-xs text-slate-300">Nome Completo *</Label>
+              <Input
+                placeholder="Ex: João Silva"
+                value={editName}
+                onChange={(e) => setEditName(e.target.value)}
+                className="bg-slate-950 border-slate-800 text-slate-100 text-xs"
+                required
+              />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs text-slate-300">Telefone / WhatsApp *</Label>
+              <Input
+                placeholder="Ex: 923456789"
+                value={editPhone}
+                onChange={(e) => setEditPhone(e.target.value)}
+                className="bg-slate-950 border-slate-800 text-slate-100 text-xs"
+                required
+              />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs text-slate-300">Link Principal *</Label>
+              <Input
+                type="url"
+                placeholder="Ex: https://perfil.com"
+                value={editPrimaryLink}
+                onChange={(e) => setEditPrimaryLink(e.target.value)}
+                className="bg-slate-950 border-slate-800 text-slate-100 text-xs"
+                required
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <div className="space-y-1">
+                <Label className="text-xs text-slate-300">TikTok</Label>
+                <Input
+                  placeholder="@usuario"
+                  value={editTiktok}
+                  onChange={(e) => setEditTiktok(e.target.value)}
+                  className="bg-slate-950 border-slate-800 text-slate-100 text-xs"
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs text-slate-300">Instagram</Label>
+                <Input
+                  placeholder="@usuario"
+                  value={editInstagram}
+                  onChange={(e) => setEditInstagram(e.target.value)}
+                  className="bg-slate-950 border-slate-800 text-slate-100 text-xs"
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <div className="space-y-1">
+                <Label className="text-xs text-slate-300">YouTube</Label>
+                <Input
+                  placeholder="Canal"
+                  value={editYoutube}
+                  onChange={(e) => setEditYoutube(e.target.value)}
+                  className="bg-slate-950 border-slate-800 text-slate-100 text-xs"
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs text-slate-300">País</Label>
+                <Input
+                  placeholder="Angola"
+                  value={editCountry}
+                  onChange={(e) => setEditCountry(e.target.value)}
+                  className="bg-slate-950 border-slate-800 text-slate-100 text-xs"
+                  required
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <div className="space-y-1">
+                <Label className="text-xs text-slate-300">Nível / Role</Label>
+                <Select value={editRole} onValueChange={setEditRole}>
+                  <SelectTrigger className="bg-slate-950 border-slate-800 text-slate-100 text-xs">
+                    <SelectValue placeholder="Selecione" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-slate-900 border-slate-800 text-slate-100 text-xs">
+                    <SelectItem value="user">Usuário Operador (USER)</SelectItem>
+                    <SelectItem value="admin">Administrador (ADMIN)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs text-slate-300">Status Ativo</Label>
+                <Select value={editIsActive ? "true" : "false"} onValueChange={(v) => setEditIsActive(v === "true")}>
+                  <SelectTrigger className="bg-slate-950 border-slate-800 text-slate-100 text-xs">
+                    <SelectValue placeholder="Selecione" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-slate-900 border-slate-800 text-slate-100 text-xs">
+                    <SelectItem value="true">Ativo</SelectItem>
+                    <SelectItem value="false">Inativo</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="pt-2 flex gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setIsEditUserOpen(false)}
+                className="flex-1 border-slate-800 text-slate-400 text-xs"
+              >
+                Cancelar
+              </Button>
+              <Button
+                type="submit"
+                disabled={submitting}
+                className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-medium"
+              >
+                {submitting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "Salvar Alterações"}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+
       {/* Modal Criar Usuário */}
       <Dialog open={isCreateUserOpen} onOpenChange={setIsCreateUserOpen}>
         <DialogContent className="max-w-md bg-slate-900 border-slate-800 text-slate-100 sm:rounded-2xl p-6">
