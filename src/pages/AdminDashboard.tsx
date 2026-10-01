@@ -510,6 +510,9 @@ export const AdminDashboardPage: React.FC = () => {
         type: newType,
         platform: newPlatform,
         target_url: newTargetUrl.trim(),
+        target_account: newType === "affiliate" ? (newTargetAccount.trim() || null) : null,
+        action_type: newType === "affiliate" ? newActionType : null,
+        requester_phone: newType === "affiliate" ? (newRequesterPhone.trim() || null) : null,
         instructions: newInstructions.trim() || "Acesse o link e conclua a tarefa.",
         reward_amount: parseFloat(newReward),
         max_participants: parseInt(newMaxParticipants) || 100,
@@ -530,7 +533,10 @@ export const AdminDashboardPage: React.FC = () => {
       setNewDesc("");
       setNewType("affiliate");
       setNewPlatform("TikTok");
+      setNewActionType("follow");
+      setNewTargetAccount("");
       setNewTargetUrl("");
+      setNewRequesterPhone("");
       setNewInstructions("");
       setNewReward("150");
       setNewMaxParticipants("100");
@@ -554,8 +560,30 @@ export const AdminDashboardPage: React.FC = () => {
     setNewObjective(req.objective || "");
     setNewInstructions("");
     setNewTargetUrl("");
+    setNewTargetAccount("");
+    setNewRequesterPhone(req.profiles?.phone || "");
     setNewStatus("draft");
     setIsCreateCampaignOpen(true);
+  };
+
+  const handlePrepareWhatsAppAffiliate = (campaign: any, participants: any[]) => {
+    const phone = campaign.requester_phone || "+244900000000";
+    const completedCount = participants.filter(p => p.status === "COMPLETED").length;
+    const totalCount = participants.length;
+
+    const message = `Olá! Segue o relatório operacional da campanha *${campaign.title}*:\n\n` +
+      `- Plataforma: ${campaign.platform}\n` +
+      `- Alvo: ${campaign.target_account || campaign.target_url}\n` +
+      `- Participantes Atribuídos: ${totalCount}\n` +
+      `- Concluídos: ${completedCount}\n\n` +
+      `Lista de Participantes:\n` +
+      participants.map((p, idx) => `${idx + 1}. ${p.profiles?.name || 'Utilizador'} (${p.status === 'COMPLETED' ? '✅ Concluído' : '⏳ Pendente'})`).join('\n') +
+      `\n\nGerado via ADXmoney Control.`;
+
+    const encoded = encodeURIComponent(message);
+    const cleanPhone = phone.replace(/\D/g, '');
+    const url = `https://wa.me/${cleanPhone}?text=${encoded}`;
+    window.open(url, '_blank');
   };
 
   const handleAutoSelectParticipants = async (campaignId: string) => {
