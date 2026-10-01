@@ -68,16 +68,22 @@ const Login: React.FC = () => {
       console.log("[Login] Sucesso:", data);
       toast.success("Autenticação realizada com sucesso.");
 
-      // Verificar se é o primeiro login através do metadata ou aguardar o profile no context
-      const isFirstLogin = data.user?.user_metadata?.first_login;
-      const role = data.user?.user_metadata?.role || "user";
+      // Consultar perfil na base de dados para garantir valor real de first_login e role
+      const { data: userProfile } = await supabase
+        .from("profiles")
+        .select("first_login, role")
+        .eq("id", data.user.id)
+        .maybeSingle();
+
+      const isFirstLogin = userProfile?.first_login ?? data.user?.user_metadata?.first_login;
+      const role = userProfile?.role || data.user?.user_metadata?.role || "user";
 
       if (isFirstLogin) {
         navigate("/account/setup", { replace: true });
       } else if (role === "admin") {
         navigate("/admin", { replace: true });
       } else {
-        navigate("/dashboard", { replace: true });
+        navigate("/app", { replace: true });
       }
     } catch (err: unknown) {
       console.error("[Login] Erro inesperado:", err);

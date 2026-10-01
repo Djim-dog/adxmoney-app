@@ -232,7 +232,7 @@ export const AdminDashboardPage: React.FC = () => {
     setSubmitting(true);
     try {
       const { data, error } = await supabase.functions.invoke("admin-delete-user", {
-        body: { user_id: userId },
+        body: { userId: userId },
       });
 
       if (error) {
