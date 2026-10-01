@@ -214,20 +214,25 @@ export const AdminDashboardPage: React.FC = () => {
 
     setSubmitting(true);
     try {
-      const { data, error } = await supabase.rpc("admin_create_user", {
-        p_email: newEmail.trim(),
-        p_password: predefinedPassword,
-        p_name: newName.trim(),
-        p_phone: newPhone.trim() || null,
-        p_role: newRole,
-        p_primary_link: newPrimaryLink.trim() || null,
-        p_tiktok: newTiktok.trim() || null,
-        p_instagram: newInstagram.trim() || null,
-        p_youtube: newYoutube.trim() || null,
-        p_country: newCountry.trim() || "Angola",
+      // Invocar a Edge Function segura com a Auth Admin API do Supabase
+      const { data: edgeData, error: edgeError } = await supabase.functions.invoke("admin-create-user", {
+        body: {
+          email: newEmail.trim(),
+          password: predefinedPassword,
+          name: newName.trim(),
+          phone: newPhone.trim() || null,
+          role: newRole,
+          primary_link: newPrimaryLink.trim() || null,
+          tiktok: newTiktok.trim() || null,
+          instagram: newInstagram.trim() || null,
+          youtube: newYoutube.trim() || null,
+          country: newCountry.trim() || "Angola",
+        },
       });
 
-      if (error) throw error;
+      if (edgeError || (edgeData && edgeData.error)) {
+        throw new Error(edgeError?.message || edgeData?.error || "Erro ao criar utilizador via Edge Function.");
+      }
 
       // Armazenar dados para o modal de comprovativo de criação
       setCreatedUserData({

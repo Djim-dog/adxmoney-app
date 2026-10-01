@@ -45,33 +45,34 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchProfile = async (userId: string, currentUser?: User | null): Promise<Profile | null> => {
+  // Função para sincronizar perfil automaticamente a partir do user autenticado
+  const fetchOrSyncProfile = async (authUser: User): Promise<Profile | null> => {
     try {
-      const { data: profileData } = await supabase
+      // 1. Tentar localizar o perfil existente na tabela pública 'profiles'
+      const { data: profileData, error: profileError } = await supabase
         .from("profiles")
         .select("*")
-        .eq("id", userId)
+        .eq("id", authUser.id)
         .maybeSingle();
 
-      if (profileData) {
+      if (profileData && !profileError) {
         const loaded = profileData as Profile;
         setProfile(loaded);
         return loaded;
       }
 
-      // Se não encontrou na tabela profiles mas temos o user do auth, cria instantaneamente em memória e no banco
-      const targetUser = currentUser || user;
-      const metaRole = (targetUser?.user_metadata?.role as string) || "user";
-      const metaName = (targetUser?.user_metadata?.name as string) || targetUser?.email?.split("@")[0] || "Operador";
-      const userEmail = targetUser?.email || "";
+      // 2. Se não existir perfil na tabela 'profiles', criar automaticamente a partir do authUser
+      const metaRole = (authUser.user_metadata?.role as string) || "user";
+      const metaName = (authUser.user_metadata?.name as string) || authUser.email?.split("@")[0] || "Utilizador";
+      const userEmail = authUser.email || "";
 
       const newProfile: Profile = {
-        id: userId,
+        id: authUser.id,
         email: userEmail,
         name: metaName,
-        first_name: null,
-        last_name: null,
-        phone: null,
+        first_name: authUser.user_metadata?.first_name || null,
+        last_name: authUser.user_metadata?.last_name || null,
+        phone: authUser.user_metadata?.phone || null,
         avatar_url: null,
         role: metaRole,
         first_login: true,
@@ -80,43 +81,51 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         updated_at: new Date().toISOString(),
       };
 
-      // Tenta gravar na tabela profiles em segundo plano (sem bloquear)
-      supabase.from("profiles").upsert({
-        id: userId,
-        email: userEmail,
-        name: metaName,
-        role: metaRole,
-        first_login: true,
-        is_active: true,
-      }).then();
+      // Inserir de forma resiliente na tabela 'profiles'
+      const { data: insertedProfile } = await supabase
+        .from("profiles")
+        .upsert({
+          id: authUser.id,
+          email: userEmail,
+          name: metaName,
+          role: metaRole,
+          first_login: true,
+          is_active: true,
+        })
+        .select()
+        .maybeSingle();
 
-      supabase.from("wallets").upsert({
-        user_id: userId,
-        balance: 0.00,
-        reserved_balance: 0.00,
-      }).then();
+      // Garantir carteira para novos utilizadores
+      await supabase
+        .from("wallets")
+        .upsert({
+          user_id: authUser.id,
+          balance: 0.00,
+          reserved_balance: 0.00,
+        });
 
-      setProfile(newProfile);
-      return newProfile;
+      const finalProfile = (insertedProfile as Profile) || newProfile;
+      setProfile(finalProfile);
+      return finalProfile;
     } catch (err) {
-      console.error("[AuthContext] Erro ao buscar perfil:", err);
-      // Fallback supremo para nunca dar tela branca
-      const emergencyProfile: Profile = {
-        id: userId,
-        email: user?.email || "",
-        name: "Operador",
+      console.error("[AuthContext] Erro ao sincronizar perfil:", err);
+      // Fallback seguro em memória para evitar qualquer bloqueio de tela
+      const fallbackProfile: Profile = {
+        id: authUser.id,
+        email: authUser.email || "",
+        name: authUser.user_metadata?.name || authUser.email?.split("@")[0] || "Utilizador",
         first_name: null,
         last_name: null,
         phone: null,
         avatar_url: null,
-        role: "user",
-        first_login: true,
+        role: (authUser.user_metadata?.role as string) || "user",
+        first_login: false,
         is_active: true,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       };
-      setProfile(emergencyProfile);
-      return emergencyProfile;
+      setProfile(fallbackProfile);
+      return fallbackProfile;
     }
   };
 
@@ -132,10 +141,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(initialSession?.user ?? null);
 
         if (initialSession?.user) {
-          await fetchProfile(initialSession.user.id, initialSession.user);
+          await fetchOrSyncProfile(initialSession.user);
         }
       } catch (err) {
-        console.error("[AuthContext] Erro ao obter sessão:", err);
+        console.error("[AuthContext] Erro ao inicializar sessão:", err);
       } finally {
         if (isMounted) {
           setLoading(false);
@@ -146,14 +155,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     initAuth();
 
     const { data: authListener } = supabase.auth.onAuthStateChange(
-      async (event, newSession) => {
+      async (_event, newSession) => {
         if (!isMounted) return;
 
         setSession(newSession);
         setUser(newSession?.user ?? null);
 
         if (newSession?.user) {
-          await fetchProfile(newSession.user.id, newSession.user);
+          await fetchOrSyncProfile(newSession.user);
         } else {
           setProfile(null);
         }
@@ -180,8 +189,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const refreshProfile = async () => {
-    if (user) {
-      await fetchProfile(user.id);
+    const { data: { user: currentUser } } = await supabase.auth.getUser();
+    if (currentUser) {
+      await fetchOrSyncProfile(currentUser);
     }
   };
 

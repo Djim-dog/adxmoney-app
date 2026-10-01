@@ -346,16 +346,18 @@ const Index = () => {
 
     setSubmittingAction(true);
     try {
-      const { data, error } = await supabase.rpc("admin_create_user", {
-        p_email: newEmail.trim(),
-        p_password: newPassword,
-        p_name: newName.trim(),
-        p_phone: newPhone.trim() || null,
-        p_role: newRole,
+      const { data, error } = await supabase.functions.invoke("admin-create-user", {
+        body: {
+          email: newEmail.trim(),
+          password: newPassword,
+          name: newName.trim(),
+          phone: newPhone.trim() || null,
+          role: newRole,
+        },
       });
 
-      if (error) {
-        toast.error(error.message);
+      if (error || (data && data.error)) {
+        toast.error(error?.message || data?.error || "Erro ao criar usuário.");
         return;
       }
 
