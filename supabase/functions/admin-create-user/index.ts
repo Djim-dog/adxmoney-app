@@ -32,7 +32,7 @@ serve(async (req) => {
     const { data: { user: callerUser }, error: userError } = await userClient.auth.getUser();
     if (userError || !callerUser) {
       return new Response(
-        JSON.stringify({ error: "Sessão inválida ou expirada." }),
+        JSON.stringify({ error: "Sessão inválida ou expirada. Faça login novamente." }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -79,7 +79,22 @@ serve(async (req) => {
     const cleanEmail = email.toLowerCase().trim();
     const userRole = role || "user";
 
-    // Criar usuário via Supabase Auth Admin API (Garante criação 100% íntegra de auth.users e auth.identities)
+    // 4. Verificar se o e-mail já existe na base pública de perfis ou no auth
+    const { data: existingProfile } = await adminClient
+      .from("profiles")
+      .select("id, email")
+      .eq("email", cleanEmail)
+      .maybeSingle();
+
+    if (existingProfile) {
+      return new Response(
+        JSON.stringify({ error: "Já existe uma conta cadastrada com este e-mail." }),
+        { status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // 5. Criar usuário via Supabase Auth Admin API
+    // Isso cria nativamente em auth.users e gera a identidade 'email' em auth.identities
     const { data: createdAuthData, error: createAuthError } = await adminClient.auth.admin.createUser({
       email: cleanEmail,
       password: password,
@@ -93,16 +108,22 @@ serve(async (req) => {
     });
 
     if (createAuthError) {
-      console.error("[admin-create-user] Erro ao criar auth user:", createAuthError);
+      console.error("[admin-create-user] Erro ao criar utilizador no Supabase Auth:", createAuthError);
+      const isAlreadyExists = createAuthError.message?.toLowerCase().includes("already") || 
+                              createAuthError.message?.toLowerCase().includes("exists");
       return new Response(
-        JSON.stringify({ error: createAuthError.message }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        JSON.stringify({ 
+          error: isAlreadyExists 
+            ? "Já existe um utilizador registado com este e-mail no sistema." 
+            : createAuthError.message 
+        }),
+        { status: isAlreadyExists ? 409 : 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
     const newUserId = createdAuthData.user.id;
 
-    // 4. Criar ou atualizar o perfil público
+    // 6. Criar o perfil público associado exatamente ao newUserId gerado
     const { error: profileUpsertError } = await adminClient
       .from("profiles")
       .upsert({
@@ -121,10 +142,10 @@ serve(async (req) => {
       });
 
     if (profileUpsertError) {
-      console.error("[admin-create-user] Erro ao criar profile:", profileUpsertError);
+      console.error("[admin-create-user] Erro ao criar perfil público:", profileUpsertError);
     }
 
-    // 5. Criar carteira inicial
+    // 7. Criar carteira inicial
     await adminClient
       .from("wallets")
       .upsert({
@@ -133,7 +154,7 @@ serve(async (req) => {
         reserved_balance: 0.00,
       });
 
-    // 6. Criar perfil de afiliado padrão
+    // 8. Criar perfil de afiliado padrão inativo
     await adminClient
       .from("affiliate_profiles")
       .upsert({
@@ -144,7 +165,7 @@ serve(async (req) => {
         total_earned: 0.00,
       });
 
-    // 7. Registrar log de atividade da administração
+    // 9. Registrar log de atividade da administração
     await adminClient
       .from("activity_logs")
       .insert({
