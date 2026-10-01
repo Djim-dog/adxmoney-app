@@ -125,6 +125,10 @@ export const AdminDashboardPage: React.FC = () => {
   const [selectedOperationalCampaign, setSelectedOperationalCampaign] = useState<any | null>(null);
   const [operationalParticipants, setOperationalParticipants] = useState<any[]>([]);
 
+  // Detalhes da solicitação
+  const [isRequestDetailsOpen, setIsRequestDetailsOpen] = useState(false);
+  const [selectedRequest, setSelectedRequest] = useState<any | null>(null);
+
   const [selectedCampaignId, setSelectedCampaignId] = useState<string | null>(null);
   const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
 
@@ -553,6 +557,47 @@ export const AdminDashboardPage: React.FC = () => {
     setIsCreateCampaignOpen(true);
   };
 
+  const handleAutoSelectParticipants = async (campaignId: string) => {
+    setSubmitting(true);
+    try {
+      const { data, error } = await supabase.rpc("admin_select_eligible_participants", {
+        p_campaign_id: campaignId,
+        p_limit: 100,
+      });
+
+      if (error) throw error;
+
+      if (data && data.success) {
+        toast.success(`Selecionados ${data.selected_count || 0} participantes elegíveis com sucesso.`);
+        await loadAdminData();
+      } else {
+        toast.success("Participantes selecionados com sucesso.");
+        await loadAdminData();
+      }
+    } catch (err: any) {
+      toast.error(err.message || "Erro ao selecionar participantes.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleOpenOperationalList = async (campaign: any) => {
+    setSelectedOperationalCampaign(campaign);
+    setIsOperationalListOpen(true);
+    try {
+      const { data, error } = await supabase
+        .from("campaign_assignments")
+        .select("*, profiles:user_id(name, email, phone, tiktok, instagram, youtube, country)")
+        .eq("campaign_id", campaign.id);
+
+      if (error) throw error;
+      setOperationalParticipants(data || []);
+    } catch (err: any) {
+      toast.error("Erro ao carregar lista operacional.");
+      setOperationalParticipants([]);
+    }
+  };
+
   // Atribuir Campanha
   const handleAssignCampaign = async () => {
     if (!selectedCampaignId || selectedUserIds.length === 0) {
@@ -658,6 +703,14 @@ export const AdminDashboardPage: React.FC = () => {
         .eq("id", id);
 
       if (error) throw error;
+
+      // Registrar no log de atividades
+      await supabase.from("activity_logs").insert({
+        user_id: user?.id,
+        action_type: `CAMPAIGN_REQUEST_${status.toUpperCase()}`,
+        title: `Solicitação de Campanha ${status === "aprovada" ? "Aprovada" : "Rejeitada"}`,
+        details: `Solicitação ID: ${id}`
+      });
 
       toast.success(`Solicitação de campanha ${status} com sucesso.`);
       await loadAdminData();
@@ -1129,7 +1182,7 @@ export const AdminDashboardPage: React.FC = () => {
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   {campaignsList.map((c) => (
-                    <Card key={c.id} className="bg-slate-900 border-slate-800">
+                    <Card key={c.id} className="bg-slate-900 border-slate-800 flex flex-col justify-between">
                       <CardHeader className="pb-2">
                         <div className="flex items-center justify-between">
                           <Badge className="text-[10px] bg-slate-950 text-slate-300 border-slate-800">
@@ -1153,6 +1206,25 @@ export const AdminDashboardPage: React.FC = () => {
                           {c.target_url}
                         </a>
                       </CardContent>
+                      <CardFooter className="pt-2 border-t border-slate-800/60 flex items-center justify-between gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          disabled={submitting}
+                          onClick={() => handleAutoSelectParticipants(c.id)}
+                          className="border-slate-800 bg-slate-950 text-slate-300 hover:text-white hover:bg-slate-800 text-xs h-7 rounded-md"
+                        >
+                          Atribuir Elegíveis
+                        </Button>
+                        <Button
+                          size="sm"
+                          onClick={() => handleOpenOperationalList(c)}
+                          className="bg-indigo-600 hover:bg-indigo-500 text-white text-xs h-7 rounded-md gap-1"
+                        >
+                          <Users className="w-3 h-3" />
+                          Lista Operacional
+                        </Button>
+                      </CardFooter>
                     </Card>
                   ))}
                 </div>
@@ -2043,6 +2115,76 @@ export const AdminDashboardPage: React.FC = () => {
               </div>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* MODAL LISTA OPERACIONAL DE CAMPANHA */}
+      <Dialog open={isOperationalListOpen} onOpenChange={setIsOperationalListOpen}>
+        <DialogContent className="bg-slate-900 border-slate-800 text-white max-w-2xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-base font-bold flex items-center gap-2">
+              <Users className="w-4 h-4 text-indigo-400" />
+              Lista Operacional: {selectedOperationalCampaign?.title}
+            </DialogTitle>
+            <DialogDescription className="text-xs text-slate-400">
+              Participantes atribuídos e status de execução para auditoria e conferência.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-3 py-2">
+            {operationalParticipants.length === 0 ? (
+              <div className="text-center py-8 text-xs text-slate-500">
+                Nenhum participante atribuído a esta campanha ainda. Use o botão "Atribuir Elegíveis" para popular.
+              </div>
+            ) : (
+              <div className="divide-y divide-slate-800/80 border border-slate-800 rounded-lg overflow-hidden bg-slate-950/40">
+                {operationalParticipants.map((p) => (
+                  <div key={p.id} className="p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-slate-800/20">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-bold text-white">{p.profiles?.name || "Usuário"}</span>
+                        <Badge
+                          className={`text-[9px] ${
+                            p.status === "COMPLETED"
+                              ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30"
+                              : "bg-amber-500/10 text-amber-400 border-amber-500/30"
+                          }`}
+                        >
+                          {p.status}
+                        </Badge>
+                      </div>
+                      <div className="text-[11px] text-slate-400 flex flex-wrap gap-x-3 gap-y-1">
+                        <span>📧 {p.profiles?.email}</span>
+                        {p.profiles?.phone && <span>📱 {p.profiles.phone}</span>}
+                        {p.profiles?.tiktok && <span>TikTok: @{p.profiles.tiktok}</span>}
+                        {p.profiles?.instagram && <span>IG: @{p.profiles.instagram}</span>}
+                      </div>
+                    </div>
+
+                    <div className="text-[10px] text-slate-500 text-right shrink-0">
+                      Atribuído em:<br />
+                      {new Date(p.created_at).toLocaleString("pt-AO")}
+                      {p.completed_at && (
+                        <div className="text-emerald-400 mt-0.5">
+                          Concluído: {new Date(p.completed_at).toLocaleString("pt-AO")}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setIsOperationalListOpen(false)}
+              className="border-slate-800 text-slate-300 hover:bg-slate-800 text-xs h-8"
+            >
+              Fechar
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
