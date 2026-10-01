@@ -404,22 +404,22 @@ export default function UserAppPage() {
                     <Label className="text-xs font-bold text-slate-300">Método de Recebimento</Label>
                     <div className="grid grid-cols-2 gap-2">
                       {[
-                        { id: 'express', label: 'Express', icon: Smartphone },
-                        { id: 'unitel', label: 'Unitel Money', icon: PhoneCall },
-                        { id: 'iban', label: 'IBAN', icon: Banknote },
-                        { id: 'pix', label: 'PIX', icon: CreditCard }
+                        { id: 'express', label: 'Express', img: '/icon-express.jpg' },
+                        { id: 'unitel', label: 'Unitel Money', img: '/icon-unitel.jpg' },
+                        { id: 'iban', label: 'IBAN', img: '/icon-iban.jpg' },
+                        { id: 'pix', label: 'PIX', img: '/icon-pix.jpg' }
                       ].map((method) => (
                         <button
                           key={method.id}
                           type="button"
                           onClick={() => setWithdrawMethod(method.id)}
                           className={`flex items-center gap-2 p-3 rounded-xl border text-left transition-all ${
-                            withdrawMethod === method.id 
-                            ? 'bg-indigo-500/10 border-indigo-500 text-indigo-400' 
+                            withdrawMethod === method.id
+                            ? 'bg-indigo-500/10 border-indigo-500 text-indigo-400'
                             : 'bg-slate-950 border-slate-800 text-slate-500 hover:border-slate-700'
                           }`}
                         >
-                          <method.icon className="w-4 h-4" />
+                          <img src={method.img} alt={method.label} className="w-5 h-5 rounded-md object-cover" />
                           <span className="text-xs font-bold">{method.label}</span>
                         </button>
                       ))}
