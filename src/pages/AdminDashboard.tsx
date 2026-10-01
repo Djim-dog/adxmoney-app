@@ -23,6 +23,7 @@ import {
   Check,
   Copy,
   MessageSquare,
+  Megaphone,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -36,7 +37,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 export const AdminDashboardPage: React.FC = () => {
   const { profile, signOut } = useAuth();
   const [activeSection, setActiveSection] = useState<
-    "dashboard" | "users" | "campaigns" | "participations" | "affiliates" | "withdrawals" | "history" | "settings"
+    "dashboard" | "users" | "campaigns" | "campaignRequests" | "participations" | "affiliates" | "withdrawals" | "history" | "settings"
   >("dashboard");
 
   // Dados reais
@@ -52,10 +53,12 @@ export const AdminDashboardPage: React.FC = () => {
     completedParticipations: 0,
     pendingWithdrawals: 0,
     pendingWithdrawalAmount: 0,
+    pendingCampaignRequests: 0,
   });
 
   const [usersList, setUsersList] = useState<any[]>([]);
   const [campaignsList, setCampaignsList] = useState<any[]>([]);
+  const [campaignRequestsList, setCampaignRequestsList] = useState<any[]>([]);
   const [withdrawalsList, setWithdrawalsList] = useState<any[]>([]);
   const [assignmentsList, setAssignmentsList] = useState<any[]>([]);
   const [affiliatesList, setAffiliatesList] = useState<any[]>([]);
@@ -158,6 +161,13 @@ export const AdminDashboardPage: React.FC = () => {
         .limit(50);
       setActivityLogs(logsData || []);
 
+      // 7. Solicitações de Campanha
+      const { data: requestsData } = await supabase
+        .from("campaign_requests")
+        .select("*, profiles:user_id(name, email)")
+        .order("created_at", { ascending: false });
+      setCampaignRequestsList(requestsData || []);
+
       // Calcular Indicadores
       const totalU = users.length;
       const activeU = users.filter((u) => u.is_active !== false).length;
@@ -174,6 +184,8 @@ export const AdminDashboardPage: React.FC = () => {
       const pendingWCount = pendingW.length;
       const pendingWAmount = pendingW.reduce((sum, w) => sum + Number(w.amount || 0), 0);
 
+      const pendingCR = (requestsData || []).filter((r: any) => r.status === "pendente").length;
+
       setStats({
         totalUsers: totalU,
         activeUsers: activeU,
@@ -185,6 +197,7 @@ export const AdminDashboardPage: React.FC = () => {
         completedParticipations: completedP,
         pendingWithdrawals: pendingWCount,
         pendingWithdrawalAmount: pendingWAmount,
+        pendingCampaignRequests: pendingCR,
       });
     } catch (err) {
       console.error("[AdminDashboard] Erro ao carregar dados:", err);
@@ -206,7 +219,6 @@ export const AdminDashboardPage: React.FC = () => {
       return;
     }
 
-    // Gerar senha pré-definida vinculada ao e-mail do usuário (ex: User@4921!)
     const cleanEmailPrefix = (newEmail.split("@")[0] || "Adx").replace(/[^a-zA-Z0-9]/g, "");
     const prefixFormatted = cleanEmailPrefix.charAt(0).toUpperCase() + cleanEmailPrefix.slice(1, 5);
     const randomDigits = Math.floor(1000 + Math.random() * 9000);
@@ -214,25 +226,36 @@ export const AdminDashboardPage: React.FC = () => {
 
     setSubmitting(true);
     try {
-      // Invocar a Edge Function segura com a Auth Admin API do Supabase
       const { data: edgeData, error: edgeError } = await supabase.functions.invoke("admin-create-user", {
         body: {
-        email: newEmail.trim(),
-        password: predefinedPassword,
-        name: newName.trim(),
-        phone: newPhone.trim() || null,
-        role: newRole,
-        first_login: true,
-        primary_link: newPrimaryLink.trim() || null,
-        tiktok: newTiktok.trim() || null,
-        instagram: newInstagram.trim() || null,
-        youtube: newYoutube.trim() || null,
-        country: newCountry.trim() || "Angola",
-      },
+          email: newEmail.trim(),
+          password: predefinedPassword,
+          name: newName.trim(),
+          phone: newPhone.trim() || null,
+          role: newRole,
+          first_login: true,
+          primary_link: newPrimaryLink.trim() || null,
+          tiktok: newTiktok.trim() || null,
+          instagram: newInstagram.trim() || null,
+          youtube: newYoutube.trim() || null,
+          country: newCountry.trim() || "Angola",
+        },
       });
 
-      if (edgeError || (edgeData && edgeData.error)) {
-        throw new Error(edgeError?.message || edgeData?.error || "Erro ao criar utilizador via Edge Function.");
+      if (edgeError) {
+        // Tentar extrair a mensagem de erro da resposta do Edge Function
+        let errorMsg = "Erro ao criar utilizador.";
+        try {
+          const body = await edgeError.context.json();
+          errorMsg = body.error || errorMsg;
+        } catch (e) {
+          errorMsg = edgeError.message || errorMsg;
+        }
+        throw new Error(errorMsg);
+      }
+
+      if (edgeData && edgeData.error) {
+        throw new Error(edgeData.error);
       }
 
       // Armazenar dados para o modal de comprovativo de criação
@@ -447,6 +470,26 @@ export const AdminDashboardPage: React.FC = () => {
     }
   };
 
+  // Atualizar Status de Solicitação de Campanha
+  const handleUpdateCampaignRequestStatus = async (id: string, status: "aprovada" | "rejeitada") => {
+    setSubmitting(true);
+    try {
+      const { error } = await supabase
+        .from("campaign_requests")
+        .update({ status, updated_at: new Date().toISOString() })
+        .eq("id", id);
+
+      if (error) throw error;
+
+      toast.success(`Solicitação de campanha ${status} com sucesso.`);
+      await loadAdminData();
+    } catch (err: any) {
+      toast.error(err.message || "Erro ao atualizar status da solicitação.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col selection:bg-emerald-500 selection:text-white">
       {/* Topo do Painel */}
@@ -523,6 +566,18 @@ export const AdminDashboardPage: React.FC = () => {
             >
               <Layers className="w-4 h-4" />
               <span>Campanhas ({campaignsList.length})</span>
+            </button>
+
+            <button
+              onClick={() => setActiveSection("campaignRequests")}
+              className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium transition-colors ${
+                activeSection === "campaignRequests"
+                  ? "bg-emerald-600 text-white"
+                  : "text-slate-400 hover:text-white hover:bg-slate-800/60"
+              }`}
+            >
+              <Megaphone className="w-4 h-4" />
+              <span>Solicitações ({stats.pendingCampaignRequests})</span>
             </button>
 
             <button
@@ -632,6 +687,18 @@ export const AdminDashboardPage: React.FC = () => {
                   </CardHeader>
                   <CardContent className="pt-0 text-[11px] text-slate-500">
                     {stats.completedParticipations} concluída(s) no total
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-slate-900 border-slate-800">
+                  <CardHeader className="pb-2">
+                    <CardDescription className="text-xs text-slate-400">Solicitações de Campanha</CardDescription>
+                    <CardTitle className="text-2xl font-bold text-sky-400 font-mono">
+                      {stats.pendingCampaignRequests}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="pt-0 text-[11px] text-slate-500">
+                    Aguardando revisão
                   </CardContent>
                 </Card>
 
@@ -851,6 +918,94 @@ export const AdminDashboardPage: React.FC = () => {
                   ))}
                 </div>
               )}
+            </div>
+          )}
+
+          {/* SEÇÃO: SOLICITAÇÕES DE CAMPANHA */}
+          {activeSection === "campaignRequests" && (
+            <div className="space-y-4">
+              <div>
+                <h2 className="text-base font-bold text-white">Solicitações de Novas Campanhas</h2>
+                <p className="text-xs text-slate-400">Analise as propostas enviadas pelos utilizadores.</p>
+              </div>
+
+              <Card className="bg-slate-900 border-slate-800">
+                <CardContent className="p-0">
+                  {campaignRequestsList.length === 0 ? (
+                    <div className="text-center py-10 text-xs text-slate-500">Nenhuma solicitação encontrada.</div>
+                  ) : (
+                    <div className="divide-y divide-slate-800">
+                      {campaignRequestsList.map((req) => (
+                        <div key={req.id} className="p-5 flex flex-col gap-4 hover:bg-slate-800/30 transition-colors">
+                          <div className="flex flex-col md:flex-row md:items-start justify-between gap-3">
+                            <div className="space-y-1">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <span className="text-sm font-bold text-white">{req.title}</span>
+                                <Badge variant="outline" className="text-[10px] uppercase font-mono border-slate-700 text-slate-300 bg-slate-950">
+                                  {req.type === 'afiliados' ? 'Afiliados' : 'Monetização Coletiva'}
+                                </Badge>
+                                <Badge
+                                  className={`text-[10px] ${
+                                    req.status === "pendente"
+                                      ? "bg-amber-500/10 text-amber-400 border-amber-500/30"
+                                      : req.status === "aprovada"
+                                      ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30"
+                                      : "bg-rose-500/10 text-rose-400 border-rose-500/30"
+                                  }`}
+                                >
+                                  {req.status}
+                                </Badge>
+                              </div>
+                              <p className="text-xs text-slate-400">
+                                Solicitado por: <span className="font-semibold text-slate-200">{req.profiles?.name || req.profiles?.email}</span> • {new Date(req.created_at).toLocaleString('pt-AO')}
+                              </p>
+                            </div>
+
+                            {req.status === "pendente" && (
+                              <div className="flex gap-2">
+                                <Button
+                                  size="sm"
+                                  disabled={submitting}
+                                  onClick={() => handleUpdateCampaignRequestStatus(req.id, "aprovada")}
+                                  className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs h-8 rounded-lg"
+                                >
+                                  Aprovar
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  disabled={submitting}
+                                  onClick={() => handleUpdateCampaignRequestStatus(req.id, "rejeitada")}
+                                  className="border-rose-800 text-rose-400 hover:bg-rose-950/40 text-xs h-8 rounded-lg"
+                                >
+                                  Rejeitar
+                                </Button>
+                              </div>
+                            )}
+                          </div>
+
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-slate-950/40 p-4 rounded-xl border border-slate-800/60">
+                            <div className="space-y-1">
+                              <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Descrição</span>
+                              <p className="text-xs text-slate-300 leading-relaxed">{req.description}</p>
+                            </div>
+                            <div className="space-y-1">
+                              <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Objetivo</span>
+                              <p className="text-xs text-slate-300 leading-relaxed">{req.objective}</p>
+                            </div>
+                            {req.additional_information && (
+                              <div className="md:col-span-2 space-y-1 pt-2 border-t border-slate-800/40">
+                                <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Informações Adicionais</span>
+                                <p className="text-xs text-slate-400 leading-relaxed">{req.additional_information}</p>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
             </div>
           )}
 

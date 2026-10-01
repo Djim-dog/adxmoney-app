@@ -24,6 +24,7 @@ import {
   Gift,
   Search,
   Lock,
+  Megaphone,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
@@ -33,10 +34,12 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 
+import { UserCampaignsHub } from "@/components/user/UserCampaignsHub";
+
 export default function UserAppPage() {
   const { user, profile, signOut, refreshProfile } = useAuth();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<"home" | "tasks" | "wallet" | "account">("home");
+  const [activeTab, setActiveTab] = useState<"home" | "tasks" | "campaigns" | "wallet" | "account">("home");
 
   const [loading, setLoading] = useState(false);
   const [wallet, setWallet] = useState<{ id: string; balance: number; reserved_balance: number } | null>(null);
@@ -278,18 +281,18 @@ export default function UserAppPage() {
 
             {/* Ações Rápidas */}
             <div className="grid grid-cols-2 gap-4">
-              <button 
-                onClick={() => setActiveTab("tasks")}
+              <button
+                onClick={() => setActiveTab("campaigns")}
                 className="flex flex-col items-center justify-center p-5 bg-slate-900 border border-slate-800 rounded-2xl hover:border-indigo-500/50 transition-all group"
               >
                 <div className="w-12 h-12 bg-indigo-500/10 rounded-xl flex items-center justify-center text-indigo-400 group-hover:scale-110 transition-transform mb-3">
-                  <Layers className="w-6 h-6" />
+                  <Megaphone className="w-6 h-6" />
                 </div>
-                <span className="text-sm font-bold text-white">Tarefas</span>
-                <span className="text-[10px] text-slate-500 mt-0.5">Novas tarefas</span>
+                <span className="text-sm font-bold text-white">Campanhas</span>
+                <span className="text-[10px] text-slate-500 mt-0.5">Ver Oportunidades</span>
               </button>
 
-              <button 
+              <button
                 onClick={() => setActiveTab("account")}
                 className="flex flex-col items-center justify-center p-5 bg-slate-900 border border-slate-800 rounded-2xl hover:border-emerald-500/50 transition-all group"
               >
@@ -333,6 +336,11 @@ export default function UserAppPage() {
               )}
             </div>
           </div>
+        )}
+
+        {/* ABA: CAMPANHAS */}
+        {activeTab === "campaigns" && user && (
+          <UserCampaignsHub userId={user.id} />
         )}
 
         {/* ABA: TAREFAS */}
@@ -652,6 +660,18 @@ export default function UserAppPage() {
               <Smartphone className="w-5 h-5" />
             </div>
             <span className="text-[9px] mt-1 font-bold">Início</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab("campaigns")}
+            className={`flex flex-col items-center justify-center transition-all ${
+              activeTab === "campaigns" ? "text-indigo-400 scale-110" : "text-slate-500 hover:text-slate-300"
+            }`}
+          >
+            <div className={`p-1.5 rounded-lg ${activeTab === "campaigns" ? "bg-indigo-500/10" : ""}`}>
+              <Megaphone className="w-5 h-5" />
+            </div>
+            <span className="text-[9px] mt-1 font-bold">Campanhas</span>
           </button>
 
           <button
