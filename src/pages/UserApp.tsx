@@ -220,29 +220,20 @@ export default function UserAppPage() {
 
     setIsRequestingWithdraw(true);
     try {
-      // 1. Create withdrawal request
-      const details = {
-        method: withdrawMethod,
-        iban: withdrawMethod === 'iban' ? withdrawIban : null,
-        holder: withdrawMethod === 'iban' ? withdrawHolder : null,
-        phone: (withdrawMethod === 'express' || withdrawMethod === 'unitel') ? withdrawPhone : null,
-        pix: withdrawMethod === 'pix' ? withdrawPix : null
-      };
-
-      const { error: wError } = await supabase
-        .from("withdrawals")
-        .insert({
-          user_id: user?.id,
-          amount: amount,
-          method: withdrawMethod,
-          status: "PENDING",
-          details: details
-        });
+      // Usar a RPC request_withdrawal que já lida com a reserva de saldo e tabela withdrawals
+      const { data, error: wError } = await supabase.rpc("request_withdrawal", {
+        p_amount: amount,
+        p_method: withdrawMethod.toUpperCase(),
+        p_payment_details: {
+          iban: withdrawMethod === 'iban' ? withdrawIban : null,
+          holder: withdrawMethod === 'iban' ? withdrawHolder : null,
+          phone: (withdrawMethod === 'express' || withdrawMethod === 'unitel') ? withdrawPhone : null,
+          pix: withdrawMethod === 'pix' ? withdrawPix : null
+        }
+      });
 
       if (wError) throw wError;
 
-      // 2. Reserved balance logic would be handled by a DB trigger in a real app,
-      // but here we just notify the user and refresh
       toast.success("Solicitação de saque enviada! Aguardando processamento.");
       setWithdrawAmount("");
       loadUserData();
