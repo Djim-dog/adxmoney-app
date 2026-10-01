@@ -24,18 +24,14 @@ import {
   Copy,
   MessageSquare,
   Megaphone,
+  Eye,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 
 export const AdminDashboardPage: React.FC = () => {
-  const { profile, signOut } = useAuth();
+  const { user, profile, signOut } = useAuth();
   const [activeSection, setActiveSection] = useState<
     "dashboard" | "users" | "campaigns" | "campaignRequests" | "participations" | "affiliates" | "withdrawals" | "history" | "settings"
   >("dashboard");
@@ -516,7 +512,7 @@ export const AdminDashboardPage: React.FC = () => {
         status: newStatus,
         period_start: newStartAt ? new Date(newStartAt).toISOString() : null,
         period_end: newEndAt ? new Date(newEndAt).toISOString() : null,
-        created_by: user?.id,
+        created_by: user?.id || null,
       });
 
       if (error) throw error;
