@@ -158,10 +158,7 @@ export default function AccountSetup() {
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 flex flex-col justify-center items-center px-4 py-8">
       {/* Header / Brand */}
       <div className="max-w-md w-full mb-6 text-center">
-        <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-indigo-600/20 border border-indigo-500/30 text-indigo-400 mb-3 shadow-lg shadow-indigo-900/30">
-          <ShieldCheck className="w-8 h-8" />
-        </div>
-        <h1 className="text-2xl font-bold tracking-tight text-white">ADX Money</h1>
+        <img src="/logo.png" alt="ADX Money Logo" className="h-16 mx-auto mb-3" />
         <p className="text-sm text-slate-400 mt-1">Configuração Obrigatória de Primeiro Acesso</p>
       </div>
 

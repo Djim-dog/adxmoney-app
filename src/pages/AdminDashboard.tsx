@@ -451,7 +451,7 @@ export const AdminDashboardPage: React.FC = () => {
       {/* Topo do Painel */}
       <header className="border-b border-slate-800 bg-slate-900/90 px-6 py-3.5 flex items-center justify-between sticky top-0 z-30">
         <div className="flex items-center gap-3">
-          <img src="/logo.png" alt="Logo" className="w-8 h-8 object-contain rounded-lg bg-slate-800/50 p-1" />
+          <img src="/logo.png" alt="Logo" className="h-8 w-auto" />
           <span className="font-mono font-bold text-[10px] text-emerald-400 bg-emerald-950/60 border border-emerald-500/30 px-1.5 py-0.5 rounded uppercase tracking-wider">
             Admin
           </span>
