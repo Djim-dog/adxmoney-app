@@ -306,7 +306,7 @@ export default function UserAppPage() {
                   Pendente: {(wallet?.reserved_balance || 0).toLocaleString("pt-AO")} Kz
                 </div>
                 <Button
-                  onClick={() => setActiveTab("wallet")}
+                  onClick={() => setIsWithdrawModalOpen(true)}
                   className="bg-white text-indigo-700 hover:bg-indigo-50 text-xs h-8 px-4 font-bold rounded-full shadow-lg"
                 >
                   Levantar
