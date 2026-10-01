@@ -106,10 +106,16 @@ export const AdminDashboardPage: React.FC = () => {
 
   const [newTitle, setNewTitle] = useState("");
   const [newDesc, setNewDesc] = useState("");
+  const [newType, setNewType] = useState<"affiliate" | "collective">("affiliate");
   const [newPlatform, setNewPlatform] = useState("TikTok");
   const [newTargetUrl, setNewTargetUrl] = useState("");
   const [newInstructions, setNewInstructions] = useState("");
   const [newReward, setNewReward] = useState("150");
+  const [newMaxParticipants, setNewMaxParticipants] = useState("100");
+  const [newObjective, setNewObjective] = useState("");
+  const [newStatus, setNewStatus] = useState("draft");
+  const [newStartAt, setNewStartAt] = useState("");
+  const [newEndAt, setNewEndAt] = useState("");
 
   const [selectedCampaignId, setSelectedCampaignId] = useState<string | null>(null);
   const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
@@ -488,11 +494,17 @@ export const AdminDashboardPage: React.FC = () => {
       const { error } = await supabase.from("campaigns").insert({
         title: newTitle.trim(),
         description: newDesc.trim(),
+        type: newType,
         platform: newPlatform,
         target_url: newTargetUrl.trim(),
         instructions: newInstructions.trim() || "Acesse o link e conclua a tarefa.",
         reward_amount: parseFloat(newReward),
-        status: "ACTIVE",
+        max_participants: parseInt(newMaxParticipants) || 100,
+        objective: newObjective.trim() || null,
+        status: newStatus,
+        period_start: newStartAt ? new Date(newStartAt).toISOString() : null,
+        period_end: newEndAt ? new Date(newEndAt).toISOString() : null,
+        created_by: user?.id,
       });
 
       if (error) throw error;
@@ -504,6 +516,7 @@ export const AdminDashboardPage: React.FC = () => {
       setNewTargetUrl("");
       setNewInstructions("");
       setNewReward("150");
+      setNewObjective("");
       await loadAdminData();
     } catch (err: any) {
       toast.error(err.message || "Erro ao cadastrar campanha.");
@@ -1672,6 +1685,19 @@ export const AdminDashboardPage: React.FC = () => {
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleCreateCampaign} className="space-y-3 mt-2">
+            <div className="space-y-1">
+              <Label className="text-xs text-slate-300">Tipo de Campanha *</Label>
+              <Select value={newType} onValueChange={(val: any) => setNewType(val)}>
+                <SelectTrigger className="bg-slate-950 border-slate-800 text-slate-100 text-xs">
+                  <SelectValue placeholder="Selecione o Tipo" />
+                </SelectTrigger>
+                <SelectContent className="bg-slate-900 border-slate-800 text-slate-100 text-xs">
+                  <SelectItem value="affiliate">Campanha de Afiliados (Tarefas)</SelectItem>
+                  <SelectItem value="collective">Monetização Coletiva (Metas)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
             <div className="space-y-1">
               <Label className="text-xs text-slate-300">Título *</Label>
               <Input
