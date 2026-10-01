@@ -2327,5 +2327,8 @@ export const AdminDashboardPage: React.FC = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+    </div>
+  );
+};
 
 export default AdminDashboardPage;
