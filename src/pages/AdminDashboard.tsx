@@ -108,7 +108,10 @@ export const AdminDashboardPage: React.FC = () => {
   const [newDesc, setNewDesc] = useState("");
   const [newType, setNewType] = useState<"affiliate" | "collective">("affiliate");
   const [newPlatform, setNewPlatform] = useState("TikTok");
+  const [newActionType, setNewActionType] = useState("follow");
+  const [newTargetAccount, setNewTargetAccount] = useState("");
   const [newTargetUrl, setNewTargetUrl] = useState("");
+  const [newRequesterPhone, setNewRequesterPhone] = useState("");
   const [newInstructions, setNewInstructions] = useState("");
   const [newReward, setNewReward] = useState("150");
   const [newMaxParticipants, setNewMaxParticipants] = useState("100");
@@ -116,6 +119,11 @@ export const AdminDashboardPage: React.FC = () => {
   const [newStatus, setNewStatus] = useState("draft");
   const [newStartAt, setNewStartAt] = useState("");
   const [newEndAt, setNewEndAt] = useState("");
+
+  // Lista operacional do solicitante
+  const [isOperationalListOpen, setIsOperationalListOpen] = useState(false);
+  const [selectedOperationalCampaign, setSelectedOperationalCampaign] = useState<any | null>(null);
+  const [operationalParticipants, setOperationalParticipants] = useState<any[]>([]);
 
   const [selectedCampaignId, setSelectedCampaignId] = useState<string | null>(null);
   const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
@@ -511,18 +519,38 @@ export const AdminDashboardPage: React.FC = () => {
 
       toast.success("Campanha criada com sucesso.");
       setIsCreateCampaignOpen(false);
+      
+      // Limpar formulário
       setNewTitle("");
       setNewDesc("");
+      setNewType("affiliate");
+      setNewPlatform("TikTok");
       setNewTargetUrl("");
       setNewInstructions("");
       setNewReward("150");
+      setNewMaxParticipants("100");
       setNewObjective("");
+      setNewStatus("draft");
+      setNewStartAt("");
+      setNewEndAt("");
+      
       await loadAdminData();
     } catch (err: any) {
       toast.error(err.message || "Erro ao cadastrar campanha.");
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const openCreateCampaignWithData = (req: any) => {
+    setNewTitle(req.title || "");
+    setNewDesc(req.description || "");
+    setNewType(req.type === "afiliados" ? "affiliate" : "collective");
+    setNewObjective(req.objective || "");
+    setNewInstructions("");
+    setNewTargetUrl("");
+    setNewStatus("draft");
+    setIsCreateCampaignOpen(true);
   };
 
   // Atribuir Campanha
@@ -1192,6 +1220,17 @@ export const AdminDashboardPage: React.FC = () => {
                                   Rejeitar
                                 </Button>
                               </div>
+                            )}
+
+                            {req.status === "aprovada" && (
+                              <Button
+                                size="sm"
+                                onClick={() => openCreateCampaignWithData(req)}
+                                className="bg-sky-600 hover:bg-sky-500 text-white text-xs h-8 rounded-lg gap-1.5"
+                              >
+                                <PlusCircle className="w-3.5 h-3.5" />
+                                Criar Campanha
+                              </Button>
                             )}
                           </div>
 
