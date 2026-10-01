@@ -30,8 +30,9 @@ serve(async (req) => {
 
     console.log(`[admin-create-user] Tentando criar usuário: ${email}`);
 
-    // 1. Criar usuário no Auth (Admin API)
-    const { data: userData, error: userError } = await supabaseAdmin.auth.admin.createUser({
+    // 1. Criar usuário no Auth (Admin API) com tratamento robusto para e-mail já existente
+    let userData;
+    const { data: createdData, error: userError } = await supabaseAdmin.auth.admin.createUser({
       email: email.trim(),
       password: password,
       email_confirm: true,
@@ -44,23 +45,51 @@ serve(async (req) => {
     })
 
     if (userError) {
-      console.error("[admin-create-user] Erro ao criar auth user:", userError.message);
-      // Se o erro for de e-mail já existente
+      console.log("[admin-create-user] Erro ao criar auth user (pode já existir no auth):", userError.message);
       if (userError.message.includes("already registered") || userError.message.includes("already exists")) {
-        return new Response(JSON.stringify({ error: "Este e-mail já está em uso por outro operador." }), {
-          status: 400,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        })
+        // Localizar o utilizador existente no auth para atualizar a senha e reativá-lo
+        const { data: listData, error: listError } = await supabaseAdmin.auth.admin.listUsers();
+        if (listError) {
+          throw listError;
+        }
+        const existingAuthUser = listData?.users?.find(u => u.email?.toLowerCase() === email.trim().toLowerCase());
+        
+        if (existingAuthUser) {
+          const { data: updatedAuthData, error: updateAuthError } = await supabaseAdmin.auth.admin.updateUserById(existingAuthUser.id, {
+            password: password,
+            user_metadata: { 
+              name, 
+              role, 
+              phone,
+              first_login: first_login ?? true 
+            }
+          });
+          if (updateAuthError) {
+            throw updateAuthError;
+          }
+          userData = { user: updatedAuthData.user };
+          console.log(`[admin-create-user] Utilizador já existia no Auth. Senha e metadados atualizados para ID: ${existingAuthUser.id}`);
+        } else {
+          return new Response(JSON.stringify({ error: "Este e-mail já está registado no sistema de autenticação." }), {
+            status: 400,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          });
+        }
+      } else {
+        throw userError;
       }
-      throw userError
+    } else {
+      userData = createdData;
     }
 
     const userId = userData.user.id
 
-    // 2. Criar perfil na tabela public.profiles (O trigger handle_new_user já deve fazer isso, mas vamos garantir os campos extras)
+    // 2. Criar ou atualizar perfil na tabela public.profiles
     const { error: profileError } = await supabaseAdmin
       .from('profiles')
-      .update({
+      .upsert({
+        id: userId,
+        email: email.trim(),
         name: name.trim(),
         phone: phone ? phone.trim() : null,
         role: role || 'user',
@@ -70,9 +99,9 @@ serve(async (req) => {
         instagram: instagram ? instagram.trim() : null,
         youtube: youtube ? youtube.trim() : null,
         country: country || 'Angola',
-        is_active: true
-      })
-      .eq('id', userId)
+        is_active: true,
+        updated_at: new Date().toISOString()
+      }, { onConflict: 'id' })
 
     if (profileError) {
       console.error("[admin-create-user] Erro ao atualizar perfil:", profileError.message);
@@ -85,14 +114,13 @@ serve(async (req) => {
       .insert({ user_id: userId, balance: 0, reserved_balance: 0 })
       .select()
 
-    // Ignorar erro se a carteira já existir (via trigger)
     if (walletError && !walletError.message.includes("duplicate key")) {
       console.error("[admin-create-user] Erro ao criar carteira:", walletError.message);
     }
 
-    console.log(`[admin-create-user] Usuário ${email} criado com sucesso. ID: ${userId}`);
+    console.log(`[admin-create-user] Usuário ${email} processado com sucesso. ID: ${userId}`);
 
-    return new Response(JSON.stringify({ message: 'Usuário criado com sucesso', user: userData.user }), {
+    return new Response(JSON.stringify({ message: 'Usuário criado/atualizado com sucesso', user: userData.user }), {
       status: 200,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
