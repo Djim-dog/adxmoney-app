@@ -29,6 +29,11 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export const AdminDashboardPage: React.FC = () => {
   const { user, profile, signOut } = useAuth();
@@ -512,7 +517,7 @@ export const AdminDashboardPage: React.FC = () => {
         status: newStatus,
         period_start: newStartAt ? new Date(newStartAt).toISOString() : null,
         period_end: newEndAt ? new Date(newEndAt).toISOString() : null,
-        created_by: user?.id || null,
+        created_by: profile?.id || null,
       });
 
       if (error) throw error;
@@ -702,7 +707,7 @@ export const AdminDashboardPage: React.FC = () => {
 
       // Registrar no log de atividades
       await supabase.from("activity_logs").insert({
-        user_id: user?.id,
+        user_id: profile?.id,
         action_type: `CAMPAIGN_REQUEST_${status.toUpperCase()}`,
         title: `Solicitação de Campanha ${status === "aprovada" ? "Aprovada" : "Rejeitada"}`,
         details: `Solicitação ID: ${id}`
