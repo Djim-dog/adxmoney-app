@@ -96,8 +96,8 @@ export const FirstAccessModal: React.FC<FirstAccessModalProps> = ({
       }
 
       // 2. Atualizar perfil e marcar first_login como false
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("Usuário não autenticado.");
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
+      if (!currentUser?.id) throw new Error("Sessão expirada. Por favor, tente novamente.");
 
       const { error: profileError } = await supabase
         .from("profiles")
@@ -112,7 +112,7 @@ export const FirstAccessModal: React.FC<FirstAccessModalProps> = ({
           first_login: false,
           updated_at: new Date().toISOString(),
         })
-        .eq("id", user.id);
+        .eq("id", currentUser.id);
 
       if (profileError) {
         throw profileError;
@@ -120,7 +120,7 @@ export const FirstAccessModal: React.FC<FirstAccessModalProps> = ({
 
       // 3. Registrar log de atividade
       await supabase.from("activity_logs").insert({
-        user_id: user.id,
+        user_id: currentUser.id,
         action_type: "FIRST_LOGIN_COMPLETED",
         title: "Primeiro Acesso Concluído",
         details: "Senha definitiva configurada e dados confirmados pelo usuário.",
@@ -216,7 +216,7 @@ export const FirstAccessModal: React.FC<FirstAccessModalProps> = ({
           {/* Bloco de Confirmação de Perfil */}
           <div className="space-y-3 pt-1">
             <h4 className="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
-              <ShieldCheck className="w-4 h-4 text-sky-400" />
+              <img src="/logo.png" alt="Logo" className="w-4 h-4 object-contain" />
               Confirmação dos Dados Cadastrados
             </h4>
 
