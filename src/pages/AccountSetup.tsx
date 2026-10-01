@@ -123,7 +123,7 @@ export default function AccountSetup() {
 
       await refreshProfile();
       toast.success(result.message || "Configuração inicial concluída com sucesso!");
-      navigate("/dashboard", { replace: true });
+      navigate("/app", { replace: true });
     } catch (err: any) {
       console.error("Erro inesperado no setup:", err);
       toast.error("Ocorreu um erro ao configurar a sua conta. Tente novamente.");
