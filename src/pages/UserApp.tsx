@@ -560,7 +560,7 @@ export default function UserAppPage() {
                 <CardFooter className="pt-2">
                   <Button
                     type="submit"
-                    disabled={isRequestingWithdraw || !withdrawAmount || parseFloat(withdrawAmount) <= 0}
+                    disabled={isRequestingWithdraw || !withdrawAmount || parseFloat(withdrawAmount) <= 0 || parseFloat(withdrawAmount) > (wallet?.balance || 0)}
                     className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold h-11 rounded-xl shadow-lg shadow-indigo-950/50"
                   >
                     {isRequestingWithdraw ? <Loader2 className="w-5 h-5 animate-spin" /> : "Solicitar Levantamento"}
