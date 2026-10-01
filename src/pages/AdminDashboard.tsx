@@ -194,7 +194,7 @@ export const AdminDashboardPage: React.FC = () => {
       // 7. Solicitações de Campanha
       const { data: requestsData } = await supabase
         .from("campaign_requests")
-        .select("*, profiles:user_id(name, email)")
+        .select("*, profiles:user_id(name, email, phone, tiktok, instagram, youtube, country)")
         .order("created_at", { ascending: false });
       setCampaignRequestsList(requestsData || []);
 
@@ -1272,38 +1272,53 @@ export const AdminDashboardPage: React.FC = () => {
                               </p>
                             </div>
 
-                            {req.status === "pendente" && (
-                              <div className="flex gap-2">
-                                <Button
-                                  size="sm"
-                                  disabled={submitting}
-                                  onClick={() => handleUpdateCampaignRequestStatus(req.id, "aprovada")}
-                                  className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs h-8 rounded-lg"
-                                >
-                                  Aprovar
-                                </Button>
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  disabled={submitting}
-                                  onClick={() => handleUpdateCampaignRequestStatus(req.id, "rejeitada")}
-                                  className="border-rose-800 text-rose-400 hover:bg-rose-950/40 text-xs h-8 rounded-lg"
-                                >
-                                  Rejeitar
-                                </Button>
-                              </div>
-                            )}
-
-                            {req.status === "aprovada" && (
+                            <div className="flex items-center gap-2">
                               <Button
                                 size="sm"
-                                onClick={() => openCreateCampaignWithData(req)}
-                                className="bg-sky-600 hover:bg-sky-500 text-white text-xs h-8 rounded-lg gap-1.5"
+                                variant="outline"
+                                onClick={() => {
+                                  setSelectedRequest(req);
+                                  setIsRequestDetailsOpen(true);
+                                }}
+                                className="border-slate-800 bg-slate-950 text-indigo-400 hover:text-indigo-300 hover:bg-slate-800 text-xs h-8 rounded-lg gap-1.5"
                               >
-                                <PlusCircle className="w-3.5 h-3.5" />
-                                Criar Campanha
+                                <Eye className="w-3.5 h-3.5" />
+                                Auditar Pedido
                               </Button>
-                            )}
+
+                              {req.status === "pendente" && (
+                                <div className="flex gap-2">
+                                  <Button
+                                    size="sm"
+                                    disabled={submitting}
+                                    onClick={() => handleUpdateCampaignRequestStatus(req.id, "aprovada")}
+                                    className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs h-8 rounded-lg"
+                                  >
+                                    Aprovar
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    disabled={submitting}
+                                    onClick={() => handleUpdateCampaignRequestStatus(req.id, "rejeitada")}
+                                    className="border-rose-800 text-rose-400 hover:bg-rose-950/40 text-xs h-8 rounded-lg"
+                                  >
+                                    Rejeitar
+                                  </Button>
+                                </div>
+                              )}
+
+                              {req.status === "aprovada" && (
+                                <Button
+                                  size="sm"
+                                  onClick={() => openCreateCampaignWithData(req)}
+                                  className="bg-sky-600 hover:bg-sky-500 text-white text-xs h-8 rounded-lg gap-1.5"
+                                >
+                                  <PlusCircle className="w-3.5 h-3.5" />
+                                  Criar Campanha
+                                </Button>
+                              )}
+                            </div>
                           </div>
 
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 bg-slate-950/40 p-4 rounded-xl border border-slate-800/60">
@@ -2187,8 +2202,130 @@ export const AdminDashboardPage: React.FC = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
-  );
-};
+
+      {/* MODAL AUDITORIA DE PEDIDO DE CAMPANHA */}
+      <Dialog open={isRequestDetailsOpen} onOpenChange={setIsRequestDetailsOpen}>
+        <DialogContent className="bg-slate-900 border-slate-800 text-white max-w-xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-base font-bold flex items-center gap-2">
+              <Eye className="w-4 h-4 text-indigo-400" />
+              Auditoria de Pedido de Campanha
+            </DialogTitle>
+            <DialogDescription className="text-xs text-slate-400">
+              Detalhes completos e dados do solicitante para verificação.
+            </DialogDescription>
+          </DialogHeader>
+
+          {selectedRequest && (
+            <div className="space-y-4 py-2 text-xs">
+              <div className="bg-slate-950/60 p-3.5 rounded-lg border border-slate-800/80 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-400 font-medium">Status Atual:</span>
+                  <Badge
+                    className={`text-[10px] uppercase ${
+                      selectedRequest.status === "pendente"
+                        ? "bg-amber-500/10 text-amber-400 border-amber-500/30"
+                        : selectedRequest.status === "aprovada"
+                        ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30"
+                        : "bg-rose-500/10 text-rose-400 border-rose-500/30"
+                    }`}
+                  >
+                    {selectedRequest.status}
+                  </Badge>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-400 font-medium">Tipo:</span>
+                  <span className="text-slate-200 font-mono uppercase">
+                    {selectedRequest.type === 'afiliados' ? 'Afiliados' : 'Monetização Coletiva'}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-400 font-medium">Data do Pedido:</span>
+                  <span className="text-slate-300">{new Date(selectedRequest.created_at).toLocaleString('pt-AO')}</span>
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <span className="text-slate-400 font-semibold uppercase tracking-wider text-[10px]">Título da Proposta</span>
+                <p className="text-sm font-bold text-white bg-slate-950 p-2.5 rounded border border-slate-800">{selectedRequest.title}</p>
+              </div>
+
+              <div className="space-y-1.5">
+                <span className="text-slate-400 font-semibold uppercase tracking-wider text-[10px]">Objetivo</span>
+                <p className="text-slate-200 bg-slate-950 p-2.5 rounded border border-slate-800">{selectedRequest.objective}</p>
+              </div>
+
+              <div className="space-y-1.5">
+                <span className="text-slate-400 font-semibold uppercase tracking-wider text-[10px]">Descrição Detalhada</span>
+                <p className="text-slate-300 bg-slate-950 p-3 rounded border border-slate-800 whitespace-pre-line leading-relaxed">{selectedRequest.description}</p>
+              </div>
+
+              {selectedRequest.additional_information && (
+                <div className="space-y-1.5">
+                  <span className="text-slate-400 font-semibold uppercase tracking-wider text-[10px]">Informações Adicionais</span>
+                  <p className="text-slate-300 bg-slate-950 p-3 rounded border border-slate-800">{selectedRequest.additional_information}</p>
+                </div>
+              )}
+
+              <div className="bg-slate-950/80 p-3.5 rounded-lg border border-slate-800 space-y-2">
+                <span className="text-indigo-400 font-semibold uppercase tracking-wider text-[10px]">Dados do Solicitante</span>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px] text-slate-300 pt-1">
+                  <div><span className="text-slate-500">Nome:</span> {selectedRequest.profiles?.name || "N/D"}</div>
+                  <div><span className="text-slate-500">E-mail:</span> {selectedRequest.profiles?.email || "N/D"}</div>
+                  <div><span className="text-slate-500">Telefone:</span> {selectedRequest.profiles?.phone || "N/D"}</div>
+                  <div><span className="text-slate-500">País:</span> {selectedRequest.profiles?.country || "Angola"}</div>
+                  {selectedRequest.profiles?.tiktok && <div><span className="text-slate-500">TikTok:</span> @{selectedRequest.profiles.tiktok}</div>}
+                  {selectedRequest.profiles?.instagram && <div><span className="text-slate-500">Instagram:</span> @{selectedRequest.profiles.instagram}</div>}
+                </div>
+              </div>
+            </div>
+          )}
+
+          <DialogFooter className="gap-2">
+            {selectedRequest?.status === "pendente" && (
+              <div className="flex gap-2 w-full">
+                <Button
+                  onClick={async () => {
+                    await handleUpdateCampaignRequestStatus(selectedRequest.id, "aprovada");
+                    setIsRequestDetailsOpen(false);
+                  }}
+                  className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white text-xs h-8"
+                >
+                  Aprovar Pedido
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={async () => {
+                    await handleUpdateCampaignRequestStatus(selectedRequest.id, "rejeitada");
+                    setIsRequestDetailsOpen(false);
+                  }}
+                  className="flex-1 border-rose-800 text-rose-400 hover:bg-rose-950 text-xs h-8"
+                >
+                  Rejeitar Pedido
+                </Button>
+              </div>
+            )}
+            {selectedRequest?.status === "aprovada" && (
+              <Button
+                onClick={() => {
+                  setIsRequestDetailsOpen(false);
+                  openCreateCampaignWithData(selectedRequest);
+                }}
+                className="w-full bg-sky-600 hover:bg-sky-500 text-white text-xs h-8 gap-1.5"
+              >
+                <PlusCircle className="w-3.5 h-3.5" />
+                Criar Campanha a partir deste Pedido
+              </Button>
+            )}
+            <Button
+              variant="outline"
+              onClick={() => setIsRequestDetailsOpen(false)}
+              className="border-slate-800 text-slate-300 hover:bg-slate-800 text-xs h-8"
+            >
+              Fechar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
 export default AdminDashboardPage;
