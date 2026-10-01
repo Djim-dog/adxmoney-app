@@ -38,7 +38,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 export const AdminDashboardPage: React.FC = () => {
   const { user, profile, signOut } = useAuth();
   const [activeSection, setActiveSection] = useState<
-    "dashboard" | "users" | "campaigns" | "campaignRequests" | "participations" | "affiliates" | "withdrawals" | "history" | "settings"
+    "dashboard" | "users" | "campaigns" | "campaignRequests" | "participations" | "affiliates" | "withdrawals" | "history" | "settings" | "community"
   >("dashboard");
 
   // Dados reais
@@ -55,6 +55,7 @@ export const AdminDashboardPage: React.FC = () => {
     pendingWithdrawals: 0,
     pendingWithdrawalAmount: 0,
     pendingCampaignRequests: 0,
+    activeCommunityTasks: 0,
   });
 
   const [usersList, setUsersList] = useState<any[]>([]);
@@ -64,10 +65,14 @@ export const AdminDashboardPage: React.FC = () => {
   const [assignmentsList, setAssignmentsList] = useState<any[]>([]);
   const [affiliatesList, setAffiliatesList] = useState<any[]>([]);
   const [activityLogs, setActivityLogs] = useState<any[]>([]);
+  const [communityTasksList, setCommunityTasksList] = useState<any[]>([]);
+  const [communityReports, setCommunityReports] = useState<any[]>([]);
+  const [communitySettings, setCommunitySettings] = useState<any>(null);
 
   // Modais de Criação
   const [isCreateUserOpen, setIsCreateUserOpen] = useState(false);
   const [isEditUserOpen, setIsEditUserOpen] = useState(false);
+  const [isCreateCommunityTaskOpen, setIsCreateCommunityTaskOpen] = useState(false);
   const [selectedEditUser, setSelectedEditUser] = useState<any | null>(null);
   const [editName, setEditName] = useState("");
   const [editPhone, setEditPhone] = useState("");
@@ -217,6 +222,31 @@ export const AdminDashboardPage: React.FC = () => {
 
       const pendingCR = (requestsData || []).filter((r: any) => r.status === "pendente").length;
 
+      // 8. Tarefas Comunitárias
+      const { data: ctData } = await supabase
+        .from("community_tasks")
+        .select("*")
+        .order("created_at", { ascending: false });
+      const cTasks = ctData || [];
+      setCommunityTasksList(cTasks);
+
+      // 9. Denúncias Comunitárias
+      const { data: repData } = await supabase
+        .from("task_reports")
+        .select("*, community_tasks(platform, task_type, profile_url), profiles:user_id(name, email)")
+        .order("created_at", { ascending: false });
+      setCommunityReports(repData || []);
+
+      // 10. Configurações Comunitárias
+      const { data: settingsData } = await supabase
+        .from("community_settings")
+        .select("*");
+      if (settingsData) {
+        const settingsMap: any = {};
+        settingsData.forEach(s => settingsMap[s.key] = s.value);
+        setCommunitySettings(settingsMap);
+      }
+
       setStats({
         totalUsers: totalU,
         activeUsers: activeU,
@@ -229,6 +259,7 @@ export const AdminDashboardPage: React.FC = () => {
         pendingWithdrawals: pendingWCount,
         pendingWithdrawalAmount: pendingWAmount,
         pendingCampaignRequests: pendingCR,
+        activeCommunityTasks: cTasks.filter(t => t.status === 'active').length,
       });
     } catch (err) {
       console.error("[AdminDashboard] Erro ao carregar dados:", err);

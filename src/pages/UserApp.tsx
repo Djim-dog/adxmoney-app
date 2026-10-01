@@ -35,6 +35,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "sonner";
 
 import { UserCampaignsHub } from "@/components/user/UserCampaignsHub";
+import { CommunityTasksSection } from "@/components/user/CommunityTasksSection";
+import {
+  Tiktok,
+  Instagram as InstagramIcon,
+  Youtube as YoutubeIcon
+} from "lucide-react";
 
 export default function UserAppPage() {
   const { user, profile, signOut, refreshProfile } = useAuth();
@@ -68,6 +74,7 @@ export default function UserAppPage() {
   }, [user]);
 
   const [activeTab, setActiveTab] = useState<"home" | "tasks" | "campaigns" | "wallet" | "account">("home");
+  const [tasksSubTab, setTasksSubTab] = useState<"financial" | "community">("financial");
 
   const [loading, setLoading] = useState(false);
   const [wallet, setWallet] = useState<{ id: string; balance: number; reserved_balance: number } | null>(null);
@@ -81,6 +88,9 @@ export default function UserAppPage() {
   const [profileName, setProfileName] = useState("");
   const [profilePhone, setProfilePhone] = useState("");
   const [profileLink, setProfileLink] = useState("");
+  const [profileTiktok, setProfileTiktok] = useState("");
+  const [profileInstagram, setProfileInstagram] = useState("");
+  const [profileYoutube, setProfileYoutube] = useState("");
   const [updatingProfile, setUpdatingProfile] = useState(false);
 
   // Withdrawal form
@@ -97,6 +107,9 @@ export default function UserAppPage() {
       setProfileName(profile.name || "");
       setProfilePhone(profile.phone || "");
       setProfileLink(profile.primary_link || "");
+      setProfileTiktok(profile.tiktok || "");
+      setProfileInstagram(profile.instagram || "");
+      setProfileYoutube(profile.youtube || "");
       setWithdrawHolder(profile.name || "");
       setWithdrawPhone(profile.phone || "");
     }
@@ -174,6 +187,9 @@ export default function UserAppPage() {
           name: profileName.trim(),
           phone: profilePhone.trim(),
           primary_link: profileLink.trim(),
+          tiktok: profileTiktok.trim(),
+          instagram: profileInstagram.trim(),
+          youtube: profileYoutube.trim(),
           updated_at: new Date().toISOString(),
         })
         .eq("id", user.id);
@@ -374,47 +390,72 @@ export default function UserAppPage() {
         {/* ABA: TAREFAS */}
         {activeTab === "tasks" && (
           <div className="space-y-5 animate-in slide-in-from-right-4 duration-300">
-            <div>
-              <h2 className="text-xl font-extrabold text-white">Tarefas Operacionais</h2>
-              <p className="text-xs text-slate-400 mt-1">Execute as atividades para aumentar o seu saldo.</p>
+            <div className="flex bg-slate-900 p-1 rounded-xl border border-slate-800">
+              <button
+                onClick={() => setTasksSubTab("financial")}
+                className={`flex-1 py-2 text-[10px] font-bold rounded-lg transition-all ${
+                  tasksSubTab === "financial" ? "bg-indigo-600 text-white shadow-lg" : "text-slate-500 hover:text-slate-300"
+                }`}
+              >
+                Financeiras
+              </button>
+              <button
+                onClick={() => setTasksSubTab("community")}
+                className={`flex-1 py-2 text-[10px] font-bold rounded-lg transition-all ${
+                  tasksSubTab === "community" ? "bg-indigo-600 text-white shadow-lg" : "text-slate-500 hover:text-slate-300"
+                }`}
+              >
+                Comunitárias
+              </button>
             </div>
 
-            {campaigns.length === 0 ? (
-              <Card className="bg-slate-900 border-slate-800 border-dashed p-10 text-center">
-                <Layers className="w-10 h-10 text-slate-700 mx-auto mb-3" />
-                <p className="text-xs text-slate-500">Sem tarefas atribuídas no momento. Aguarde liberação do administrador.</p>
-              </Card>
-            ) : (
+            {tasksSubTab === "financial" ? (
               <div className="space-y-4">
-                {campaigns.map((c) => (
-                  <Card key={c.id} className="bg-slate-900 border-slate-800 overflow-hidden">
-                    <CardHeader className="pb-3">
-                      <div className="flex justify-between items-start mb-2">
-                        <Badge variant="outline" className="text-[9px] uppercase border-slate-700 text-slate-400">
-                          {c.platform}
-                        </Badge>
-                        <span className="text-xs font-black text-emerald-400 font-mono">
-                          +{c.reward_amount.toLocaleString()} Kz
-                        </span>
-                      </div>
-                      <CardTitle className="text-sm font-bold text-white">{c.title}</CardTitle>
-                    </CardHeader>
-                    <CardContent className="text-xs text-slate-400 pb-4">
-                      {c.description}
-                    </CardContent>
-                    <CardFooter className="bg-slate-950/50 p-3 border-t border-slate-800 flex justify-between items-center">
-                      <Badge className={c.assignment_status === 'COMPLETED' ? 'bg-emerald-500/10 text-emerald-400 border-none' : 'bg-amber-500/10 text-amber-400 border-none'}>
-                        {c.assignment_status === 'COMPLETED' ? 'Concluída' : 'Pendente'}
-                      </Badge>
-                      <Button size="sm" className="h-7 text-[10px] bg-indigo-600 hover:bg-indigo-500" asChild>
-                        <a href={c.target_url} target="_blank" rel="noreferrer">
-                          Abrir Tarefa <ExternalLink className="w-3 h-3 ml-1" />
-                        </a>
-                      </Button>
-                    </CardFooter>
+                <div>
+                  <h2 className="text-xl font-extrabold text-white">Tarefas Operacionais</h2>
+                  <p className="text-xs text-slate-400 mt-1">Execute as atividades para aumentar o seu saldo.</p>
+                </div>
+
+                {campaigns.length === 0 ? (
+                  <Card className="bg-slate-900 border-slate-800 border-dashed p-10 text-center">
+                    <Layers className="w-10 h-10 text-slate-700 mx-auto mb-3" />
+                    <p className="text-xs text-slate-500">Sem tarefas financeiras atribuídas no momento.</p>
                   </Card>
-                ))}
+                ) : (
+                  <div className="space-y-4">
+                    {campaigns.map((c) => (
+                      <Card key={c.id} className="bg-slate-900 border-slate-800 overflow-hidden">
+                        <CardHeader className="pb-3">
+                          <div className="flex justify-between items-start mb-2">
+                            <Badge variant="outline" className="text-[9px] uppercase border-slate-700 text-slate-400">
+                              {c.platform}
+                            </Badge>
+                            <span className="text-xs font-black text-emerald-400 font-mono">
+                              +{c.reward_amount.toLocaleString()} Kz
+                            </span>
+                          </div>
+                          <CardTitle className="text-sm font-bold text-white">{c.title}</CardTitle>
+                        </CardHeader>
+                        <CardContent className="text-xs text-slate-400 pb-4">
+                          {c.description}
+                        </CardContent>
+                        <CardFooter className="bg-slate-950/50 p-3 border-t border-slate-800 flex justify-between items-center">
+                          <Badge className={c.assignment_status === 'COMPLETED' ? 'bg-emerald-500/10 text-emerald-400 border-none' : 'bg-amber-500/10 text-amber-400 border-none'}>
+                            {c.assignment_status === 'COMPLETED' ? 'Concluída' : 'Pendente'}
+                          </Badge>
+                          <Button size="sm" className="h-7 text-[10px] bg-indigo-600 hover:bg-indigo-500" asChild>
+                            <a href={c.target_url} target="_blank" rel="noreferrer">
+                              Abrir Tarefa <ExternalLink className="w-3 h-3 ml-1" />
+                            </a>
+                          </Button>
+                        </CardFooter>
+                      </Card>
+                    ))}
+                  </div>
+                )}
               </div>
+            ) : (
+              <CommunityTasksSection />
             )}
           </div>
         )}
@@ -651,11 +692,48 @@ export default function UserAppPage() {
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <Label className="text-[10px] uppercase font-bold text-slate-500">Rede Social Principal</Label>
-                    <Input 
-                      value={profileLink} 
+                    <Label className="text-[10px] uppercase font-bold text-slate-500">TikTok Handle</Label>
+                    <div className="relative">
+                      <Tiktok className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                      <Input
+                        value={profileTiktok}
+                        onChange={(e) => setProfileTiktok(e.target.value)}
+                        placeholder="@usuario"
+                        className="bg-slate-950 border-slate-800 text-sm h-11 pl-10"
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-[10px] uppercase font-bold text-slate-500">Instagram Handle</Label>
+                    <div className="relative">
+                      <InstagramIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                      <Input
+                        value={profileInstagram}
+                        onChange={(e) => setProfileInstagram(e.target.value)}
+                        placeholder="@usuario"
+                        className="bg-slate-950 border-slate-800 text-sm h-11 pl-10"
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-[10px] uppercase font-bold text-slate-500">Canal YouTube</Label>
+                    <div className="relative">
+                      <YoutubeIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                      <Input
+                        value={profileYoutube}
+                        onChange={(e) => setProfileYoutube(e.target.value)}
+                        placeholder="URL ou @canal"
+                        className="bg-slate-950 border-slate-800 text-sm h-11 pl-10"
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-1.5 pt-2">
+                    <Label className="text-[10px] uppercase font-bold text-slate-500 text-indigo-400">Rede Social Principal (Geral)</Label>
+                    <Input
+                      value={profileLink}
                       onChange={(e) => setProfileLink(e.target.value)}
-                      className="bg-slate-950 border-slate-800 text-sm h-11" 
+                      placeholder="Link de perfil principal"
+                      className="bg-slate-950 border-slate-800 text-sm h-11"
                     />
                   </div>
                 </CardContent>
