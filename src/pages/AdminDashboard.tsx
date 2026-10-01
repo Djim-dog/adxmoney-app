@@ -1825,69 +1825,229 @@ export const AdminDashboardPage: React.FC = () => {
               </Select>
             </div>
 
-            <div className="space-y-1">
-              <Label className="text-xs text-slate-300">Título *</Label>
-              <Input
-                placeholder="Ex: Seguir perfil no TikTok"
-                value={newTitle}
-                onChange={(e) => setNewTitle(e.target.value)}
-                className="bg-slate-950 border-slate-800 text-slate-100 text-xs"
-                required
-              />
-            </div>
-            <div className="space-y-1">
-              <Label className="text-xs text-slate-300">Plataforma</Label>
-              <Select value={newPlatform} onValueChange={setNewPlatform}>
-                <SelectTrigger className="bg-slate-950 border-slate-800 text-slate-100 text-xs">
-                  <SelectValue placeholder="Selecione" />
-                </SelectTrigger>
-                <SelectContent className="bg-slate-900 border-slate-800 text-slate-100 text-xs">
-                  <SelectItem value="TikTok">TikTok</SelectItem>
-                  <SelectItem value="Instagram">Instagram</SelectItem>
-                  <SelectItem value="YouTube">YouTube</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-1">
-              <Label className="text-xs text-slate-300">Link Alvo *</Label>
-              <Input
-                placeholder="https://tiktok.com/@..."
-                value={newTargetUrl}
-                onChange={(e) => setNewTargetUrl(e.target.value)}
-                className="bg-slate-950 border-slate-800 text-slate-100 text-xs"
-                required
-              />
-            </div>
-            <div className="space-y-1">
-              <Label className="text-xs text-slate-300">Recompensa (Kz) *</Label>
-              <Input
-                type="number"
-                min="1"
-                placeholder="150"
-                value={newReward}
-                onChange={(e) => setNewReward(e.target.value)}
-                className="bg-slate-950 border-slate-800 text-slate-100 text-xs"
-                required
-              />
-            </div>
-            <div className="space-y-1">
-              <Label className="text-xs text-slate-300">Descrição</Label>
-              <Input
-                placeholder="Resumo da tarefa"
-                value={newDesc}
-                onChange={(e) => setNewDesc(e.target.value)}
-                className="bg-slate-950 border-slate-800 text-slate-100 text-xs"
-              />
-            </div>
-            <div className="space-y-1">
-              <Label className="text-xs text-slate-300">Instruções</Label>
-              <Textarea
-                placeholder="O que o usuário deve fazer..."
-                value={newInstructions}
-                onChange={(e) => setNewInstructions(e.target.value)}
-                className="bg-slate-950 border-slate-800 text-slate-100 text-xs min-h-[70px]"
-              />
-            </div>
+            {/* CAMPOS ESPECÍFICOS DE AFFILIATE */}
+            {newType === "affiliate" && (
+              <>
+                <div className="space-y-1">
+                  <Label className="text-xs text-slate-300">Título da Campanha *</Label>
+                  <Input
+                    placeholder="Ex: Seguir perfil no TikTok"
+                    value={newTitle}
+                    onChange={(e) => setNewTitle(e.target.value)}
+                    className="bg-slate-950 border-slate-800 text-slate-100 text-xs"
+                    required
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="space-y-1">
+                    <Label className="text-xs text-slate-300">Plataforma *</Label>
+                    <Select value={newPlatform} onValueChange={setNewPlatform}>
+                      <SelectTrigger className="bg-slate-950 border-slate-800 text-slate-100 text-xs">
+                        <SelectValue placeholder="Selecione" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-slate-900 border-slate-800 text-slate-100 text-xs">
+                        <SelectItem value="TikTok">TikTok</SelectItem>
+                        <SelectItem value="Instagram">Instagram</SelectItem>
+                        <SelectItem value="YouTube">YouTube</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-1">
+                    <Label className="text-xs text-slate-300">Ação *</Label>
+                    <Select value={newActionType} onValueChange={setNewActionType}>
+                      <SelectTrigger className="bg-slate-950 border-slate-800 text-slate-100 text-xs">
+                        <SelectValue placeholder="Selecione" />
+                      </SelectTrigger>
+                      <SelectContent className="bg-slate-900 border-slate-800 text-slate-100 text-xs">
+                        <SelectItem value="follow">Seguir / Inscrever-se</SelectItem>
+                        <SelectItem value="like">Curtir / Like</SelectItem>
+                        <SelectItem value="comment">Comentar</SelectItem>
+                        <SelectItem value="share">Compartilhar</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <Label className="text-xs text-slate-300">Conta / Perfil Alvo *</Label>
+                  <Input
+                    placeholder="Ex: @adxmoney ou Nome do Canal"
+                    value={newTargetAccount}
+                    onChange={(e) => setNewTargetAccount(e.target.value)}
+                    className="bg-slate-950 border-slate-800 text-slate-100 text-xs"
+                    required
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <Label className="text-xs text-slate-300">Link da Conta Alvo *</Label>
+                  <Input
+                    placeholder="https://tiktok.com/@..."
+                    value={newTargetUrl}
+                    onChange={(e) => setNewTargetUrl(e.target.value)}
+                    className="bg-slate-950 border-slate-800 text-slate-100 text-xs"
+                    required
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="space-y-1">
+                    <Label className="text-xs text-slate-300">Meta / Qtd Participantes *</Label>
+                    <Input
+                      type="number"
+                      min="1"
+                      placeholder="100"
+                      value={newMaxParticipants}
+                      onChange={(e) => setNewMaxParticipants(e.target.value)}
+                      className="bg-slate-950 border-slate-800 text-slate-100 text-xs"
+                      required
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <Label className="text-xs text-slate-300">Recompensa (Kz) *</Label>
+                    <Input
+                      type="number"
+                      min="1"
+                      placeholder="150"
+                      value={newReward}
+                      onChange={(e) => setNewReward(e.target.value)}
+                      className="bg-slate-950 border-slate-800 text-slate-100 text-xs"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <Label className="text-xs text-slate-300">WhatsApp / Telefone do Solicitante</Label>
+                  <Input
+                    placeholder="Ex: +244923456789"
+                    value={newRequesterPhone}
+                    onChange={(e) => setNewRequesterPhone(e.target.value)}
+                    className="bg-slate-950 border-slate-800 text-slate-100 text-xs"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="space-y-1">
+                    <Label className="text-xs text-slate-300">Início do Período</Label>
+                    <Input
+                      type="datetime-local"
+                      value={newStartAt}
+                      onChange={(e) => setNewStartAt(e.target.value)}
+                      className="bg-slate-950 border-slate-800 text-slate-100 text-xs"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs text-slate-300">Fim do Período</Label>
+                    <Input
+                      type="datetime-local"
+                      value={newEndAt}
+                      onChange={(e) => setNewEndAt(e.target.value)}
+                      className="bg-slate-950 border-slate-800 text-slate-100 text-xs"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <Label className="text-xs text-slate-300">Instruções aos Participantes</Label>
+                  <Textarea
+                    placeholder="Instruções específicas para a conclusão da ação..."
+                    value={newInstructions}
+                    onChange={(e) => setNewInstructions(e.target.value)}
+                    className="bg-slate-950 border-slate-800 text-slate-100 text-xs min-h-[60px]"
+                  />
+                </div>
+              </>
+            )}
+
+            {/* CAMPOS ESPECÍFICOS DE COLLECTIVE */}
+            {newType === "collective" && (
+              <>
+                <div className="space-y-1">
+                  <Label className="text-xs text-slate-300">Título do Projeto Coletivo *</Label>
+                  <Input
+                    placeholder="Ex: Campanha de Alcance Coletivo"
+                    value={newTitle}
+                    onChange={(e) => setNewTitle(e.target.value)}
+                    className="bg-slate-950 border-slate-800 text-slate-100 text-xs"
+                    required
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <Label className="text-xs text-slate-300">Objetivo da Monetização Coletiva *</Label>
+                  <Input
+                    placeholder="Ex: Atingir 1.000 inscritos para monetização"
+                    value={newObjective}
+                    onChange={(e) => setNewObjective(e.target.value)}
+                    className="bg-slate-950 border-slate-800 text-slate-100 text-xs"
+                    required
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <Label className="text-xs text-slate-300">Link Alvo *</Label>
+                  <Input
+                    placeholder="https://..."
+                    value={newTargetUrl}
+                    onChange={(e) => setNewTargetUrl(e.target.value)}
+                    className="bg-slate-950 border-slate-800 text-slate-100 text-xs"
+                    required
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="space-y-1">
+                    <Label className="text-xs text-slate-300">Meta de Utilizadores *</Label>
+                    <Input
+                      type="number"
+                      min="1"
+                      placeholder="500"
+                      value={newMaxParticipants}
+                      onChange={(e) => setNewMaxParticipants(e.target.value)}
+                      className="bg-slate-950 border-slate-800 text-slate-100 text-xs"
+                      required
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <Label className="text-xs text-slate-300">Recompensa (Kz) *</Label>
+                    <Input
+                      type="number"
+                      min="1"
+                      placeholder="200"
+                      value={newReward}
+                      onChange={(e) => setNewReward(e.target.value)}
+                      className="bg-slate-950 border-slate-800 text-slate-100 text-xs"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <Label className="text-xs text-slate-300">Descrição do Projeto</Label>
+                  <Input
+                    placeholder="Resumo explicativo do projeto coletivo"
+                    value={newDesc}
+                    onChange={(e) => setNewDesc(e.target.value)}
+                    className="bg-slate-950 border-slate-800 text-slate-100 text-xs"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <Label className="text-xs text-slate-300">Regras & Diretrizes</Label>
+                  <Textarea
+                    placeholder="Regras de participação coletiva..."
+                    value={newInstructions}
+                    onChange={(e) => setNewInstructions(e.target.value)}
+                    className="bg-slate-950 border-slate-800 text-slate-100 text-xs min-h-[60px]"
+                  />
+                </div>
+              </>
+            )}
             <div className="pt-2 flex gap-2">
               <Button
                 type="button"
@@ -2192,7 +2352,16 @@ export const AdminDashboardPage: React.FC = () => {
             )}
           </div>
 
-          <DialogFooter>
+          <DialogFooter className="gap-2 sm:justify-between items-center">
+            {selectedOperationalCampaign?.type === "affiliate" && (
+              <Button
+                onClick={() => handlePrepareWhatsAppAffiliate(selectedOperationalCampaign, operationalParticipants)}
+                className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs h-8 gap-1.5 shadow-sm shadow-emerald-900/30"
+              >
+                <MessageSquare className="w-3.5 h-3.5" />
+                Preparar envio ao solicitante
+              </Button>
+            )}
             <Button
               variant="outline"
               onClick={() => setIsOperationalListOpen(false)}
