@@ -31,7 +31,7 @@ export default function AccountSetup() {
   useEffect(() => {
     if (profile) {
       if (profile.first_login === false) {
-        navigate("/dashboard", { replace: true });
+        navigate("/app", { replace: true });
         return;
       }
       setName(profile.name || "");
