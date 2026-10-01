@@ -225,9 +225,9 @@ export default function UserAppPage() {
         p_amount: amount,
         p_method: withdrawMethod.toUpperCase(),
         p_payment_details: {
+          titular: withdrawMethod === 'iban' ? withdrawHolder : (user?.user_metadata?.name || null),
           iban: withdrawMethod === 'iban' ? withdrawIban : null,
-          holder: withdrawMethod === 'iban' ? withdrawHolder : null,
-          phone: (withdrawMethod === 'express' || withdrawMethod === 'unitel') ? withdrawPhone : null,
+          telefone: (withdrawMethod === 'express' || withdrawMethod === 'unitel') ? withdrawPhone : null,
           pix: withdrawMethod === 'pix' ? withdrawPix : null
         }
       });
@@ -306,7 +306,7 @@ export default function UserAppPage() {
                   Pendente: {(wallet?.reserved_balance || 0).toLocaleString("pt-AO")} Kz
                 </div>
                 <Button
-                  onClick={() => setIsWithdrawModalOpen(true)}
+                  onClick={() => setActiveTab("wallet")}
                   className="bg-white text-indigo-700 hover:bg-indigo-50 text-xs h-8 px-4 font-bold rounded-full shadow-lg"
                 >
                   Levantar
