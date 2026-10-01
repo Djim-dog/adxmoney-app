@@ -939,9 +939,22 @@ const Index = () => {
                                 </Badge>
                               </div>
                               <p className="text-xs text-slate-400">
-                                Método: <strong>{w.method}</strong> • Titular: <strong>{w.payment_details?.titular || "N/A"}</strong>
-                                {w.payment_details?.telefone && ` • Tel: ${w.payment_details.telefone}`}
-                                {w.payment_details?.iban && ` • IBAN: ${w.payment_details.iban}`}
+                                Método: <strong>{w.method}</strong>
+                                {(w.payment_details?.titular || w.payment_details?.holder) && (
+                                  <span> • Titular: <strong>{w.payment_details?.titular || w.payment_details?.holder}</strong></span>
+                                )}
+                                {(w.payment_details?.telefone || w.payment_details?.phone) && (
+                                  <span> • Tel/Ref: <strong>{w.payment_details?.telefone || w.payment_details?.phone}</strong></span>
+                                )}
+                                {w.payment_details?.iban && (
+                                  <span> • IBAN: <strong>{w.payment_details.iban}</strong></span>
+                                )}
+                                {w.payment_details?.pix && (
+                                  <span> • PIX: <strong>{w.payment_details.pix}</strong></span>
+                                )}
+                                {w.payment_details?.target && (
+                                  <span> • Destino: <strong>{w.payment_details.target}</strong></span>
+                                )}
                               </p>
                               <p className="text-[10px] text-slate-500">
                                 Solicitado em: {new Date(w.requested_at).toLocaleString("pt-AO")}
