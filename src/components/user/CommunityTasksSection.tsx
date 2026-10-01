@@ -245,7 +245,7 @@ export const CommunityTasksSection: React.FC = () => {
 
       {/* Modal de Denúncia */}
       <Dialog open={!!reportingTask} onOpenChange={(open) => !open && setReportingTask(null)}>
-        <DialogContent className="bg-slate-900 border-slate-800 text-slate-100 sm:rounded-2xl">
+        <DialogContent className="bg-slate-900 border-slate-800 text-slate-100 sm:rounded-2xl max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-base font-bold text-white flex items-center gap-2">
               <AlertCircle className="w-5 h-5 text-rose-500" />

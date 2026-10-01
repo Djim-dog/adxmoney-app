@@ -99,7 +99,7 @@ export const WithdrawalModal: React.FC<WithdrawalModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-md bg-slate-900 border-slate-800 text-slate-100 sm:rounded-2xl p-6 shadow-2xl">
+      <DialogContent className="max-w-md bg-slate-900 border-slate-800 text-slate-100 sm:rounded-2xl p-6 shadow-2xl max-h-[85vh] overflow-y-auto">
         <DialogHeader className="text-left space-y-2">
           <div className="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 mb-1">
             <ArrowUpRight className="w-6 h-6" />

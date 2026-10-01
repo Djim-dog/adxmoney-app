@@ -1089,7 +1089,7 @@ const Index = () => {
 
       {/* MODAL: CONFIGURAÇÕES AVANÇADAS (ADMIN) */}
       <Dialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
-        <DialogContent className="max-w-md bg-slate-900 border-slate-800 text-slate-100 sm:rounded-2xl p-6">
+        <DialogContent className="max-w-md bg-slate-900 border-slate-800 text-slate-100 sm:rounded-2xl p-6 max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <div className="w-12 h-12 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 mb-2">
               <Settings className="w-6 h-6" />
@@ -1155,7 +1155,7 @@ const Index = () => {
 
       {/* MODAL: CRIAR USUÁRIO (ADMIN) */}
       <Dialog open={isCreateUserOpen} onOpenChange={setIsCreateUserOpen}>
-        <DialogContent className="max-w-md bg-slate-900 border-slate-800 text-slate-100 sm:rounded-2xl p-6">
+        <DialogContent className="max-w-md bg-slate-900 border-slate-800 text-slate-100 sm:rounded-2xl p-6 max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-lg font-bold text-white">Criar Novo Usuário</DialogTitle>
             <DialogDescription className="text-xs text-slate-400">
@@ -1241,7 +1241,7 @@ const Index = () => {
 
       {/* MODAL: CRIAR CAMPANHA (ADMIN) */}
       <Dialog open={isCreateCampaignOpen} onOpenChange={setIsCreateCampaignOpen}>
-        <DialogContent className="max-w-md bg-slate-900 border-slate-800 text-slate-100 sm:rounded-2xl p-6">
+        <DialogContent className="max-w-md bg-slate-900 border-slate-800 text-slate-100 sm:rounded-2xl p-6 max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-lg font-bold text-white">Criar Nova Campanha</DialogTitle>
             <DialogDescription className="text-xs text-slate-400">
@@ -1338,7 +1338,7 @@ const Index = () => {
 
       {/* MODAL: ATRIBUIR CAMPANHA A USUÁRIOS (ADMIN) */}
       <Dialog open={isAssignCampaignOpen} onOpenChange={setIsAssignCampaignOpen}>
-        <DialogContent className="max-w-md bg-slate-900 border-slate-800 text-slate-100 sm:rounded-2xl p-6">
+        <DialogContent className="max-w-md bg-slate-900 border-slate-800 text-slate-100 sm:rounded-2xl p-6 max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-lg font-bold text-white">Atribuir Campanha a Usuários</DialogTitle>
             <DialogDescription className="text-xs text-slate-400">

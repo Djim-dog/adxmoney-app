@@ -90,7 +90,7 @@ export const CampaignRequestModal: React.FC<CampaignRequestModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-md bg-slate-900 border-slate-800 text-slate-100 sm:rounded-2xl p-6 shadow-2xl">
+      <DialogContent className="max-w-md bg-slate-900 border-slate-800 text-slate-100 sm:rounded-2xl p-6 shadow-2xl max-h-[85vh] overflow-y-auto">
         <DialogHeader className="space-y-1.5">
           <div className="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 mb-1">
             <Megaphone className="w-5 h-5" />

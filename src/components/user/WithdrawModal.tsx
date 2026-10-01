@@ -82,7 +82,7 @@ export const WithdrawModal: React.FC<WithdrawModalProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-slate-900 border-slate-800 text-slate-100 sm:max-w-[425px]">
+      <DialogContent className="bg-slate-900 border-slate-800 text-slate-100 sm:max-w-[425px] max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-base text-white flex items-center gap-2">
             <ArrowUpRight className="w-5 h-5 text-emerald-400" /> Solicitar Saque

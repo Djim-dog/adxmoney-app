@@ -61,7 +61,7 @@ export const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={() => {}}>
-      <DialogContent className="max-w-sm bg-slate-900 border-slate-800 text-slate-100 sm:rounded-2xl p-6">
+      <DialogContent className="max-w-sm bg-slate-900 border-slate-800 text-slate-100 sm:rounded-2xl p-6 max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <div className="w-10 h-10 rounded-full bg-amber-500/10 border border-amber-500/20 flex items-center justify-center mb-2 mx-auto">
             <Lock className="w-5 h-5 text-amber-500" />

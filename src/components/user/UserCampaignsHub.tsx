@@ -271,7 +271,7 @@ export const UserCampaignsHub: React.FC<UserCampaignsHubProps> = ({ userId }) =>
         open={viewCampaignsType !== null}
         onOpenChange={(open) => !open && setViewCampaignsType(null)}
       >
-        <DialogContent className="max-w-md bg-slate-900 border-slate-800 text-slate-100 sm:rounded-2xl p-6">
+        <DialogContent className="max-w-md bg-slate-900 border-slate-800 text-slate-100 sm:rounded-2xl p-6 max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-base font-bold text-white flex items-center gap-2">
               {viewCampaignsType === "afiliados" ? (

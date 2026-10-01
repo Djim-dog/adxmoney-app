@@ -1580,7 +1580,7 @@ export const AdminDashboardPage: React.FC = () => {
       {/* MODAIS DO ADMIN */}
       {/* Modal Editar Usuário */}
       <Dialog open={isEditUserOpen} onOpenChange={setIsEditUserOpen}>
-        <DialogContent className="max-w-md bg-slate-900 border-slate-800 text-slate-100 sm:rounded-2xl p-6">
+        <DialogContent className="max-w-md bg-slate-900 border-slate-800 text-slate-100 sm:rounded-2xl p-6 max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-base font-bold text-white">Editar Dados do Utilizador</DialogTitle>
             <DialogDescription className="text-xs text-slate-400">
@@ -1709,7 +1709,7 @@ export const AdminDashboardPage: React.FC = () => {
 
       {/* Modal Criar Usuário */}
       <Dialog open={isCreateUserOpen} onOpenChange={setIsCreateUserOpen}>
-        <DialogContent className="max-w-md bg-slate-900 border-slate-800 text-slate-100 sm:rounded-2xl p-6">
+        <DialogContent className="max-w-md bg-slate-900 border-slate-800 text-slate-100 sm:rounded-2xl p-6 max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-base font-bold text-white">Criar Novo Usuário</DialogTitle>
             <DialogDescription className="text-xs text-slate-400">
@@ -1835,7 +1835,7 @@ export const AdminDashboardPage: React.FC = () => {
 
       {/* Modal Criar Campanha */}
       <Dialog open={isCreateCampaignOpen} onOpenChange={setIsCreateCampaignOpen}>
-        <DialogContent className="max-w-md bg-slate-900 border-slate-800 text-slate-100 sm:rounded-2xl p-6">
+        <DialogContent className="max-w-md bg-slate-900 border-slate-800 text-slate-100 sm:rounded-2xl p-6 max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-base font-bold text-white">Criar Nova Campanha</DialogTitle>
             <DialogDescription className="text-xs text-slate-400">
@@ -2102,7 +2102,7 @@ export const AdminDashboardPage: React.FC = () => {
 
       {/* Modal Distribuir Campanha */}
       <Dialog open={isAssignCampaignOpen} onOpenChange={setIsAssignCampaignOpen}>
-        <DialogContent className="max-w-md bg-slate-900 border-slate-800 text-slate-100 sm:rounded-2xl p-6">
+        <DialogContent className="max-w-md bg-slate-900 border-slate-800 text-slate-100 sm:rounded-2xl p-6 max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-base font-bold text-white">Distribuir Campanha</DialogTitle>
             <DialogDescription className="text-xs text-slate-400">
@@ -2182,7 +2182,7 @@ export const AdminDashboardPage: React.FC = () => {
 
             {/* Modal Gerenciar Afiliado */}
       <Dialog open={isAffiliateModalOpen} onOpenChange={setIsAffiliateModalOpen}>
-        <DialogContent className="max-w-sm bg-slate-900 border-slate-800 text-slate-100 sm:rounded-2xl p-6">
+        <DialogContent className="max-w-sm bg-slate-900 border-slate-800 text-slate-100 sm:rounded-2xl p-6 max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-base font-bold text-white">Status de Afiliado</DialogTitle>
             <DialogDescription className="text-xs text-slate-400">
@@ -2229,7 +2229,7 @@ export const AdminDashboardPage: React.FC = () => {
 
       {/* Modal Comprovativo de Criação do Usuário & Envio de Dados via WhatsApp */}
       <Dialog open={isUserCreatedSuccessOpen} onOpenChange={setIsUserCreatedSuccessOpen}>
-        <DialogContent className="max-w-md bg-slate-900 border-slate-800 text-slate-100 sm:rounded-2xl p-6">
+        <DialogContent className="max-w-md bg-slate-900 border-slate-800 text-slate-100 sm:rounded-2xl p-6 max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <div className="w-10 h-10 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mb-1 text-emerald-400 mx-auto">
               <Check className="w-5 h-5" />
