@@ -1418,37 +1418,33 @@ export const AdminDashboardPage: React.FC = () => {
             </div>
           )}
 
-          {/* SEÇÃO: SAQUES */}
+          {/* SEÇÃO: SAQUES PENDENTES */}
           {activeSection === "withdrawals" && (
             <div className="space-y-4">
               <div>
-                <h2 className="text-base font-bold text-white">Solicitações de Saque</h2>
-                <p className="text-xs text-slate-400">Validação e processamento financeiro.</p>
+                <h2 className="text-base font-bold text-white">Fila de Saques Pendentes</h2>
+                <p className="text-xs text-slate-400">Validação e processamento financeiro de pedidos pendentes.</p>
               </div>
 
               <Card className="bg-slate-900 border-slate-800">
                 <CardContent className="p-0">
-                  {withdrawalsList.length === 0 ? (
-                    <div className="text-center py-10 text-xs text-slate-500">Nenhuma solicitação de saque.</div>
+                  {withdrawalsList.filter((w) => w.status === "PENDING").length === 0 ? (
+                    <div className="text-center py-10 text-xs text-slate-500">
+                      Nenhuma solicitação de saque pendente no momento.
+                    </div>
                   ) : (
                     <div className="divide-y divide-slate-800">
-                      {withdrawalsList.map((w) => (
+                      {withdrawalsList
+                        .filter((w) => w.status === "PENDING")
+                        .map((w) => (
                         <div key={w.id} className="p-4 flex flex-col md:flex-row md:items-center justify-between gap-3 hover:bg-slate-800/30">
                           <div>
                             <div className="flex items-center gap-2">
                               <span className="text-xs font-bold text-white">
                                 {w.profiles?.name || w.profiles?.email || w.user_id}
                               </span>
-                              <Badge
-                                className={`text-[10px] ${
-                                  w.status === "PENDING"
-                                    ? "bg-amber-500/10 text-amber-400 border-amber-500/30"
-                                    : w.status === "PAID"
-                                    ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30"
-                                    : "bg-rose-500/10 text-rose-400 border-rose-500/30"
-                                }`}
-                              >
-                                {w.status}
+                              <Badge className="text-[10px] bg-amber-500/10 text-amber-400 border-amber-500/30">
+                                PENDENTE
                               </Badge>
                             </div>
                             <p className="text-xs text-slate-400 mt-1">
@@ -1475,25 +1471,23 @@ export const AdminDashboardPage: React.FC = () => {
                             <span className="text-sm font-bold font-mono text-amber-400">
                               {Number(w.amount).toLocaleString("pt-AO")} Kz
                             </span>
-                            {w.status === "PENDING" && (
-                              <div className="flex gap-1.5">
-                                <Button
-                                  size="sm"
-                                  onClick={() => handleProcessWithdrawal(w.id, "PAID")}
-                                  className="bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] h-7 px-2.5 rounded-lg"
-                                >
-                                  Pagar
-                                </Button>
-                                <Button
-                                  size="sm"
-                                  onClick={() => handleProcessWithdrawal(w.id, "REJECT")}
-                                  variant="outline"
-                                  className="border-rose-800 text-rose-400 hover:bg-rose-950/40 text-[11px] h-7 px-2.5 rounded-lg"
-                                >
-                                  Rejeitar
-                                </Button>
-                              </div>
-                            )}
+                            <div className="flex gap-1.5">
+                              <Button
+                                size="sm"
+                                onClick={() => handleProcessWithdrawal(w.id, "PAID")}
+                                className="bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] h-7 px-2.5 rounded-lg"
+                              >
+                                Pagar
+                              </Button>
+                              <Button
+                                size="sm"
+                                onClick={() => handleProcessWithdrawal(w.id, "REJECT")}
+                                variant="outline"
+                                className="border-rose-800 text-rose-400 hover:bg-rose-950/40 text-[11px] h-7 px-2.5 rounded-lg"
+                              >
+                                Rejeitar
+                              </Button>
+                            </div>
                           </div>
                         </div>
                       ))}
