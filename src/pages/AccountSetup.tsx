@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { ShieldCheck, Lock, User, Phone, Link2, Eye, EyeOff, Loader2, CheckCircle2, ArrowRight } from "lucide-react";
+import { ShieldCheck, Lock, User, Phone, Link2, Eye, EyeOff, Loader2, CheckCircle2, ArrowRight, UserPlus } from "lucide-react";
 import { toast } from "sonner";
 
 export default function AccountSetup() {
@@ -25,11 +25,11 @@ export default function AccountSetup() {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [primaryLink, setPrimaryLink] = useState("");
+  const [inviteCode, setInviteCode] = useState("");
   const [country, setCountry] = useState("Angola");
 
   useEffect(() => {
     if (profile) {
-      // Se o utilizador já concluiu o primeiro login, deve ir direto para o dashboard
       if (profile.first_login === false) {
         navigate("/dashboard", { replace: true });
         return;
@@ -84,71 +84,49 @@ export default function AccountSetup() {
       return;
     }
 
-    if (!primaryLink.trim()) {
-      toast.error("Por favor, informe o seu link principal (TikTok, Instagram ou canal).");
-      return;
-    }
-
     setLoading(true);
 
     try {
-      // 1. Atualizar a palavra-passe no Supabase Auth usando a API oficial
+      // 1. Atualizar a palavra-passe no Supabase Auth
       const { error: authError } = await supabase.auth.updateUser({
         password: password,
       });
 
       if (authError) {
-        console.error("Erro ao atualizar palavra-passe:", authError);
         toast.error(`Erro ao atualizar palavra-passe: ${authError.message}`);
         setLoading(false);
         return;
       }
 
-      // 2. Atualizar o perfil público do utilizador (garantindo first_login = false)
-      const { error: profileError } = await supabase
-        .from("profiles")
-        .update({
-          name: name.trim(),
-          phone: phone.trim(),
-          primary_link: primaryLink.trim(),
-          country: country.trim() || "Angola",
-          first_login: false,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", user?.id);
+      // 2. Chamar a RPC para atualizar perfil e bônus atômicamente
+      const { data: rpcData, error: rpcError } = await supabase.rpc('complete_account_setup', {
+        p_user_id: user?.id,
+        p_name: name.trim(),
+        p_phone: phone.trim(),
+        p_primary_link: primaryLink.trim(),
+        p_invite_code: inviteCode.trim().toUpperCase() || null
+      });
 
-      if (profileError) {
-        console.error("Erro ao atualizar dados do perfil:", profileError);
-        toast.error(`Erro ao salvar dados do perfil: ${profileError.message}`);
+      if (rpcError) {
+        console.error("Erro na RPC setup:", rpcError);
+        toast.error(`Erro ao salvar dados: ${rpcError.message}`);
         setLoading(false);
         return;
       }
 
-      // 3. Registrar auditoria no activity_logs se a tabela estiver acessível
-      try {
-        await supabase.from("activity_logs").insert({
-          user_id: user?.id,
-          action_type: "FIRST_LOGIN_COMPLETED",
-          details: {
-            step: "account_setup",
-            timestamp: new Date().toISOString(),
-            ip: "client_confirmed",
-          },
-        });
-      } catch (logErr) {
-        console.warn("Log silencioso de auditoria:", logErr);
+      const result = rpcData as { success: boolean; message: string };
+      if (!result.success) {
+        toast.error(result.message);
+        setLoading(false);
+        return;
       }
 
-      // 4. Recarregar o perfil no contexto de autenticação
       await refreshProfile();
-
-      toast.success("Configuração inicial concluída com sucesso! Bem-vindo(a) ao ADX Money.");
-
-      // 5. Redirecionar para o painel principal (/dashboard)
+      toast.success(result.message || "Configuração inicial concluída com sucesso!");
       navigate("/dashboard", { replace: true });
     } catch (err: any) {
-      console.error("Erro inesperado no setup de conta:", err);
-      toast.error(err?.message || "Ocorreu um erro ao configurar a sua conta. Tente novamente.");
+      console.error("Erro inesperado no setup:", err);
+      toast.error("Ocorreu um erro ao configurar a sua conta. Tente novamente.");
     } finally {
       setLoading(false);
     }
@@ -156,7 +134,6 @@ export default function AccountSetup() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 flex flex-col justify-center items-center px-4 py-8">
-      {/* Header / Brand */}
       <div className="max-w-md w-full mb-6 text-center">
         <img src="/logo.png" alt="ADX Money Logo" className="h-16 mx-auto mb-3" />
         <p className="text-sm text-slate-400 mt-1">Configuração Obrigatória de Primeiro Acesso</p>
@@ -168,7 +145,6 @@ export default function AccountSetup() {
             <span>Passo {step} de 2</span>
             <span>{step === 1 ? "Segurança" : "Dados Pessoais"}</span>
           </div>
-          {/* Progress bar */}
           <div className="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
             <div
               className="bg-indigo-500 h-full transition-all duration-300"
@@ -176,28 +152,18 @@ export default function AccountSetup() {
             />
           </div>
           <CardTitle className="text-xl font-bold text-white pt-2">
-            {step === 1 ? "Alterar Palavra-passe Provisória" : "Confirmar os Seus Dados"}
+            {step === 1 ? "Nova Palavra-passe" : "Confirmar os Seus Dados"}
           </CardTitle>
           <CardDescription className="text-slate-400 text-xs leading-relaxed">
             {step === 1
-              ? "Por motivos de segurança, é obrigatório definir uma nova palavra-passe pessoal antes de utilizar o painel."
-              : "Complete os seus dados para habilitar a emissão de tarefas e saques de ganhos."}
+              ? "Defina uma nova palavra-passe pessoal e segura para proteger a sua conta."
+              : "Complete os seus dados operacionais. Se tiver um código de convite, insira abaixo."}
           </CardDescription>
         </CardHeader>
 
         {step === 1 ? (
           <form onSubmit={handleNextStep}>
             <CardContent className="space-y-4 pt-2">
-              <Alert className="bg-amber-500/10 border-amber-500/20 text-amber-300 text-xs">
-                <AlertTitle className="font-semibold text-amber-200 flex items-center gap-1.5">
-                  <Lock className="w-3.5 h-3.5" />
-                  Acesso Restrito
-                </AlertTitle>
-                <AlertDescription className="text-amber-300/90 text-xs mt-1">
-                  Não é possível acessar o painel com a palavra-passe padrão atribuída pelo administrador.
-                </AlertDescription>
-              </Alert>
-
               <div className="space-y-2">
                 <Label className="text-xs text-slate-300 font-medium">Nova Palavra-passe</Label>
                 <div className="relative">
@@ -221,7 +187,7 @@ export default function AccountSetup() {
               </div>
 
               <div className="space-y-2">
-                <Label className="text-xs text-slate-300 font-medium">Confirmar Nova Palavra-passe</Label>
+                <Label className="text-xs text-slate-300 font-medium">Confirmar Palavra-passe</Label>
                 <div className="relative">
                   <Input
                     type={showConfirm ? "text" : "password"}
@@ -249,7 +215,7 @@ export default function AccountSetup() {
                 onClick={() => signOut()}
                 className="w-full sm:w-auto text-slate-400 hover:text-slate-200 hover:bg-slate-800 text-xs"
               >
-                Sair da Conta
+                Sair
               </Button>
               <Button
                 type="submit"
@@ -269,8 +235,7 @@ export default function AccountSetup() {
                   Nome Completo
                 </Label>
                 <Input
-                  type="text"
-                  placeholder="Seu nome oficial"
+                  placeholder="Seu nome"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   className="bg-slate-950/60 border-slate-700 text-white focus:border-indigo-500"
@@ -284,8 +249,7 @@ export default function AccountSetup() {
                   Telefone / WhatsApp
                 </Label>
                 <Input
-                  type="tel"
-                  placeholder="+244 9..."
+                  placeholder="+244..."
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   className="bg-slate-950/60 border-slate-700 text-white focus:border-indigo-500"
@@ -295,29 +259,29 @@ export default function AccountSetup() {
 
               <div className="space-y-2">
                 <Label className="text-xs text-slate-300 font-medium flex items-center gap-1.5">
-                  <Link2 className="w-3.5 h-3.5 text-indigo-400" />
-                  Link Principal (TikTok, Instagram ou Canal)
+                  <UserPlus className="w-3.5 h-3.5 text-emerald-400" />
+                  Código de Convite (Opcional)
                 </Label>
                 <Input
-                  type="url"
-                  placeholder="https://tiktok.com/@seu_perfil"
-                  value={primaryLink}
-                  onChange={(e) => setPrimaryLink(e.target.value)}
-                  className="bg-slate-950/60 border-slate-700 text-white focus:border-indigo-500"
-                  required
+                  placeholder="Ex: ADX..."
+                  value={inviteCode}
+                  onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
+                  className="bg-slate-950/60 border-slate-700 text-emerald-300 font-mono placeholder:text-slate-600 focus:border-emerald-500"
                 />
-                <p className="text-[11px] text-slate-400">
-                  Utilizado para validar as publicações de campanhas e tarefas concluídas.
+                <p className="text-[10px] text-slate-400">
+                  Insira o código se foi convidado por alguém para receber o bónus inicial de 250 Kz.
                 </p>
               </div>
 
               <div className="space-y-2">
-                <Label className="text-xs text-slate-300 font-medium">País de Residência</Label>
+                <Label className="text-xs text-slate-300 font-medium flex items-center gap-1.5">
+                  <Link2 className="w-3.5 h-3.5 text-indigo-400" />
+                  Link Redes Sociais (Opcional)
+                </Label>
                 <Input
-                  type="text"
-                  placeholder="Angola"
-                  value={country}
-                  onChange={(e) => setCountry(e.target.value)}
+                  placeholder="TikTok ou Instagram link"
+                  value={primaryLink}
+                  onChange={(e) => setPrimaryLink(e.target.value)}
                   className="bg-slate-950/60 border-slate-700 text-white focus:border-indigo-500"
                 />
               </div>
@@ -339,10 +303,7 @@ export default function AccountSetup() {
                 className="w-full sm:flex-1 bg-emerald-600 hover:bg-emerald-500 text-white gap-2 text-xs font-semibold shadow-lg shadow-emerald-950/50"
               >
                 {loading ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    Salvando Configurações...
-                  </>
+                  <Loader2 className="w-4 h-4 animate-spin" />
                 ) : (
                   <>
                     <CheckCircle2 className="w-4 h-4" />
@@ -356,7 +317,7 @@ export default function AccountSetup() {
       </Card>
 
       <div className="text-center mt-6 text-xs text-slate-500">
-        ADX Money Security Protocol &copy; {new Date().getFullYear()} — Todos os direitos reservados.
+        ADX Money &copy; {new Date().getFullYear()} — Todos os direitos reservados.
       </div>
     </div>
   );

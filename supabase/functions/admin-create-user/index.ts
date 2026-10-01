@@ -124,6 +124,8 @@ serve(async (req) => {
     const newUserId = createdAuthData.user.id;
 
     // 6. Criar o perfil público associado exatamente ao newUserId gerado
+    const referralCode = 'ADX' + Math.random().toString(36).substring(2, 8).toUpperCase();
+
     const { error: profileUpsertError } = await adminClient
       .from("profiles")
       .upsert({
@@ -138,6 +140,7 @@ serve(async (req) => {
         youtube: youtube || null,
         country: country || "Angola",
         first_login: true,
+        referral_code: referralCode,
         is_active: true,
       });
 

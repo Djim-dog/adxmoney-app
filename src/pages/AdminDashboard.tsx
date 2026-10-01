@@ -217,17 +217,18 @@ export const AdminDashboardPage: React.FC = () => {
       // Invocar a Edge Function segura com a Auth Admin API do Supabase
       const { data: edgeData, error: edgeError } = await supabase.functions.invoke("admin-create-user", {
         body: {
-          email: newEmail.trim(),
-          password: predefinedPassword,
-          name: newName.trim(),
-          phone: newPhone.trim() || null,
-          role: newRole,
-          primary_link: newPrimaryLink.trim() || null,
-          tiktok: newTiktok.trim() || null,
-          instagram: newInstagram.trim() || null,
-          youtube: newYoutube.trim() || null,
-          country: newCountry.trim() || "Angola",
-        },
+        email: newEmail.trim(),
+        password: predefinedPassword,
+        name: newName.trim(),
+        phone: newPhone.trim() || null,
+        role: newRole,
+        first_login: true,
+        primary_link: newPrimaryLink.trim() || null,
+        tiktok: newTiktok.trim() || null,
+        instagram: newInstagram.trim() || null,
+        youtube: newYoutube.trim() || null,
+        country: newCountry.trim() || "Angola",
+      },
       });
 
       if (edgeError || (edgeData && edgeData.error)) {
