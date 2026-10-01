@@ -88,7 +88,7 @@ export const WithdrawModal: React.FC<WithdrawModalProps> = ({
             <ArrowUpRight className="w-5 h-5 text-emerald-400" /> Solicitar Saque
           </DialogTitle>
           <DialogDescription className="text-xs text-slate-400">
-            O valor solicitado será reservado e transferido para seus dados bancários após aprovação.
+            O valor solicitado será reservado e transferido para os seus dados bancários no prazo de até 24 horas.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleRequestWithdraw} className="space-y-4 py-2">
@@ -142,7 +142,7 @@ export const WithdrawModal: React.FC<WithdrawModalProps> = ({
           <div className="bg-slate-950/70 p-3 rounded-lg border border-slate-800/80 text-[11px] text-slate-400 flex gap-2 items-start">
             <Info className="w-4 h-4 text-sky-400 shrink-0 mt-0.5" />
             <span>
-              Saques são processados e pagos nos dias úteis. Certifique-se de que os dados bancários estão corretos.
+              Os saques são processados e pagos no prazo máximo de 24 horas. Certifique-se de que os seus dados bancários estão corretos.
             </span>
           </div>
 

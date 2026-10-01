@@ -292,25 +292,34 @@ export default function UserAppPage() {
               <div className="absolute top-0 right-0 p-4 opacity-10">
                 <Wallet className="w-24 h-24 rotate-12" />
               </div>
-              <CardHeader className="pb-2">
-                <CardDescription className="text-indigo-200 text-[10px] font-bold uppercase tracking-widest">
-                  Saldo Total
-                </CardDescription>
-                <CardTitle className="text-4xl font-extrabold text-white font-mono tracking-tighter">
-                  {(wallet?.balance || 0).toLocaleString("pt-AO", { minimumFractionDigits: 2 })} <span className="text-xl">Kz</span>
+              <CardHeader className="pb-1">
+                <div className="flex justify-between items-start">
+                  <CardDescription className="text-indigo-200 text-[10px] font-bold uppercase tracking-widest">
+                    Saldo Disponível
+                  </CardDescription>
+                  <div className="flex items-center gap-1 bg-white/10 px-2 py-0.5 rounded-full border border-white/10">
+                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                    <span className="text-[9px] text-white/80 font-bold">Saques em 24h</span>
+                  </div>
+                </div>
+                <CardTitle className="text-4xl font-extrabold text-white font-mono tracking-tighter mt-1">
+                  {(wallet?.balance || 0).toLocaleString("pt-AO", { minimumFractionDigits: 2 })} <span className="text-xl font-normal opacity-80">Kz</span>
                 </CardTitle>
               </CardHeader>
-              <CardContent className="pt-2 flex items-center justify-between">
-                <div className="text-[11px] text-indigo-100 flex items-center gap-1.5">
-                  <Lock className="w-3 h-3" />
-                  Pendente: {(wallet?.reserved_balance || 0).toLocaleString("pt-AO")} Kz
+              <CardContent className="pt-2 space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="text-[11px] text-indigo-100 flex items-center gap-1.5 bg-black/10 px-2 py-1 rounded-lg">
+                    <Lock className="w-3 h-3 opacity-60" />
+                    <span>Bloqueado: {(wallet?.reserved_balance || 0).toLocaleString("pt-AO")} Kz</span>
+                  </div>
+                  
+                  <Button
+                    onClick={() => setActiveTab("wallet")}
+                    className="bg-white text-indigo-700 hover:bg-indigo-50 text-xs h-9 px-6 font-extrabold rounded-xl shadow-xl hover:scale-105 active:scale-95 transition-all"
+                  >
+                    Levantar Agora
+                  </Button>
                 </div>
-                <Button
-                  onClick={() => setActiveTab("wallet")}
-                  className="bg-white text-indigo-700 hover:bg-indigo-50 text-xs h-8 px-4 font-bold rounded-full shadow-lg"
-                >
-                  Levantar
-                </Button>
               </CardContent>
             </Card>
 
@@ -557,14 +566,18 @@ export default function UserAppPage() {
                     </div>
                   )}
                 </CardContent>
-                <CardFooter className="pt-2">
+                <CardFooter className="pt-2 flex flex-col gap-3">
                   <Button
                     type="submit"
                     disabled={isRequestingWithdraw || !withdrawAmount || parseFloat(withdrawAmount) <= 0 || parseFloat(withdrawAmount) > (wallet?.balance || 0)}
                     className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold h-11 rounded-xl shadow-lg shadow-indigo-950/50"
                   >
-                    {isRequestingWithdraw ? <Loader2 className="w-5 h-5 animate-spin" /> : "Solicitar Levantamento"}
+                    {isRequestingWithdraw ? <Loader2 className="w-5 h-5 animate-spin" /> : "Confirmar Levantamento"}
                   </Button>
+                  <p className="text-[10px] text-slate-500 text-center flex items-center justify-center gap-1.5 italic">
+                    <Info className="w-3 h-3 text-indigo-400" />
+                    O valor solicitado será processado e pago num prazo de 24 horas úteis.
+                  </p>
                 </CardFooter>
               </form>
             </Card>
