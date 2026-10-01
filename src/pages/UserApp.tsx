@@ -23,6 +23,7 @@ import {
   CreditCard,
   Gift,
   Search,
+  Lock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
@@ -263,7 +264,7 @@ export default function UserAppPage() {
               </CardHeader>
               <CardContent className="pt-2 flex items-center justify-between">
                 <div className="text-[11px] text-indigo-100 flex items-center gap-1.5">
-                  <Clock className="w-3 h-3" />
+                  <Lock className="w-3 h-3" />
                   Pendente: {(wallet?.reserved_balance || 0).toLocaleString("pt-AO")} Kz
                 </div>
                 <Button

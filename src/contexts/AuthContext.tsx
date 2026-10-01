@@ -13,6 +13,11 @@ export interface Profile {
   role: "admin" | "user" | string;
   first_login: boolean;
   is_active: boolean;
+  primary_link?: string | null;
+  country?: string | null;
+  referral_code?: string | null;
+  invited_by?: string | null;
+  referred_completed?: boolean;
   created_at: string | null;
   updated_at: string | null;
 }
