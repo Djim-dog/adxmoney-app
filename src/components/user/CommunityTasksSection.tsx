@@ -6,12 +6,12 @@ import {
   CheckCircle2,
   AlertCircle,
   Loader2,
-  Tiktok,
   Instagram,
   Youtube,
   MoreVertical,
   Flag,
   Info,
+  Video,
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -124,7 +124,7 @@ export const CommunityTasksSection: React.FC = () => {
 
   const getPlatformIcon = (platform: string) => {
     switch (platform) {
-      case 'tiktok': return <span className="text-white font-bold">TikTok</span>;
+      case 'tiktok': return <Video className="w-4 h-4 text-cyan-400" />;
       case 'instagram': return <Instagram className="w-4 h-4 text-pink-500" />;
       case 'youtube': return <Youtube className="w-4 h-4 text-red-600" />;
       default: return <Layers className="w-4 h-4" />;

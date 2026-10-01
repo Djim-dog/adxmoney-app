@@ -37,7 +37,7 @@ import { toast } from "sonner";
 import { UserCampaignsHub } from "@/components/user/UserCampaignsHub";
 import { CommunityTasksSection } from "@/components/user/CommunityTasksSection";
 import {
-  Tiktok,
+  Video as TiktokIcon,
   Instagram as InstagramIcon,
   Youtube as YoutubeIcon
 } from "lucide-react";
@@ -694,7 +694,7 @@ export default function UserAppPage() {
                   <div className="space-y-1.5">
                     <Label className="text-[10px] uppercase font-bold text-slate-500">TikTok Handle</Label>
                     <div className="relative">
-                      <Tiktok className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                      <TiktokIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
                       <Input
                         value={profileTiktok}
                         onChange={(e) => setProfileTiktok(e.target.value)}
