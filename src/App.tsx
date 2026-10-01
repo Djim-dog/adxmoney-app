@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Login from "./pages/Login";
+import AccountSetup from "./pages/AccountSetup";
 import AdminDashboardPage from "./pages/AdminDashboard";
 import UserAppPage from "./pages/UserApp";
 import NotFound from "./pages/NotFound";
@@ -43,6 +44,16 @@ const App = () => (
               }
             />
 
+            {/* ROTA DE CONFIGURAÇÃO INICIAL (Obrigatória) */}
+            <Route
+              path="/account/setup"
+              element={
+                <ProtectedRoute>
+                  <AccountSetup />
+                </ProtectedRoute>
+              }
+            />
+
             {/* ROTA EXCLUSIVA DE USUÁRIO (Protegida por Role real) */}
             <Route
               path="/app"
@@ -52,6 +63,7 @@ const App = () => (
                 </ProtectedRoute>
               }
             />
+            <Route path="/dashboard" element={<Navigate to="/app" replace />} />
 
             {/* Página 404 */}
             <Route path="*" element={<NotFound />} />

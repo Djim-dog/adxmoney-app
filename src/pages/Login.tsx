@@ -19,6 +19,9 @@ const Login: React.FC = () => {
 
   // Redirecionamento automático caso já esteja autenticado
   if (!authLoading && session && profile) {
+    if (profile.first_login) {
+      return <Navigate to="/account/setup" replace />;
+    }
     if (profile.role === "admin") {
       return <Navigate to="/admin" replace />;
     } else {
@@ -65,11 +68,16 @@ const Login: React.FC = () => {
       console.log("[Login] Sucesso:", data);
       toast.success("Autenticação realizada com sucesso.");
 
-      const role = data.user.user_metadata?.role || "user";
-      if (role === "admin") {
+      // Verificar se é o primeiro login através do metadata ou aguardar o profile no context
+      const isFirstLogin = data.user?.user_metadata?.first_login;
+      const role = data.user?.user_metadata?.role || "user";
+
+      if (isFirstLogin) {
+        navigate("/account/setup", { replace: true });
+      } else if (role === "admin") {
         navigate("/admin", { replace: true });
       } else {
-        navigate("/app", { replace: true });
+        navigate("/dashboard", { replace: true });
       }
     } catch (err: unknown) {
       console.error("[Login] Erro inesperado:", err);

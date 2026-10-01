@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { FirstAccessModal } from "@/components/FirstAccessModal";
 import { UserHomeSection } from "@/components/user/UserHomeSection";
 import { UserCampaignsSection } from "@/components/user/UserCampaignsSection";
+import { Navigate } from "react-router-dom";
 import { UserWalletSection } from "@/components/user/UserWalletSection";
 import { UserHistorySection } from "@/components/user/UserHistorySection";
 import { UserProfileSection } from "@/components/user/UserProfileSection";
@@ -213,15 +213,8 @@ export default function UserAppPage() {
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col selection:bg-emerald-500 selection:text-white">
-      {/* Modal obrigatório de primeiro acesso para novos usuários */}
-      <FirstAccessModal
-        open={Boolean(profile?.first_login)}
-        onCompleted={async () => {
-          await refreshProfile();
-          await loadUserData();
-        }}
-      />
-
+      {profile?.first_login && <Navigate to="/account/setup" replace />}
+      
       {/* Modal de Saque */}
       <WithdrawModal
         open={isWithdrawModalOpen}

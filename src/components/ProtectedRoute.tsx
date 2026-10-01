@@ -31,6 +31,17 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   // Obter papel com fallback imediato baseado no metadata do Supabase Auth para evitar qualquer bloqueio
   const effectiveRole = profile?.role || (user.user_metadata?.role as string) || 'user';
 
+  // 1. Impor primeiro acesso: se o perfil indicar first_login, deve ser redirecionado para /account/setup
+  // Exceto se já estiver na própria rota de setup
+  if (profile?.first_login && location.pathname !== '/account/setup') {
+    return <Navigate to="/account/setup" replace />;
+  }
+
+  // 2. Se já completou o first_login, não deve conseguir voltar para /account/setup
+  if (profile?.first_login === false && location.pathname === '/account/setup') {
+    return <Navigate to="/app" replace />;
+  }
+
   if (location.pathname === '/') {
     return effectiveRole === 'admin' ? <Navigate to="/admin" replace /> : <Navigate to="/app" replace />;
   }
