@@ -16,6 +16,13 @@ import {
   Megaphone,
   Settings,
   Bell,
+  MoreVertical,
+  HelpCircle,
+  Shield,
+  FileText,
+  Info,
+  Clock,
+  MessageSquare
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -50,6 +57,13 @@ export default function UserAppPage() {
 
   // Profile overlay / Settings Modal
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  const [isSupportOpen, setIsSupportOpen] = useState(false);
+  const [isAboutOpen, setIsAboutOpen] = useState(false);
+  const [isPrivacyOpen, setIsPrivacyOpen] = useState(false);
+  const [isFaqOpen, setIsFaqOpen] = useState(false);
   const [profileName, setProfileName] = useState("");
   const [profilePhone, setProfilePhone] = useState("");
   const [profileLink, setProfileLink] = useState("");
@@ -275,18 +289,19 @@ export default function UserAppPage() {
         </div>
 
         <div className="flex items-center gap-2">
-          <button 
-            onClick={() => toast.info("Não tem notificações novas no momento.")}
-            className="w-10 h-10 rounded-2xl bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 transition-all active:scale-95"
+          <button
+            onClick={() => setIsNotificationsOpen(true)}
+            className="w-10 h-10 rounded-2xl bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 transition-all active:scale-95 relative"
           >
             <Bell className="w-5 h-5" />
+            <span className="absolute top-2 right-2 w-2 h-2 bg-emerald-500 rounded-full"></span>
           </button>
 
           <button
-            onClick={() => setIsSettingsOpen(true)}
+            onClick={() => setIsMenuOpen(true)}
             className="w-10 h-10 rounded-2xl bg-emerald-50 hover:bg-emerald-100 flex items-center justify-center text-emerald-600 transition-all active:scale-95 border border-emerald-100"
           >
-            <Settings className="w-5 h-5" />
+            <MoreVertical className="w-5 h-5" />
           </button>
         </div>
       </header>
@@ -463,6 +478,94 @@ export default function UserAppPage() {
                 <Wallet className="w-6 h-6 text-emerald-600" /> Gestão Financeira
               </h2>
               <p className="text-sm text-slate-500 mt-1 font-medium">Acompanhe seu saldo e solicite levantamentos de forma segura.</p>
+            </div>
+
+            {/* Ações Rápidas da Minha Página */}
+            <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm space-y-4">
+              <h3 className="text-sm font-black text-slate-900 uppercase tracking-wider">Atalhos e Menu da Conta</h3>
+              <div className="grid grid-cols-2 gap-3">
+                <Button
+                  onClick={() => setIsSettingsOpen(true)}
+                  variant="outline"
+                  className="h-14 justify-start gap-3 rounded-2xl border-slate-200 hover:border-emerald-500 hover:bg-emerald-50/50 text-slate-700 font-bold"
+                >
+                  <Settings className="w-5 h-5 text-emerald-600 shrink-0" />
+                  <div className="text-left truncate">
+                    <div className="text-xs font-black truncate">Configurações</div>
+                    <div className="text-[10px] text-slate-400 font-normal truncate">Dados e perfil</div>
+                  </div>
+                </Button>
+
+                <Button
+                  onClick={() => setIsNotificationsOpen(true)}
+                  variant="outline"
+                  className="h-14 justify-start gap-3 rounded-2xl border-slate-200 hover:border-emerald-500 hover:bg-emerald-50/50 text-slate-700 font-bold"
+                >
+                  <Bell className="w-5 h-5 text-emerald-600 shrink-0" />
+                  <div className="text-left truncate">
+                    <div className="text-xs font-black truncate">Notificações</div>
+                    <div className="text-[10px] text-slate-400 font-normal truncate">Avisos e alertas</div>
+                  </div>
+                </Button>
+
+                <Button
+                  onClick={() => setIsHistoryOpen(true)}
+                  variant="outline"
+                  className="h-14 justify-start gap-3 rounded-2xl border-slate-200 hover:border-emerald-500 hover:bg-emerald-50/50 text-slate-700 font-bold"
+                >
+                  <Clock className="w-5 h-5 text-emerald-600 shrink-0" />
+                  <div className="text-left truncate">
+                    <div className="text-xs font-black truncate">Histórico</div>
+                    <div className="text-[10px] text-slate-400 font-normal truncate">Transações</div>
+                  </div>
+                </Button>
+
+                <Button
+                  onClick={() => setIsSupportOpen(true)}
+                  variant="outline"
+                  className="h-14 justify-start gap-3 rounded-2xl border-slate-200 hover:border-emerald-500 hover:bg-emerald-50/50 text-slate-700 font-bold"
+                >
+                  <MessageSquare className="w-5 h-5 text-emerald-600 shrink-0" />
+                  <div className="text-left truncate">
+                    <div className="text-xs font-black truncate">Suporte</div>
+                    <div className="text-[10px] text-slate-400 font-normal truncate">Fale connosco</div>
+                  </div>
+                </Button>
+
+                <Button
+                  onClick={() => setIsAboutOpen(true)}
+                  variant="outline"
+                  className="h-14 justify-start gap-3 rounded-2xl border-slate-200 hover:border-emerald-500 hover:bg-emerald-50/50 text-slate-700 font-bold"
+                >
+                  <Info className="w-5 h-5 text-emerald-600 shrink-0" />
+                  <div className="text-left truncate">
+                    <div className="text-xs font-black truncate">Sobre ADX</div>
+                    <div className="text-[10px] text-slate-400 font-normal truncate">Informações</div>
+                  </div>
+                </Button>
+
+                <Button
+                  onClick={() => setIsFaqOpen(true)}
+                  variant="outline"
+                  className="h-14 justify-start gap-3 rounded-2xl border-slate-200 hover:border-emerald-500 hover:bg-emerald-50/50 text-slate-700 font-bold"
+                >
+                  <HelpCircle className="w-5 h-5 text-emerald-600 shrink-0" />
+                  <div className="text-left truncate">
+                    <div className="text-xs font-black truncate">FAQ</div>
+                    <div className="text-[10px] text-slate-400 font-normal truncate">Dúvidas comuns</div>
+                  </div>
+                </Button>
+              </div>
+
+              <div className="pt-2">
+                <Button
+                  onClick={() => signOut()}
+                  variant="destructive"
+                  className="w-full h-12 rounded-2xl bg-rose-50 hover:bg-rose-100 text-rose-600 font-black text-xs uppercase tracking-widest gap-2 border border-rose-200"
+                >
+                  <LogOut className="w-4 h-4" /> Terminar Sessão
+                </Button>
+              </div>
             </div>
 
             {/* Card de Saldo */}
@@ -728,6 +831,257 @@ export default function UserAppPage() {
       </Dialog>
 
       {/* Bottom Navigation */}
+      {/* Modal / Sheet do Menu Três Pontos */}
+      <Dialog open={isMenuOpen} onOpenChange={setIsMenuOpen}>
+        <DialogContent className="bg-white rounded-3xl border-none max-w-md p-6">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-black text-slate-900">Menu Principal</DialogTitle>
+            <DialogDescription className="text-xs text-slate-500">
+              Acesse configurações, histórico, suporte e informações da ADXmoney.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-2 py-4">
+            <button
+              onClick={() => { setIsMenuOpen(false); setIsSettingsOpen(true); }}
+              className="w-full flex items-center justify-between p-3 rounded-2xl hover:bg-slate-50 transition-all font-bold text-sm text-slate-700"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                  <Settings className="w-5 h-5" />
+                </div>
+                <span>Configurações</span>
+              </div>
+              <span className="text-xs text-slate-400">Editar perfil</span>
+            </button>
+
+            <button
+              onClick={() => { setIsMenuOpen(false); setIsNotificationsOpen(true); }}
+              className="w-full flex items-center justify-between p-3 rounded-2xl hover:bg-slate-50 transition-all font-bold text-sm text-slate-700"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                  <Bell className="w-5 h-5" />
+                </div>
+                <span>Notificações</span>
+              </div>
+              <span className="text-xs text-emerald-600 font-bold">Ver avisos</span>
+            </button>
+
+            <button
+              onClick={() => { setIsMenuOpen(false); setIsHistoryOpen(true); }}
+              className="w-full flex items-center justify-between p-3 rounded-2xl hover:bg-slate-50 transition-all font-bold text-sm text-slate-700"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                  <Clock className="w-5 h-5" />
+                </div>
+                <span>Histórico</span>
+              </div>
+              <span className="text-xs text-slate-400">Atividades</span>
+            </button>
+
+            <button
+              onClick={() => { setIsMenuOpen(false); setIsSupportOpen(true); }}
+              className="w-full flex items-center justify-between p-3 rounded-2xl hover:bg-slate-50 transition-all font-bold text-sm text-slate-700"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                  <MessageSquare className="w-5 h-5" />
+                </div>
+                <span>Apoio ao Cliente</span>
+              </div>
+              <span className="text-xs text-slate-400">WhatsApp</span>
+            </button>
+
+            <button
+              onClick={() => { setIsMenuOpen(false); setIsAboutOpen(true); }}
+              className="w-full flex items-center justify-between p-3 rounded-2xl hover:bg-slate-50 transition-all font-bold text-sm text-slate-700"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                  <Info className="w-5 h-5" />
+                </div>
+                <span>Sobre ADXmoney</span>
+              </div>
+              <span className="text-xs text-slate-400">Info</span>
+            </button>
+
+            <button
+              onClick={() => { setIsMenuOpen(false); setIsPrivacyOpen(true); }}
+              className="w-full flex items-center justify-between p-3 rounded-2xl hover:bg-slate-50 transition-all font-bold text-sm text-slate-700"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                  <Shield className="w-5 h-5" />
+                </div>
+                <span>Privacidade e Termos</span>
+              </div>
+              <span className="text-xs text-slate-400">Regras</span>
+            </button>
+
+            <button
+              onClick={() => { setIsMenuOpen(false); setIsFaqOpen(true); }}
+              className="w-full flex items-center justify-between p-3 rounded-2xl hover:bg-slate-50 transition-all font-bold text-sm text-slate-700"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                  <HelpCircle className="w-5 h-5" />
+                </div>
+                <span>FAQ (Perguntas Frequentes)</span>
+              </div>
+              <span className="text-xs text-slate-400">Dúvidas</span>
+            </button>
+          </div>
+
+          <div className="pt-2 border-t border-slate-100">
+            <Button
+              onClick={() => { setIsMenuOpen(false); signOut(); }}
+              variant="destructive"
+              className="w-full h-12 rounded-2xl bg-rose-50 hover:bg-rose-100 text-rose-600 font-black text-xs uppercase tracking-widest gap-2"
+            >
+              <LogOut className="w-4 h-4" /> Terminar Sessão
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal Notificações */}
+      <Dialog open={isNotificationsOpen} onOpenChange={setIsNotificationsOpen}>
+        <DialogContent className="bg-white rounded-3xl border-none max-w-md p-6">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-black text-slate-900">Notificações</DialogTitle>
+            <DialogDescription className="text-xs text-slate-500">
+              Avisos e atualizações recentes da sua conta ADXmoney.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-6 space-y-4">
+            <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-100 flex gap-3">
+              <Bell className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
+              <div>
+                <h4 className="text-xs font-black text-slate-900">Bem-vindo à nova versão ADXmoney</h4>
+                <p className="text-[11px] text-slate-600 mt-1">Explore campanhas, conclua tarefas de comunidade e aumente seus ganhos diários.</p>
+                <span className="text-[9px] text-emerald-600 font-bold uppercase mt-2 block">Hoje</span>
+              </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal Histórico */}
+      <Dialog open={isHistoryOpen} onOpenChange={setIsHistoryOpen}>
+        <DialogContent className="bg-white rounded-3xl border-none max-w-lg p-6">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-black text-slate-900">Histórico de Atividades</DialogTitle>
+            <DialogDescription className="text-xs text-slate-500">
+              Suas últimas transações e movimentações financeiras.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4 max-h-[60vh] overflow-y-auto space-y-3">
+            {transactions.length === 0 ? (
+              <p className="text-center text-xs text-slate-400 py-8">Nenhuma transação recente encontrada.</p>
+            ) : (
+              transactions.map((tx) => (
+                <div key={tx.id} className="p-3.5 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-between">
+                  <div>
+                    <h4 className="text-xs font-bold text-slate-900">{tx.description || tx.type}</h4>
+                    <span className="text-[10px] text-slate-400">{new Date(tx.created_at).toLocaleDateString()}</span>
+                  </div>
+                  <span className={`text-xs font-black ${tx.amount > 0 ? "text-emerald-600" : "text-rose-600"}`}>
+                    {tx.amount > 0 ? "+" : ""}{tx.amount} Kz
+                  </span>
+                </div>
+              ))
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal Suporte */}
+      <Dialog open={isSupportOpen} onOpenChange={setIsSupportOpen}>
+        <DialogContent className="bg-white rounded-3xl border-none max-w-md p-6">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-black text-slate-900">Apoio ao Cliente</DialogTitle>
+            <DialogDescription className="text-xs text-slate-500">
+              Precisa de ajuda? Fale diretamente com nossa equipe via WhatsApp.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-6 space-y-4 text-center">
+            <div className="w-16 h-16 bg-emerald-50 text-emerald-600 rounded-3xl flex items-center justify-center mx-auto">
+              <MessageSquare className="w-8 h-8" />
+            </div>
+            <p className="text-xs text-slate-600 font-medium">
+              Nosso atendimento funciona de segunda a sábado das 08h às 20h.
+            </p>
+            <Button
+              onClick={() => window.open("https://wa.me/244923000000?text=Olá,%20preciso%20de%20suporte%20no%20ADXmoney", "_blank")}
+              className="w-full h-12 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-black text-xs uppercase tracking-widest gap-2 shadow-lg shadow-emerald-600/20"
+            >
+              Abrir WhatsApp de Suporte
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal Sobre */}
+      <Dialog open={isAboutOpen} onOpenChange={setIsAboutOpen}>
+        <DialogContent className="bg-white rounded-3xl border-none max-w-md p-6">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-black text-slate-900">Sobre a ADXmoney</DialogTitle>
+            <DialogDescription className="text-xs text-slate-500">
+              Conectando anunciantes e operadores na maior plataforma de engajamento.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4 space-y-3 text-xs text-slate-600 leading-relaxed font-medium">
+            <p>A ADXmoney é uma plataforma digital inovadora focada em impulsionar campanhas de marketing de forma colaborativa e segura.</p>
+            <p>Versão atual: 2.0.0 (Build 2026)</p>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal Privacidade e Termos */}
+      <Dialog open={isPrivacyOpen} onOpenChange={setIsPrivacyOpen}>
+        <DialogContent className="bg-white rounded-3xl border-none max-w-md p-6">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-black text-slate-900">Privacidade e Termos</DialogTitle>
+            <DialogDescription className="text-xs text-slate-500">
+              Termos de uso e diretrizes de privacidade da plataforma.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4 max-h-[60vh] overflow-y-auto space-y-3 text-xs text-slate-600 leading-relaxed font-medium">
+            <p>1. Ao utilizar a ADXmoney, você concorda em cumprir todas as diretrizes operacionais.</p>
+            <p>2. É estritamente proibido o uso de contas falsas ou bots para a conclusão de tarefas.</p>
+            <p>3. Os pagamentos são processados após verificação dos requisitos de cada campanha.</p>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal FAQ / Perguntas Frequentes */}
+      <Dialog open={isFaqOpen} onOpenChange={setIsFaqOpen}>
+        <DialogContent className="bg-white rounded-3xl border-none max-w-lg p-6">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-black text-slate-900">Perguntas Frequentes (FAQ)</DialogTitle>
+            <DialogDescription className="text-xs text-slate-500">
+              Respostas para as dúvidas mais comuns dos operadores.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4 max-h-[60vh] overflow-y-auto space-y-4">
+            <div className="p-3.5 rounded-2xl bg-slate-50 space-y-1">
+              <h4 className="text-xs font-black text-slate-900">Como começo a ganhar?</h4>
+              <p className="text-[11px] text-slate-600">Acesse a aba Tarefas ou Campanhas, escolha uma tarefa disponível, realize a ação solicitada e envie a comprovação.</p>
+            </div>
+            <div className="p-3.5 rounded-2xl bg-slate-50 space-y-1">
+              <h4 className="text-xs font-black text-slate-900">Quanto tempo demoram os levantamentos?</h4>
+              <p className="text-[11px] text-slate-600">Os levantamentos são processados em até 24 horas úteis diretamente para sua conta bancária ou Multicaixa Express.</p>
+            </div>
+            <div className="p-3.5 rounded-2xl bg-slate-50 space-y-1">
+              <h4 className="text-xs font-black text-slate-900">Como funciona o programa de afiliados?</h4>
+              <p className="text-[11px] text-slate-600">Compartilhe seu link de convite exclusivo. Você ganha comissões em cima de cada tarefa concluída pelos seus indicados.</p>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       <nav className="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-xl border-t border-slate-200 z-40 px-4 py-3 shadow-2xl">
         <div className="max-w-xl mx-auto flex items-center justify-around">
           

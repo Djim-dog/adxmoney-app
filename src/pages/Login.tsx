@@ -6,8 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Mail, Lock, Loader2 } from "lucide-react";
+import { Mail, Lock, Loader2, HelpCircle } from "lucide-react";
 import { SplashScreen } from "@/components/SplashScreen";
 
 const Login: React.FC = () => {
@@ -17,6 +18,7 @@ const Login: React.FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const [isFaqOpen, setIsFaqOpen] = useState(false);
 
   // Redirecionamento automático caso já esteja autenticado
   if (!authLoading && session && profile) {
@@ -90,7 +92,20 @@ const Login: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col justify-center items-center bg-slate-50 px-4 py-8 text-slate-900">
+    <div className="min-h-screen flex flex-col justify-center items-center bg-slate-50 px-4 py-8 text-slate-900 relative">
+      {/* FAQ no canto superior direito para novos usuários */}
+      <div className="absolute top-4 right-4 z-10">
+        <Button
+          onClick={() => setIsFaqOpen(true)}
+          variant="outline"
+          size="sm"
+          className="rounded-2xl border-slate-200 bg-white/80 backdrop-blur-md hover:bg-emerald-50 hover:border-emerald-300 text-slate-700 font-bold text-xs gap-1.5 shadow-sm"
+        >
+          <HelpCircle className="w-4 h-4 text-emerald-600" />
+          <span>Perguntas Frequentes</span>
+        </Button>
+      </div>
+
       <div className="w-full max-w-sm">
         <div className="text-center mb-10">
           <img src="/logo.png" alt="ADXmoney Logo" className="h-20 mx-auto mb-4" />
@@ -158,6 +173,32 @@ const Login: React.FC = () => {
           ADXmoney &copy; {new Date().getFullYear()} &bull; Plataforma Financeira Operacional
         </p>
       </div>
+
+      {/* Modal FAQ / Perguntas Frequentes para Login */}
+      <Dialog open={isFaqOpen} onOpenChange={setIsFaqOpen}>
+        <DialogContent className="bg-white rounded-3xl border-none max-w-lg p-6">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-black text-slate-900">Perguntas Frequentes (FAQ)</DialogTitle>
+            <DialogDescription className="text-xs text-slate-500">
+              Tire suas dúvidas antes de começar a operar na ADXmoney.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4 max-h-[60vh] overflow-y-auto space-y-4">
+            <div className="p-3.5 rounded-2xl bg-slate-50 space-y-1">
+              <h4 className="text-xs font-black text-slate-900">Como obtenho meus dados de acesso?</h4>
+              <p className="text-[11px] text-slate-600">Os dados de acesso (e-mail e senha inicial) são fornecidos pelo administrador ou através do seu link de convite.</p>
+            </div>
+            <div className="p-3.5 rounded-2xl bg-slate-50 space-y-1">
+              <h4 className="text-xs font-black text-slate-900">Como começo a ganhar?</h4>
+              <p className="text-[11px] text-slate-600">Após fazer login e configurar sua conta, acesse as tarefas e campanhas para realizar as interações e acumular ganhos.</p>
+            </div>
+            <div className="p-3.5 rounded-2xl bg-slate-50 space-y-1">
+              <h4 className="text-xs font-black text-slate-900">Quanto tempo demoram os pagamentos?</h4>
+              <p className="text-[11px] text-slate-600">Os levantamentos são processados em até 24 horas úteis via Multicaixa Express ou transferência bancária.</p>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
