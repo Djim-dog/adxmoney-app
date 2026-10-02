@@ -44,17 +44,6 @@ export default function UserAppPage() {
 
   const [loading, setLoading] = useState(true);
   const [wallet, setWallet] = useState<{ id: string; balance: number; reserved_balance: number } | null>(null);
-=======
-export default function UserAppPage() {
-  const { user, profile, signOut, refreshProfile } = useAuth();
-  const navigate = useNavigate();
-
-  // Navigation Tabs: "tasks" | "campaigns" | "affiliate" | "wallet"
-  const [activeTab, setActiveTab] = useState<"tasks" | "campaigns" | "affiliate" | "wallet">("tasks");
-  const [tasksSubTab, setTasksSubTab] = useState<"community" | "financial">("community");
-
-  const [loading, setLoading] = useState(false);
-  const [wallet, setWallet] = useState<{ id: string; balance: number; reserved_balance: number } | null>(null);
   const [campaigns, setCampaigns] = useState<any[]>([]);
   const [transactions, setTransactions] = useState<any[]>([]);
   const [affiliate, setAffiliate] = useState<any | null>(null);

@@ -56,9 +56,6 @@ import { SplashScreen } from "@/components/SplashScreen";
 
 export const AdminDashboardPage: React.FC = () => {
   const { user, profile, signOut } = useAuth();
-=======
-export const AdminDashboardPage: React.FC = () => {
-  const { user, profile, signOut } = useAuth();
   const [activeSection, setActiveSection] = useState<
     | "dashboard"
     | "users"
@@ -74,15 +71,6 @@ export const AdminDashboardPage: React.FC = () => {
 
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-
-  // Search & Filter
-=======
-  const [loading, setLoading] = useState(true);
-  const [submitting, setSubmitting] = useState(false);
-
-  if (loading || !profile) {
-    return <SplashScreen message="Carregando painel administrativo..." />;
-  }
 
   // Search & Filter
   const [searchUser, setSearchUser] = useState("");
@@ -565,6 +553,10 @@ export const AdminDashboardPage: React.FC = () => {
     const matchesType = typeCampaignFilter === "all" || c.type === typeCampaignFilter;
     return matchesSearch && matchesType;
   });
+
+  if (loading || !profile) {
+    return <SplashScreen message="Carregando painel administrativo..." />;
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans antialiased">
