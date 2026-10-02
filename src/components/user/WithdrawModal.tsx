@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { ArrowUpRight, Loader2, Info } from "lucide-react";
+import { ArrowUpRight, Loader2, Info, Banknote } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -82,90 +82,87 @@ export const WithdrawModal: React.FC<WithdrawModalProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-slate-900 border-slate-800 text-slate-100 sm:max-w-[425px] max-h-[85vh] overflow-y-auto">
+      <DialogContent className="bg-white border-none shadow-2xl rounded-3xl p-8 max-w-[425px]">
         <DialogHeader>
-          <DialogTitle className="text-base text-white flex items-center gap-2">
-            <ArrowUpRight className="w-5 h-5 text-emerald-400" /> Solicitar Saque
+          <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center mb-2">
+             <Banknote className="w-6 h-6" />
+          </div>
+          <DialogTitle className="text-xl font-black text-slate-900 tracking-tight">
+            Solicitar Levantamento
           </DialogTitle>
-          <DialogDescription className="text-xs text-slate-400">
-            O valor solicitado será reservado e transferido para os seus dados bancários no prazo de até 24 horas.
+          <DialogDescription className="text-xs text-slate-500 font-medium">
+            O valor solicitado será transferido para os seus dados bancários no prazo de até 24 horas.
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleRequestWithdraw} className="space-y-4 py-2">
-          <div className="space-y-1.5">
-            <Label className="text-xs text-slate-300">Método de Recebimento</Label>
+        <form onSubmit={handleRequestWithdraw} className="space-y-5 py-2">
+          <div className="space-y-2">
+            <Label className="text-[10px] text-slate-400 font-black uppercase tracking-widest">Método de Recebimento</Label>
             <Select value={withdrawMethod} onValueChange={setWithdrawMethod}>
-              <SelectTrigger className="bg-slate-950 border-slate-800 text-xs text-white">
+              <SelectTrigger className="bg-slate-50 border-transparent focus:border-emerald-500 text-xs font-bold h-12 rounded-2xl transition-all">
                 <SelectValue placeholder="Selecione o método" />
               </SelectTrigger>
-              <SelectContent className="bg-slate-900 border-slate-800 text-white text-xs">
-                <SelectItem value="MULTICAIXA_EXPRESS">Multicaixa Express (Telefone)</SelectItem>
-                <SelectItem value="IBAN">Transferência Bancária (IBAN)</SelectItem>
+              <SelectContent className="bg-white rounded-2xl border border-slate-100">
+                <SelectItem value="MULTICAIXA_EXPRESS" className="text-xs font-bold">Multicaixa Express (Telefone)</SelectItem>
+                <SelectItem value="IBAN" className="text-xs font-bold">Transferência Bancária (IBAN)</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
-          <div className="space-y-1.5">
-            <Label className="text-xs text-slate-300">
+          <div className="space-y-2">
+            <Label className="text-[10px] text-slate-400 font-black uppercase tracking-widest">
               {withdrawMethod === "MULTICAIXA_EXPRESS"
-                ? "Número Multicaixa Express (9 dígitos)"
+                ? "Número Multicaixa Express"
                 : "IBAN da Conta"}
             </Label>
             <Input
               value={withdrawTarget}
               onChange={(e) => setWithdrawTarget(e.target.value)}
-              placeholder={withdrawMethod === "MULTICAIXA_EXPRESS" ? "Ex: 923456789" : "Ex: AO06.0040.0000..."}
-              className="bg-slate-950 border-slate-800 text-white text-xs"
+              placeholder={withdrawMethod === "MULTICAIXA_EXPRESS" ? "Ex: 923 456 789" : "Ex: AO06 0040..."}
+              className="bg-slate-50 border-transparent focus:bg-white focus:border-emerald-500 text-sm font-bold h-12 rounded-2xl transition-all"
               required
             />
           </div>
 
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <div className="flex justify-between items-center">
-              <Label className="text-xs text-slate-300">Valor a Sacar (Kz)</Label>
-              <span className="text-[10px] text-emerald-400 font-mono">
-                Disponível: {availableBalance.toLocaleString("pt-AO")} Kz
+              <Label className="text-[10px] text-slate-400 font-black uppercase tracking-widest">Valor a Sacar (Kz)</Label>
+              <span className="text-[9px] text-emerald-600 font-black uppercase tracking-widest bg-emerald-50 px-2 py-0.5 rounded-lg">
+                Saldo: {availableBalance.toLocaleString("pt-AO")} Kz
               </span>
             </div>
             <Input
               type="number"
               value={withdrawAmount}
               onChange={(e) => setWithdrawAmount(e.target.value)}
-              placeholder="0.00"
-              className="bg-slate-950 border-slate-800 text-white font-mono text-xs"
+              placeholder="0"
+              className="bg-slate-50 border-transparent focus:bg-white focus:border-emerald-500 font-mono text-sm font-bold h-12 rounded-2xl transition-all"
               required
               min="1"
               max={availableBalance}
             />
           </div>
 
-          <div className="bg-slate-950/70 p-3 rounded-lg border border-slate-800/80 text-[11px] text-slate-400 flex gap-2 items-start">
-            <Info className="w-4 h-4 text-sky-400 shrink-0 mt-0.5" />
+          <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 text-[10px] text-slate-500 font-medium flex gap-3 items-start leading-relaxed">
+            <Info className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
             <span>
-              Os saques são processados e pagos no prazo máximo de 24 horas. Certifique-se de que os seus dados bancários estão corretos.
+              Saques processados em até 24 horas. Certifique-se de que os seus dados estão corretos antes de confirmar.
             </span>
           </div>
 
           <DialogFooter className="pt-2">
             <Button
-              type="button"
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              className="border-slate-800 text-slate-300 text-xs h-9"
-            >
-              Cancelar
-            </Button>
-            <Button
               type="submit"
               disabled={submittingWithdraw || availableBalance <= 0}
-              className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs h-9 px-4"
+              className="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black uppercase tracking-widest h-12 rounded-2xl shadow-xl shadow-emerald-100 transition-all active:scale-95 flex items-center justify-center gap-2"
             >
               {submittingWithdraw ? (
                 <>
-                  <Loader2 className="w-3.5 h-3.5 animate-spin mr-1.5" /> Enviando...
+                  <Loader2 className="w-4 h-4 animate-spin" /> Processando...
                 </>
               ) : (
-                "Confirmar Saque"
+                <>
+                  <ArrowUpRight className="w-4 h-4" /> Confirmar Levantamento
+                </>
               )}
             </Button>
           </DialogFooter>

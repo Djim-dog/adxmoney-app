@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Loader2, Lock, Eye, EyeOff } from "lucide-react";
+import { Loader2, Lock, Eye, EyeOff, ShieldCheck } from "lucide-react";
 
 interface ChangePasswordModalProps {
   isOpen: boolean;
@@ -61,47 +61,53 @@ export const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={() => {}}>
-      <DialogContent className="max-w-sm bg-slate-900 border-slate-800 text-slate-100 sm:rounded-2xl p-6 max-h-[85vh] overflow-y-auto">
-        <DialogHeader>
-          <div className="w-10 h-10 rounded-full bg-amber-500/10 border border-amber-500/20 flex items-center justify-center mb-2 mx-auto">
-            <Lock className="w-5 h-5 text-amber-500" />
+      <DialogContent className="max-w-md bg-white border-none shadow-2xl rounded-3xl p-8 max-h-[85vh] overflow-y-auto">
+        <DialogHeader className="text-center">
+          <div className="w-14 h-14 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center mb-3 mx-auto shadow-sm">
+            <Lock className="w-7 h-7" />
           </div>
-          <DialogTitle className="text-center text-lg font-bold">Alteração de Senha</DialogTitle>
-          <DialogDescription className="text-center text-xs text-slate-400">
-            Como este é seu primeiro acesso, é obrigatório alterar sua senha pré-definida para uma senha pessoal e segura.
+          <DialogTitle className="text-xl font-black text-slate-900 tracking-tight">
+            Definir Palavra-passe Pessoal
+          </DialogTitle>
+          <DialogDescription className="text-xs text-slate-500 font-medium mt-1">
+            Por motivos de conformidade e segurança da sua conta bancária e saldo, altere a senha temporária para uma senha forte e individual.
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4 mt-2">
-          <div className="space-y-1">
-            <Label className="text-xs text-slate-300">Nova Senha</Label>
+        <form onSubmit={handleSubmit} className="space-y-5 mt-4">
+          <div className="space-y-2">
+            <Label className="text-[10px] text-slate-400 font-black uppercase tracking-widest">
+              Nova Palavra-passe
+            </Label>
             <div className="relative">
               <Input
                 type={showPassword ? "text" : "password"}
                 placeholder="Mínimo 6 caracteres"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
-                className="bg-slate-950 border-slate-800 pr-10 text-xs"
+                className="bg-slate-50 border-transparent focus:bg-white focus:border-emerald-500 pr-10 text-sm font-bold h-12 rounded-2xl transition-all"
                 required
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-2.5 text-slate-500 hover:text-slate-300"
+                className="absolute right-3.5 top-3.5 text-slate-400 hover:text-slate-600 transition-colors"
               >
-                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
               </button>
             </div>
           </div>
 
-          <div className="space-y-1">
-            <Label className="text-xs text-slate-300">Confirmar Nova Senha</Label>
+          <div className="space-y-2">
+            <Label className="text-[10px] text-slate-400 font-black uppercase tracking-widest">
+              Confirmar Palavra-passe
+            </Label>
             <Input
               type="password"
               placeholder="Repita a nova senha"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              className="bg-slate-950 border-slate-800 text-xs"
+              className="bg-slate-50 border-transparent focus:bg-white focus:border-emerald-500 text-sm font-bold h-12 rounded-2xl transition-all"
               required
             />
           </div>
@@ -109,9 +115,16 @@ export const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
           <Button
             type="submit"
             disabled={isSubmitting}
-            className="w-full bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold h-9"
+            className="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black uppercase tracking-widest h-12 rounded-2xl shadow-xl shadow-emerald-100 transition-all active:scale-95 flex items-center justify-center gap-2 mt-2"
           >
-            {isSubmitting ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "Atualizar e Prosseguir"}
+            {isSubmitting ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <>
+                <ShieldCheck className="w-4 h-4" />
+                Atualizar e Prosseguir
+              </>
+            )}
           </Button>
         </form>
       </DialogContent>

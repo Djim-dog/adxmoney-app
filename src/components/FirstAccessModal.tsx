@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Loader2, KeyRound, ShieldCheck, CheckCircle2, Lock, Eye, EyeOff } from "lucide-react";
+import { Loader2, KeyRound, ShieldCheck, CheckCircle2, Lock, Eye, EyeOff, User, Phone, Link2 } from "lucide-react";
 
 interface FirstAccessModalProps {
   isOpen: boolean;
@@ -28,9 +28,6 @@ export const FirstAccessModal: React.FC<FirstAccessModalProps> = ({
   const [name, setName] = useState(initialName || "");
   const [phone, setPhone] = useState("");
   const [primaryLink, setPrimaryLink] = useState("");
-  const [tiktok, setTiktok] = useState("");
-  const [instagram, setInstagram] = useState("");
-  const [youtube, setYoutube] = useState("");
   const [country, setCountry] = useState("Angola");
 
   const [loadingData, setLoadingData] = useState(true);
@@ -51,9 +48,6 @@ export const FirstAccessModal: React.FC<FirstAccessModalProps> = ({
             if (data.name) setName(data.name);
             if (data.phone) setPhone(data.phone);
             if (data.primary_link) setPrimaryLink(data.primary_link);
-            if (data.tiktok) setTiktok(data.tiktok);
-            if (data.instagram) setInstagram(data.instagram);
-            if (data.youtube) setYoutube(data.youtube);
             if (data.country) setCountry(data.country);
           }
         }
@@ -101,9 +95,6 @@ export const FirstAccessModal: React.FC<FirstAccessModalProps> = ({
           name: name.trim() || initialName || "Operador",
           phone: phone.trim() || null,
           primary_link: primaryLink.trim() || null,
-          tiktok: tiktok.trim() || null,
-          instagram: instagram.trim() || null,
-          youtube: youtube.trim() || null,
           country: country.trim() || "Angola",
           first_login: false,
           updated_at: new Date().toISOString(),
@@ -134,101 +125,102 @@ export const FirstAccessModal: React.FC<FirstAccessModalProps> = ({
   return (
     <Dialog open={isOpen} onOpenChange={() => {}}>
       <DialogContent 
-        className="max-w-lg bg-white border-slate-200 text-slate-900 sm:rounded-3xl p-8 shadow-2xl max-h-[90vh] overflow-y-auto"
+        className="max-w-lg bg-white border-none text-slate-900 sm:rounded-[32px] p-8 shadow-2xl max-h-[90vh] overflow-y-auto"
         onPointerDownOutside={(e) => e.preventDefault()}
         onEscapeKeyDown={(e) => e.preventDefault()}
       >
-        <DialogHeader className="text-left space-y-2 border-b border-slate-100 pb-6">
-          <div className="w-14 h-14 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600 mb-2">
-            <KeyRound className="w-7 h-7" />
+        <DialogHeader className="text-left space-y-2 border-b border-slate-50 pb-6">
+          <div className="w-16 h-16 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600 mb-2">
+            <KeyRound className="w-8 h-8" />
           </div>
-          <DialogTitle className="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-3">
-            Troca Obrigatória de Senha
-            <span className="text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full bg-emerald-100 text-emerald-700 border border-emerald-200">
-              1º Acesso
-            </span>
+          <DialogTitle className="text-2xl font-black text-slate-900 tracking-tight">
+            Configuração Inicial
           </DialogTitle>
-          <DialogDescription className="text-slate-500 text-sm font-medium leading-relaxed">
-            Por motivos de segurança, você deve substituir a senha pré-definida temporária por uma nova senha pessoal definitiva para liberar o painel.
+          <DialogDescription className="text-slate-500 text-xs font-black uppercase tracking-widest mt-1">
+            Liberação Obrigatória de Operador
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-6 mt-2">
-          <div className="p-6 rounded-3xl bg-slate-50 border border-slate-100 space-y-5">
-            <div className="flex items-center gap-2 text-emerald-700 font-black text-xs uppercase tracking-widest">
+        <form onSubmit={handleSubmit} className="space-y-8 mt-6">
+          <div className="space-y-5">
+            <div className="flex items-center gap-2 text-emerald-600 font-black text-[10px] uppercase tracking-widest">
               <Lock className="w-4 h-4" />
-              <span>Nova Senha Pessoal *</span>
+              <span>Segurança da Conta</span>
             </div>
 
-            <div className="space-y-2">
-              <Label className="text-[10px] text-slate-400 font-black uppercase tracking-widest">Nova Senha (Mínimo 6 caracteres)</Label>
-              <div className="relative">
-                <Input
-                  type={showNewPassword ? "text" : "password"}
-                  placeholder="********"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  className="bg-white border-slate-200 text-slate-900 pr-12 text-sm rounded-2xl h-12"
-                  required
-                  minLength={6}
-                  disabled={isSubmitting}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowNewPassword(!showNewPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-900"
-                >
-                  {showNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label className="text-[10px] text-slate-400 font-black uppercase tracking-widest">Nova Palavra-passe</Label>
+                <div className="relative">
+                  <Input
+                    type={showNewPassword ? "text" : "password"}
+                    placeholder="Mínimo 6 chars"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    className="bg-slate-50 border-transparent focus:bg-white focus:border-emerald-500 h-12 rounded-2xl text-sm font-bold transition-all pr-10"
+                    required
+                    minLength={6}
+                    disabled={isSubmitting}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowNewPassword(!showNewPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-900"
+                  >
+                    {showNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
               </div>
-            </div>
 
-            <div className="space-y-2">
-              <Label className="text-[10px] text-slate-400 font-black uppercase tracking-widest">Confirmar Nova Senha</Label>
-              <div className="relative">
-                <Input
-                  type={showConfirmPassword ? "text" : "password"}
-                  placeholder="********"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="bg-white border-slate-200 text-slate-900 pr-12 text-sm rounded-2xl h-12"
-                  required
-                  minLength={6}
-                  disabled={isSubmitting}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-900"
-                >
-                  {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
+              <div className="space-y-2">
+                <Label className="text-[10px] text-slate-400 font-black uppercase tracking-widest">Confirmar Senha</Label>
+                <div className="relative">
+                  <Input
+                    type={showConfirmPassword ? "text" : "password"}
+                    placeholder="Repita a senha"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    className="bg-slate-50 border-transparent focus:bg-white focus:border-emerald-500 h-12 rounded-2xl text-sm font-bold transition-all pr-10"
+                    required
+                    minLength={6}
+                    disabled={isSubmitting}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-900"
+                  >
+                    {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
               </div>
             </div>
           </div>
 
-          <div className="space-y-4 pt-1">
-            <h4 className="text-xs font-black text-slate-900 uppercase tracking-widest flex items-center gap-2">
-              <img src="/logo.png" alt="Logo" className="w-5 h-5 object-contain" />
-              Confirmação de Perfil
-            </h4>
+          <div className="space-y-5 pt-2 border-t border-slate-50">
+            <div className="flex items-center gap-2 text-emerald-600 font-black text-[10px] uppercase tracking-widest">
+              <User className="w-4 h-4" />
+              <span>Dados Identificativos</span>
+            </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label className="text-[10px] text-slate-400 font-black uppercase tracking-widest">Nome Completo</Label>
                 <Input
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="bg-white border-slate-200 text-slate-900 text-sm rounded-2xl h-12"
+                  placeholder="Nome do Operador"
+                  className="bg-slate-50 border-transparent focus:bg-white focus:border-emerald-500 h-12 rounded-2xl text-sm font-bold transition-all"
                   disabled={isSubmitting}
                 />
               </div>
               <div className="space-y-2">
-                <Label className="text-[10px] text-slate-400 font-black uppercase tracking-widest">Telefone / WhatsApp</Label>
+                <Label className="text-[10px] text-slate-400 font-black uppercase tracking-widest">WhatsApp Operacional</Label>
                 <Input
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  className="bg-white border-slate-200 text-slate-900 text-sm rounded-2xl h-12"
+                  placeholder="+244..."
+                  className="bg-slate-50 border-transparent focus:bg-white focus:border-emerald-500 h-12 rounded-2xl text-sm font-bold transition-all font-mono"
                   disabled={isSubmitting}
                 />
               </div>
@@ -239,28 +231,28 @@ export const FirstAccessModal: React.FC<FirstAccessModalProps> = ({
               <Input
                 value={primaryLink}
                 onChange={(e) => setPrimaryLink(e.target.value)}
-                placeholder="https://..."
-                className="bg-white border-slate-200 text-slate-900 text-sm rounded-2xl h-12"
+                placeholder="Ex: tiktok.com/@seuusuario"
+                className="bg-slate-50 border-transparent focus:bg-white focus:border-emerald-500 h-12 rounded-2xl text-sm font-bold transition-all"
                 disabled={isSubmitting}
               />
             </div>
           </div>
 
-          <div className="pt-2">
+          <div className="pt-4">
             <Button
               type="submit"
               disabled={isSubmitting}
-              className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black h-14 rounded-2xl flex items-center justify-center gap-2 shadow-lg shadow-emerald-100 uppercase tracking-widest text-xs"
+              className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black h-14 rounded-2xl flex items-center justify-center gap-2 shadow-xl shadow-emerald-100 uppercase tracking-widest text-xs transition-all active:scale-[0.98]"
             >
               {isSubmitting ? (
                 <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  Salvando...
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  Salvando Configurações...
                 </>
               ) : (
                 <>
-                  <CheckCircle2 className="w-4 h-4" />
-                  Concluir e Acessar Painel
+                  <CheckCircle2 className="w-5 h-5" />
+                  Ativar Minha Conta
                 </>
               )}
             </Button>
