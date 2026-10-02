@@ -93,28 +93,25 @@ const Login: React.FC = () => {
 
   return (
     <div className="min-h-screen flex flex-col justify-center items-center bg-slate-50 px-4 py-8 text-slate-900 relative">
-      {/* FAQ no canto superior direito para novos usuários */}
-      <div className="absolute top-4 right-4 z-10">
-        <Button
+      {/* FAQ no canto superior direito apenas com símbolo de interrogação */}
+      <div className="absolute top-5 right-5 z-10">
+        <button
           onClick={() => setIsFaqOpen(true)}
-          variant="outline"
-          size="sm"
-          className="rounded-2xl border-slate-200 bg-white/80 backdrop-blur-md hover:bg-emerald-50 hover:border-emerald-300 text-slate-700 font-bold text-xs gap-1.5 shadow-sm"
+          title="Perguntas Frequentes"
+          className="w-10 h-10 rounded-2xl border border-slate-200 bg-white/90 backdrop-blur-md hover:bg-emerald-50 hover:border-emerald-300 text-emerald-600 flex items-center justify-center shadow-sm transition-all active:scale-95"
         >
-          <HelpCircle className="w-4 h-4 text-emerald-600" />
-          <span>Perguntas Frequentes</span>
-        </Button>
+          <HelpCircle className="w-5 h-5" />
+        </button>
       </div>
 
       <div className="w-full max-w-sm">
-        <div className="text-center mb-10">
-          <img src="/logo.png" alt="ADXmoney Logo" className="h-20 mx-auto mb-4" />
+        <div className="text-center mb-6">
+          <img src="/logo.png" alt="ADXmoney Logo" className="h-20 mx-auto mb-3" />
           <h1 className="text-2xl font-black text-slate-900 tracking-tight">ADXmoney</h1>
-          <p className="text-[10px] text-slate-500 uppercase font-bold tracking-widest mt-2">Acesso Operacional ao Sistema</p>
         </div>
 
         <Card className="bg-white border-slate-200 text-slate-900 shadow-xl shadow-slate-200/50 rounded-3xl overflow-hidden border-none">
-          <CardHeader className="space-y-1 pb-6 pt-8 text-center bg-white">
+          <CardHeader className="space-y-1 pb-4 pt-6 text-center bg-white">
             <CardTitle className="text-xl font-bold text-slate-900">Bem-vindo</CardTitle>
             <CardDescription className="text-slate-500 text-xs">
               Insira seus dados para acessar o seu painel de operador.

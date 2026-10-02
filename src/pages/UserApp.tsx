@@ -22,7 +22,8 @@ import {
   FileText,
   Info,
   Clock,
-  MessageSquare
+  MessageSquare,
+  X
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -833,18 +834,27 @@ export default function UserAppPage() {
       {/* Bottom Navigation */}
       {/* Modal / Sheet do Menu Três Pontos */}
       <Dialog open={isMenuOpen} onOpenChange={setIsMenuOpen}>
-        <DialogContent className="bg-white rounded-3xl border-none max-w-md p-6">
-          <DialogHeader>
-            <DialogTitle className="text-xl font-black text-slate-900">Menu Principal</DialogTitle>
-            <DialogDescription className="text-xs text-slate-500">
-              Acesse configurações, histórico, suporte e informações da ADXmoney.
-            </DialogDescription>
-          </DialogHeader>
+        <DialogContent className="bg-white rounded-3xl border-none max-w-md p-6 shadow-2xl">
+          <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+            <div>
+              <DialogTitle className="text-xl font-black text-slate-900 tracking-tight">Menu Principal</DialogTitle>
+              <DialogDescription className="text-xs text-slate-500 mt-0.5">
+                Opções e recursos da sua conta ADXmoney
+              </DialogDescription>
+            </div>
+            <button
+              onClick={() => setIsMenuOpen(false)}
+              className="w-9 h-9 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center transition-all active:scale-90"
+              title="Fechar menu"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
 
-          <div className="space-y-2 py-4">
+          <div className="space-y-1.5 py-4">
             <button
               onClick={() => { setIsMenuOpen(false); setIsSettingsOpen(true); }}
-              className="w-full flex items-center justify-between p-3 rounded-2xl hover:bg-slate-50 transition-all font-bold text-sm text-slate-700"
+              className="w-full flex items-center justify-between p-3 rounded-2xl hover:bg-slate-50 border border-transparent hover:border-slate-100 transition-all font-bold text-sm text-slate-700"
             >
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
@@ -852,12 +862,12 @@ export default function UserAppPage() {
                 </div>
                 <span>Configurações</span>
               </div>
-              <span className="text-xs text-slate-400">Editar perfil</span>
+              <span className="text-xs text-slate-400 font-medium">Editar perfil</span>
             </button>
 
             <button
               onClick={() => { setIsMenuOpen(false); setIsNotificationsOpen(true); }}
-              className="w-full flex items-center justify-between p-3 rounded-2xl hover:bg-slate-50 transition-all font-bold text-sm text-slate-700"
+              className="w-full flex items-center justify-between p-3 rounded-2xl hover:bg-slate-50 border border-transparent hover:border-slate-100 transition-all font-bold text-sm text-slate-700"
             >
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
@@ -870,13 +880,81 @@ export default function UserAppPage() {
 
             <button
               onClick={() => { setIsMenuOpen(false); setIsHistoryOpen(true); }}
-              className="w-full flex items-center justify-between p-3 rounded-2xl hover:bg-slate-50 transition-all font-bold text-sm text-slate-700"
+              className="w-full flex items-center justify-between p-3 rounded-2xl hover:bg-slate-50 border border-transparent hover:border-slate-100 transition-all font-bold text-sm text-slate-700"
             >
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
                   <Clock className="w-5 h-5" />
                 </div>
                 <span>Histórico</span>
+              </div>
+              <span className="text-xs text-slate-400 font-medium">Atividades</span>
+            </button>
+
+            <button
+              onClick={() => { setIsMenuOpen(false); setIsSupportOpen(true); }}
+              className="w-full flex items-center justify-between p-3 rounded-2xl hover:bg-slate-50 border border-transparent hover:border-slate-100 transition-all font-bold text-sm text-slate-700"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                  <MessageSquare className="w-5 h-5" />
+                </div>
+                <span>Apoio ao Cliente</span>
+              </div>
+              <span className="text-xs text-slate-400 font-medium">WhatsApp</span>
+            </button>
+
+            <button
+              onClick={() => { setIsMenuOpen(false); setIsAboutOpen(true); }}
+              className="w-full flex items-center justify-between p-3 rounded-2xl hover:bg-slate-50 border border-transparent hover:border-slate-100 transition-all font-bold text-sm text-slate-700"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                  <Info className="w-5 h-5" />
+                </div>
+                <span>Sobre ADXmoney</span>
+              </div>
+              <span className="text-xs text-slate-400 font-medium">Info</span>
+            </button>
+
+            <button
+              onClick={() => { setIsMenuOpen(false); setIsPrivacyOpen(true); }}
+              className="w-full flex items-center justify-between p-3 rounded-2xl hover:bg-slate-50 border border-transparent hover:border-slate-100 transition-all font-bold text-sm text-slate-700"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                  <Shield className="w-5 h-5" />
+                </div>
+                <span>Privacidade e Termos</span>
+              </div>
+              <span className="text-xs text-slate-400 font-medium">Regras</span>
+            </button>
+
+            <button
+              onClick={() => { setIsMenuOpen(false); setIsFaqOpen(true); }}
+              className="w-full flex items-center justify-between p-3 rounded-2xl hover:bg-slate-50 border border-transparent hover:border-slate-100 transition-all font-bold text-sm text-slate-700"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                  <HelpCircle className="w-5 h-5" />
+                </div>
+                <span>Perguntas Frequentes (FAQ)</span>
+              </div>
+              <span className="text-xs text-slate-400 font-medium">Dúvidas</span>
+            </button>
+          </div>
+
+          <div className="pt-3 border-t border-slate-100">
+            <Button
+              onClick={() => { setIsMenuOpen(false); signOut(); }}
+              variant="destructive"
+              className="w-full h-12 rounded-2xl bg-rose-50 hover:bg-rose-100 text-rose-600 font-black text-xs uppercase tracking-widest gap-2 border border-rose-200"
+            >
+              <LogOut className="w-4 h-4" /> Terminar Sessão
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
               </div>
               <span className="text-xs text-slate-400">Atividades</span>
             </button>
