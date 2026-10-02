@@ -130,8 +130,8 @@ export default function AccountSetup() {
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col justify-center items-center px-4 py-12 font-sans antialiased">
       <div className="max-w-md w-full mb-10 text-center">
-        <div className="w-16 h-16 bg-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-xl shadow-emerald-100">
-          <img src="/logo.png" alt="ADX" className="h-10 w-auto brightness-0 invert" />
+        <div className="w-16 h-16 bg-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-xl shadow-emerald-100 overflow-hidden">
+          <img src="/logo.png" alt="ADX" className="w-full h-full object-cover" />
         </div>
         <h1 className="text-2xl font-black text-slate-900 tracking-tight">Ativação de Conta</h1>
         <p className="text-xs text-slate-500 mt-2 font-medium uppercase tracking-widest">Configuração Obrigatória de Operador</p>

@@ -557,8 +557,8 @@ export const AdminDashboardPage: React.FC = () => {
       {/* HEADER */}
       <header className="bg-white border-b border-slate-100 px-6 py-4 flex items-center justify-between sticky top-0 z-30">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-slate-900 flex items-center justify-center text-white font-black shadow-md shadow-slate-200">
-            ADX
+          <div className="w-10 h-10 rounded-2xl flex items-center justify-center text-white font-black shadow-md shadow-emerald-100 overflow-hidden bg-emerald-600">
+            <img src="/logo.png" alt="ADX" className="w-full h-full object-cover" />
           </div>
           <div>
             <h1 className="text-sm font-black text-slate-900 tracking-tight uppercase flex items-center gap-2">

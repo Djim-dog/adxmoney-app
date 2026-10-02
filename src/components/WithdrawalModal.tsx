@@ -53,8 +53,18 @@ export const WithdrawalModal: React.FC<WithdrawalModalProps> = ({
       return;
     }
 
+    if (method === "Unitel Money" && !phoneNumber.trim()) {
+      toast.error("Informe o número de telefone associado ao Unitel Money.");
+      return;
+    }
+
     if (method === "Transferência Bancária (IBAN)" && !accountNumber.trim()) {
       toast.error("Informe o IBAN para a transferência bancária.");
+      return;
+    }
+    
+    if (method === "Pix" && !accountNumber.trim()) {
+      toast.error("Informe a chave Pix.");
       return;
     }
 
@@ -155,8 +165,30 @@ export const WithdrawalModal: React.FC<WithdrawalModalProps> = ({
                 <SelectValue placeholder="Selecione o método" />
               </SelectTrigger>
               <SelectContent className="bg-white border-slate-200 text-slate-900">
-                <SelectItem value="Multicaixa Express">Multicaixa Express</SelectItem>
-                <SelectItem value="Transferência Bancária (IBAN)">Transferência Bancária (IBAN)</SelectItem>
+                <SelectItem value="Multicaixa Express">
+                  <div className="flex items-center gap-2">
+                    <img src="/express-logo.png" alt="Express" className="w-5 h-5 object-contain" />
+                    Multicaixa Express
+                  </div>
+                </SelectItem>
+                <SelectItem value="Transferência Bancária (IBAN)">
+                  <div className="flex items-center gap-2">
+                    <img src="/iban-logo.png" alt="IBAN" className="w-5 h-5 object-contain" />
+                    Transferência Bancária (IBAN)
+                  </div>
+                </SelectItem>
+                <SelectItem value="Unitel Money">
+                  <div className="flex items-center gap-2">
+                    <img src="/unitel-logo.png" alt="Unitel" className="w-5 h-5 object-contain" />
+                    Unitel Money
+                  </div>
+                </SelectItem>
+                <SelectItem value="Pix">
+                  <div className="flex items-center gap-2">
+                    <img src="/pix-logo.png" alt="Pix" className="w-5 h-5 object-contain" />
+                    Pix
+                  </div>
+                </SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -176,10 +208,10 @@ export const WithdrawalModal: React.FC<WithdrawalModalProps> = ({
             />
           </div>
 
-          {method === "Multicaixa Express" ? (
+          {method === "Multicaixa Express" || method === "Unitel Money" ? (
             <div className="space-y-2">
               <Label htmlFor="w-phone" className="text-xs text-slate-400 font-black uppercase tracking-widest">
-                Número de Telefone Express <span className="text-rose-400">*</span>
+                {method === "Unitel Money" ? "Número Unitel Money" : "Número de Telefone Express"} <span className="text-rose-400">*</span>
               </Label>
               <Input
                 id="w-phone"
@@ -193,12 +225,12 @@ export const WithdrawalModal: React.FC<WithdrawalModalProps> = ({
             </div>
           ) : (
             <div className="space-y-2">
-              <Label htmlFor="w-iban" className="text-xs text-slate-400 font-black uppercase tracking-widest">
-                IBAN Bancário <span className="text-rose-400">*</span>
+              <Label htmlFor="w-account" className="text-xs text-slate-400 font-black uppercase tracking-widest">
+                {method === "Pix" ? "Chave Pix" : "IBAN Bancário"} <span className="text-rose-400">*</span>
               </Label>
               <Input
-                id="w-iban"
-                placeholder="AO06 0000 0000 0000 0000 0000 0"
+                id="w-account"
+                placeholder={method === "Pix" ? "Chave Pix..." : "AO06 0000 0000 0000 0000 0000 0"}
                 value={accountNumber}
                 onChange={(e) => setAccountNumber(e.target.value)}
                 className="bg-white border-slate-200 text-slate-900 placeholder:text-slate-300 font-mono text-xs focus-visible:ring-emerald-500 rounded-2xl h-12"

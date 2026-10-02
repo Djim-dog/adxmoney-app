@@ -31,9 +31,7 @@ export const Navbar: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
         <div className="flex items-center gap-8">
           <Link to="/" className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-emerald-600 flex items-center justify-center text-white shadow-lg shadow-emerald-100">
-               <span className="font-black text-lg tracking-tighter">ADX</span>
-            </div>
+            <img src="/logo.png" alt="ADXmoney" className="w-10 h-10 rounded-2xl object-cover shadow-lg shadow-emerald-100/50 border border-slate-100" />
             <div className="hidden sm:block">
               <span className="font-black text-slate-900 tracking-tight text-lg block leading-none">ADXmoney</span>
               <span className="text-[9px] text-slate-400 font-black uppercase tracking-[0.2em] mt-0.5">Operações Digitais</span>

@@ -256,8 +256,8 @@ export default function UserAppPage() {
       {/* Header */}
       <header className="sticky top-0 z-40 bg-white border-b border-slate-200 px-4 py-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-100">
-            <img src="/logo.png" alt="ADX" className="h-6 w-auto brightness-0 invert" />
+          <div className="w-10 h-10 rounded-2xl flex items-center justify-center shadow-lg shadow-emerald-100 overflow-hidden bg-emerald-600">
+            <img src="/logo.png" alt="ADX" className="w-full h-full object-cover" />
           </div>
           <div>
             <h1 className="text-base font-black text-slate-900 tracking-tight flex items-center gap-1.5 leading-none">
