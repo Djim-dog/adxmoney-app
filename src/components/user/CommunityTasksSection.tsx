@@ -78,7 +78,7 @@ export const CommunityTasksSection: React.FC = () => {
         .from('community_settings')
         .select('value')
         .eq('key', 'daily_limits')
-        .single();
+        .maybeSingle();
       
       const configuredLimits = limitData?.value || { tiktok: 100, instagram: 100, youtube: 100 };
 
@@ -93,8 +93,8 @@ export const CommunityTasksSection: React.FC = () => {
 
       const newLimits = { ...limits };
       platforms.forEach(p => {
-        const count = queueData?.filter(q => q.community_tasks?.platform?.toLowerCase() === p.id.toLowerCase()).length || 0;
-        newLimits[p.id] = { current: count, max: configuredLimits[p.id] || 100 };
+        const count = queueData?.filter((q: any) => q.community_tasks?.platform?.toLowerCase() === p.id.toLowerCase()).length || 0;
+        newLimits[p.id] = { current: count, max: (configuredLimits as any)[p.id] || 100 };
       });
       setLimits(newLimits);
 
