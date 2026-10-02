@@ -781,20 +781,11 @@ export default function UserAppPage() {
       {/* Modal / Sheet do Menu Três Pontos */}
       <Dialog open={isMenuOpen} onOpenChange={setIsMenuOpen}>
         <DialogContent className="bg-white rounded-3xl border-none max-w-[90vw] sm:max-w-sm p-4 shadow-2xl max-h-[90vh] overflow-y-auto">
-          <div className="flex items-center justify-between pb-2 border-b border-slate-100">
-            <button
-              onClick={() => setIsMenuOpen(false)}
-              className="w-9 h-9 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-500 flex items-center justify-center transition-all active:scale-90"
-              title="Fechar menu"
-            >
-              <X className="w-5 h-5" />
-            </button>
-            <div className="text-right">
-              <DialogTitle className="text-base font-black text-slate-900 tracking-tight">Menu Principal</DialogTitle>
-              <DialogDescription className="text-[10px] text-slate-400">
-                Opções e recursos ADXmoney
-              </DialogDescription>
-            </div>
+          <div className="pb-2 border-b border-slate-100 pr-8">
+            <DialogTitle className="text-base font-black text-slate-900 tracking-tight">Menu Principal</DialogTitle>
+            <DialogDescription className="text-[10px] text-slate-400">
+              Opções e recursos ADXmoney
+            </DialogDescription>
           </div>
 
           <div className="space-y-1.5 py-3">
