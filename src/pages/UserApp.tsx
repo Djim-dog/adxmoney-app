@@ -38,7 +38,7 @@ export default function UserAppPage() {
 
   // Navigation Tabs: "tasks" | "campaigns" | "affiliate" | "wallet"
   const [activeTab, setActiveTab] = useState<"tasks" | "campaigns" | "affiliate" | "wallet">("tasks");
-  const [tasksSubTab, setTasksSubTab] = useState<"financial" | "community">("financial");
+  const [tasksSubTab, setTasksSubTab] = useState<"community" | "financial">("community");
 
   const [loading, setLoading] = useState(false);
   const [wallet, setWallet] = useState<{ id: string; balance: number; reserved_balance: number } | null>(null);
@@ -294,16 +294,6 @@ export default function UserAppPage() {
             {/* Seletor Segmentado */}
             <div className="flex bg-white p-1 rounded-3xl border border-slate-200 shadow-sm">
               <button
-                onClick={() => setTasksSubTab("financial")}
-                className={`flex-1 py-2.5 text-xs font-black rounded-2xl transition-all ${
-                  tasksSubTab === "financial"
-                    ? "bg-emerald-600 text-white shadow-md shadow-emerald-100"
-                    : "text-slate-400 hover:text-slate-600"
-                }`}
-              >
-                TAREFAS FINANCEIRAS
-              </button>
-              <button
                 onClick={() => setTasksSubTab("community")}
                 className={`flex-1 py-2.5 text-xs font-black rounded-2xl transition-all ${
                   tasksSubTab === "community"
@@ -312,6 +302,16 @@ export default function UserAppPage() {
                 }`}
               >
                 COMUNITÁRIAS
+              </button>
+              <button
+                onClick={() => setTasksSubTab("financial")}
+                className={`flex-1 py-2.5 text-xs font-black rounded-2xl transition-all ${
+                  tasksSubTab === "financial"
+                    ? "bg-emerald-600 text-white shadow-md shadow-emerald-100"
+                    : "text-slate-400 hover:text-slate-600"
+                }`}
+              >
+                TAREFAS FINANCEIRAS
               </button>
             </div>
 
