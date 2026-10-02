@@ -62,9 +62,9 @@ export const CommunityTasksSection: React.FC = () => {
   const [isReporting, setIsReporting] = useState(false);
 
   const platforms: Platform[] = [
-    { id: 'tiktok', label: 'TikTok', icon: <img src="/tiktok-logo.png" alt="TikTok" className="w-4 h-4 object-contain" /> },
-    { id: 'instagram', label: 'Instagram', icon: <img src="/instagram-logo.png" alt="Instagram" className="w-4 h-4 object-contain" /> },
-    { id: 'youtube', label: 'YouTube', icon: <img src="/youtube-logo.png" alt="YouTube" className="w-4 h-4 object-contain" /> }
+    { id: 'tiktok', label: 'TikTok', icon: <img src="/icons/tiktok.jpg" alt="TikTok" className="w-6 h-6 rounded-lg object-cover shadow-sm" /> },
+    { id: 'instagram', label: 'Instagram', icon: <img src="/icons/instagram.jpg" alt="Instagram" className="w-6 h-6 rounded-lg object-cover shadow-sm" /> },
+    { id: 'youtube', label: 'YouTube', icon: <img src="/icons/youtube.jpg" alt="YouTube" className="w-6 h-6 rounded-lg object-cover shadow-sm" /> }
   ];
 
   const loadTasks = async () => {
@@ -182,10 +182,10 @@ export const CommunityTasksSection: React.FC = () => {
               <CardHeader className="p-5 pb-3">
                 <div className="flex justify-between items-center">
                   <div className="flex items-center gap-2">
-                    <div className="w-7 h-7 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center p-1">
-                      {task.platform === 'tiktok' && <img src="/tiktok-logo.png" alt="TikTok" className="w-full h-full object-contain" />}
-                      {task.platform === 'instagram' && <img src="/instagram-logo.png" alt="Instagram" className="w-full h-full object-contain" />}
-                      {task.platform === 'youtube' && <img src="/youtube-logo.png" alt="YouTube" className="w-full h-full object-contain" />}
+                    <div className="w-8 h-8 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-center p-1 overflow-hidden shrink-0 shadow-sm">
+                      {task.platform === 'tiktok' && <img src="/icons/tiktok.jpg" alt="TikTok" className="w-full h-full object-cover rounded-lg" />}
+                      {task.platform === 'instagram' && <img src="/icons/instagram.jpg" alt="Instagram" className="w-full h-full object-cover rounded-lg" />}
+                      {task.platform === 'youtube' && <img src="/icons/youtube.jpg" alt="YouTube" className="w-full h-full object-cover rounded-lg" />}
                     </div>
                     <Badge className="bg-emerald-50 text-emerald-600 border-none px-3 py-1 font-black text-[9px] uppercase tracking-widest">
                        {task.task_type}

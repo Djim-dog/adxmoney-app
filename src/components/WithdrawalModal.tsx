@@ -166,27 +166,27 @@ export const WithdrawalModal: React.FC<WithdrawalModalProps> = ({
               </SelectTrigger>
               <SelectContent className="bg-white border-slate-200 text-slate-900">
                 <SelectItem value="Multicaixa Express">
-                  <div className="flex items-center gap-2">
-                    <img src="/express-logo.png" alt="Express" className="w-5 h-5 object-contain" />
-                    Multicaixa Express
+                  <div className="flex items-center gap-2.5">
+                    <img src="/icons/express.jpg" alt="Express" className="w-6 h-6 object-cover rounded-lg shadow-sm" />
+                    <span className="text-[10px] font-black uppercase tracking-wider">Multicaixa Express</span>
                   </div>
                 </SelectItem>
                 <SelectItem value="Transferência Bancária (IBAN)">
-                  <div className="flex items-center gap-2">
-                    <img src="/iban-logo.png" alt="IBAN" className="w-5 h-5 object-contain" />
-                    Transferência Bancária (IBAN)
+                  <div className="flex items-center gap-2.5">
+                    <img src="/icons/iban.jpg" alt="IBAN" className="w-6 h-6 object-cover rounded-lg shadow-sm" />
+                    <span className="text-[10px] font-black uppercase tracking-wider">Transferência Bancária (IBAN)</span>
                   </div>
                 </SelectItem>
                 <SelectItem value="Unitel Money">
-                  <div className="flex items-center gap-2">
-                    <img src="/unitel-logo.png" alt="Unitel" className="w-5 h-5 object-contain" />
-                    Unitel Money
+                  <div className="flex items-center gap-2.5">
+                    <img src="/icons/unitel.jpg" alt="Unitel" className="w-6 h-6 object-cover rounded-lg shadow-sm" />
+                    <span className="text-[10px] font-black uppercase tracking-wider">Unitel Money</span>
                   </div>
                 </SelectItem>
                 <SelectItem value="Pix">
-                  <div className="flex items-center gap-2">
-                    <img src="/pix-logo.png" alt="Pix" className="w-5 h-5 object-contain" />
-                    Pix
+                  <div className="flex items-center gap-2.5">
+                    <img src="/icons/pix.jpg" alt="Pix" className="w-6 h-6 object-cover rounded-lg shadow-sm" />
+                    <span className="text-[10px] font-black uppercase tracking-wider">Pix</span>
                   </div>
                 </SelectItem>
               </SelectContent>

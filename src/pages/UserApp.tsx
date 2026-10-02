@@ -491,16 +491,16 @@ export default function UserAppPage() {
                   <Label className="text-xs font-black text-slate-400 uppercase">Escolha o Método</Label>
                   <div className="grid grid-cols-2 gap-3">
                     {[
-                      { id: 'express', label: 'Multicaixa', icon: '/express-logo.png' },
-                      { id: 'unitel', label: 'Unitel Money', icon: '/unitel-logo.png' },
-                      { id: 'iban', label: 'Transferência', icon: '/iban-logo.png' },
-                      { id: 'pix', label: 'PIX Instantâneo', icon: '/pix-logo.png' }
+                      { id: 'express', label: 'Multicaixa Express', icon: '/icons/express.jpg' },
+                      { id: 'unitel', label: 'Unitel Money', icon: '/icons/unitel.jpg' },
+                      { id: 'iban', label: 'Transferência (IBAN)', icon: '/icons/iban.jpg' },
+                      { id: 'pix', label: 'PIX Instantâneo', icon: '/icons/pix.jpg' }
                     ].map((method) => (
                       <button
                         key={method.id}
                         type="button"
                         onClick={() => setWithdrawMethod(method.id)}
-                        className={`flex items-center justify-center gap-3 p-4 rounded-2xl border text-sm font-black transition-all ${
+                        className={`flex items-center justify-center gap-2.5 p-3.5 rounded-2xl border transition-all ${
                           withdrawMethod === method.id
                             ? 'bg-emerald-600 border-emerald-600 text-white shadow-lg shadow-emerald-100'
                             : 'bg-white border-slate-100 text-slate-700 hover:border-slate-200'
@@ -509,9 +509,9 @@ export default function UserAppPage() {
                         <img
                           src={method.icon}
                           alt={method.label}
-                          className={`w-5 h-5 object-contain ${withdrawMethod === method.id ? 'brightness-0 invert' : ''}`}
+                          className="w-7 h-7 object-cover rounded-lg shadow-sm border border-slate-100/20 shrink-0"
                         />
-                        {method.label}
+                        <span className="text-[10px] font-black uppercase tracking-tight">{method.label}</span>
                       </button>
                     ))}
                   </div>

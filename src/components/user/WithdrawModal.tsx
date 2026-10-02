@@ -103,15 +103,15 @@ export const WithdrawModal: React.FC<WithdrawModalProps> = ({
               </SelectTrigger>
               <SelectContent className="bg-white rounded-2xl border border-slate-100">
                 <SelectItem value="MULTICAIXA_EXPRESS" className="text-xs font-bold">
-                  <div className="flex items-center gap-2">
-                    <img src="/express-logo.png" alt="Express" className="w-5 h-5 object-contain" />
-                    Multicaixa Express (Telefone)
+                  <div className="flex items-center gap-2.5">
+                    <img src="/icons/express.jpg" alt="Express" className="w-6 h-6 object-cover rounded-lg shadow-sm" />
+                    <span className="text-[10px] font-black uppercase tracking-wider">Multicaixa Express (Telefone)</span>
                   </div>
                 </SelectItem>
                 <SelectItem value="IBAN" className="text-xs font-bold">
-                  <div className="flex items-center gap-2">
-                    <img src="/iban-logo.png" alt="IBAN" className="w-5 h-5 object-contain" />
-                    Transferência Bancária (IBAN)
+                  <div className="flex items-center gap-2.5">
+                    <img src="/icons/iban.jpg" alt="IBAN" className="w-6 h-6 object-cover rounded-lg shadow-sm" />
+                    <span className="text-[10px] font-black uppercase tracking-wider">Transferência Bancária (IBAN)</span>
                   </div>
                 </SelectItem>
               </SelectContent>

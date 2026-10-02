@@ -1323,27 +1323,21 @@ export const AdminDashboardPage: React.FC = () => {
                   </SelectTrigger>
                   <SelectContent className="bg-white border-slate-100 rounded-2xl">
                     <SelectItem value="TikTok" className="text-xs font-bold">
-                      <div className="flex items-center gap-2">
-                        <img src="/tiktok-logo.png" alt="TikTok" className="w-4 h-4 object-contain" />
-                        TikTok
+                      <div className="flex items-center gap-2.5">
+                        <img src="/icons/tiktok.jpg" alt="TikTok" className="w-5 h-5 object-cover rounded-md" />
+                        <span className="text-[10px] font-black uppercase tracking-wider">TikTok</span>
                       </div>
                     </SelectItem>
                     <SelectItem value="Instagram" className="text-xs font-bold">
-                      <div className="flex items-center gap-2">
-                        <img src="/instagram-logo.png" alt="Instagram" className="w-4 h-4 object-contain" />
-                        Instagram
+                      <div className="flex items-center gap-2.5">
+                        <img src="/icons/instagram.jpg" alt="Instagram" className="w-5 h-5 object-cover rounded-md" />
+                        <span className="text-[10px] font-black uppercase tracking-wider">Instagram</span>
                       </div>
                     </SelectItem>
                     <SelectItem value="YouTube" className="text-xs font-bold">
-                      <div className="flex items-center gap-2">
-                        <img src="/youtube-logo.png" alt="YouTube" className="w-4 h-4 object-contain" />
-                        YouTube
-                      </div>
-                    </SelectItem>
-                    <SelectItem value="Facebook" className="text-xs font-bold">
-                      <div className="flex items-center gap-2">
-                        <img src="/facebook-logo.png" alt="Facebook" className="w-4 h-4 object-contain" />
-                        Facebook
+                      <div className="flex items-center gap-2.5">
+                        <img src="/icons/youtube.jpg" alt="YouTube" className="w-5 h-5 object-cover rounded-md" />
+                        <span className="text-[10px] font-black uppercase tracking-wider">YouTube</span>
                       </div>
                     </SelectItem>
                   </SelectContent>
