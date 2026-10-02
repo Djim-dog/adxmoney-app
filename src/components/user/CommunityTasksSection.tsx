@@ -76,58 +76,66 @@ export const CommunityTasksSection: React.FC = () => {
       const loadedTasks = data || [];
       setTasks(loadedTasks);
 
-      const { data: limitData } = await supabase
-        .from('community_settings')
-        .select('value')
-        .eq('key', 'daily_limits')
-        .maybeSingle();
-      
-      const configuredLimits = limitData?.value || { tiktok: 100, instagram: 100, youtube: 100 };
+      // Obter limites configurados de forma totalmente segura e tolerante a falhas
+      let configuredLimits = { tiktok: 100, instagram: 100, youtube: 100 };
+      try {
+        const { data: limitData } = await supabase
+          .from('community_settings')
+          .select('value')
+          .eq('key', 'daily_limits')
+          .maybeSingle();
+        if (limitData && limitData.value) {
+          configuredLimits = { ...configuredLimits, ...(limitData.value as any) };
+        }
+      } catch (e) {
+        console.warn("Usando limites padrão por indisponibilidade de settings:", e);
+      }
 
-      // Calcular contagem de tarefas atuais de forma segura utilizando as tarefas ativas e a base local
+      // Calcular contagem de tarefas atuais diretamente a partir da RPC ou dados locais
       const counts: Record<string, number> = { tiktok: 0, instagram: 0, youtube: 0 };
       
-      // Buscar contagem diretamente por query segura sem joins complexos
+      // Contar com base nas tarefas retornadas ou numa contagem simples na queue do usuário
       const userId = (await supabase.auth.getUser()).data.user?.id;
       if (userId) {
-        const todayStr = new Date().toLocaleDateString('en-CA'); // Formato YYYY-MM-DD seguro
-        const { data: queueCountData } = await supabase
+        const todayStr = new Date().toLocaleDateString('en-CA');
+        const { data: queueCountData, error: qError } = await supabase
           .from('task_distribution_queue')
-          .select('id, task_id, assigned_at')
+          .select('id, assigned_at, task_id')
           .eq('user_id', userId)
           .gte('assigned_at', todayStr + 'T00:00:00');
 
-        if (queueCountData && queueCountData.length > 0) {
-          const taskIds = queueCountData.map((q: any) => q.task_id);
-          const { data: tasksPlatformData } = await supabase
-            .from('community_tasks')
-            .select('id, platform')
-            .in('id', taskIds);
+        if (!qError && queueCountData && queueCountData.length > 0) {
+          // Vamos buscar a plataforma de cada task_id na tabela community_tasks em lote
+          const tIds = queueCountData.map((q: any) => q.task_id).filter(Boolean);
+          if (tIds.length > 0) {
+            const { data: tData } = await supabase
+              .from('community_tasks')
+              .select('id, platform')
+              .in('id', tIds);
 
-          if (tasksPlatformData) {
-            const platformMap = new Map(tasksPlatformData.map((t: any) => [t.id, t.platform?.toLowerCase()]));
-            queueCountData.forEach((q: any) => {
-              const plat = platformMap.get(q.task_id);
-              if (plat && counts[plat] !== undefined) {
-                counts[plat]++;
-              }
-            });
+            if (tData) {
+              const platformMap = new Map(tData.map((t: any) => [t.id, t.platform?.toLowerCase()]));
+              queueCountData.forEach((q: any) => {
+                const plat = platformMap.get(q.task_id);
+                if (plat && counts[plat] !== undefined) {
+                  counts[plat]++;
+                }
+              });
+            }
           }
         }
       }
 
-      const newLimits = { ...limits };
-      platforms.forEach(p => {
-        newLimits[p.id] = {
-          current: counts[p.id] || 0,
-          max: (configuredLimits as any)[p.id] || 100
-        };
+      setLimits({
+        tiktok: { current: counts.tiktok, max: configuredLimits.tiktok },
+        instagram: { current: counts.instagram, max: configuredLimits.instagram },
+        youtube: { current: counts.youtube, max: configuredLimits.youtube }
       });
-      setLimits(newLimits);
 
     } catch (err: any) {
       console.error("Erro ao carregar tarefas:", err);
-      toast.error("Erro ao sincronizar tarefas.");
+      // Não bloqueia a UI com toast de erro agressivo se for falha de rede/sincronismo menor
+      setTasks([]);
     } finally {
       setLoading(false);
     }
