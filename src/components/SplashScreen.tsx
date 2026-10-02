@@ -1,28 +1,14 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 
 interface SplashScreenProps {
   message?: string;
-  onFinish?: () => void;
 }
 
 export const SplashScreen: React.FC<SplashScreenProps> = ({
-  message = "Conectando ao sistema...",
-  onFinish
+  message = "Conectando ao sistema..."
 }) => {
-  const [show, setShow] = useState(true);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setShow(false);
-      if (onFinish) onFinish();
-    }, 3000);
-    return () => clearTimeout(timer);
-  }, [onFinish]);
-
-  if (!show) return null;
-
   return (
-    <div className="fixed inset-0 z-50 bg-slate-50 flex flex-col items-center justify-center antialiased p-4 animate-in fade-in duration-300">
+    <div className="fixed inset-0 z-50 bg-slate-50 flex flex-col items-center justify-center antialiased p-4">
       <div className="relative flex flex-col items-center gap-8">
         <div className="w-32 h-32 rounded-3xl bg-emerald-600 flex items-center justify-center shadow-2xl shadow-emerald-500/20 overflow-hidden animate-in fade-in zoom-in duration-500">
           <img src="/logo.png" alt="ADXmoney" className="w-full h-full object-cover" />
@@ -33,6 +19,11 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
             <span className="text-sm">{message}</span>
           </div>
+        </div>
+      </div>
+    </div>
+  );
+};
         </div>
       </div>
     </div>
