@@ -26,6 +26,11 @@ import {
   Lock,
   Megaphone,
   Info,
+  Settings,
+  Bell,
+  CheckCircle,
+  HelpCircle,
+  X
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
@@ -33,6 +38,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { toast } from "sonner";
 
 import { UserCampaignsHub } from "@/components/user/UserCampaignsHub";
@@ -46,6 +52,36 @@ import {
 export default function UserAppPage() {
   const { user, profile, signOut, refreshProfile } = useAuth();
   const navigate = useNavigate();
+
+  // Android Navigation Tabs: "tasks" | "campaigns" | "affiliate" | "wallet"
+  const [activeTab, setActiveTab] = useState<"tasks" | "campaigns" | "affiliate" | "wallet">("tasks");
+  const [tasksSubTab, setTasksSubTab] = useState<"financial" | "community">("financial");
+
+  const [loading, setLoading] = useState(false);
+  const [wallet, setWallet] = useState<{ id: string; balance: number; reserved_balance: number } | null>(null);
+  const [campaigns, setCampaigns] = useState<any[]>([]);
+  const [transactions, setTransactions] = useState<any[]>([]);
+  const [affiliate, setAffiliate] = useState<any | null>(null);
+
+  // Profile overlay / Settings Modal
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [profileName, setProfileName] = useState("");
+  const [profilePhone, setProfilePhone] = useState("");
+  const [profileLink, setProfileLink] = useState("");
+  const [profileTiktok, setProfileTiktok] = useState("");
+  const [profileInstagram, setProfileInstagram] = useState("");
+  const [profileYoutube, setProfileYoutube] = useState("");
+  const [updatingProfile, setUpdatingProfile] = useState(false);
+
+  // Withdrawal form
+  const [withdrawMethod, setWithdrawMethod] = useState<string>("express");
+  const [withdrawAmount, setWithdrawAmount] = useState<string>("");
+  const [withdrawIban, setWithdrawIban] = useState("");
+  const [withdrawHolder, setWithdrawHolder] = useState("");
+  const [withdrawPhone, setWithdrawPhone] = useState("");
+  const [withdrawPix, setWithdrawPix] = useState("");
+  const [isRequestingWithdraw, setIsRequestingWithdraw] = useState(false);
+
   useEffect(() => {
     const checkSuspension = async () => {
       if (!user) return;
@@ -65,43 +101,14 @@ export default function UserAppPage() {
             duration: 10000,
           });
         } else if (suspendedUntil && suspendedUntil <= now && !profileData.is_active) {
-            await supabase.from("profiles").update({ is_active: true, suspended_until: null }).eq("id", user.id);
-            toast.success("Sua conta foi reativada após o período de suspensão.");
-            await refreshProfile();
+          await supabase.from("profiles").update({ is_active: true, suspended_until: null }).eq("id", user.id);
+          toast.success("Sua conta foi reativada após o período de suspensão.");
+          await refreshProfile();
         }
       }
     };
     checkSuspension();
   }, [user]);
-
-  const [activeTab, setActiveTab] = useState<"home" | "tasks" | "campaigns" | "wallet" | "account">("home");
-  const [tasksSubTab, setTasksSubTab] = useState<"financial" | "community">("financial");
-
-  const [loading, setLoading] = useState(false);
-  const [wallet, setWallet] = useState<{ id: string; balance: number; reserved_balance: number } | null>(null);
-  const [campaigns, setCampaigns] = useState<any[]>([]);
-  const [transactions, setTransactions] = useState<any[]>([]);
-  const [affiliate, setAffiliate] = useState<any | null>(null);
-
-  const [isWithdrawModalOpen, setIsWithdrawModalOpen] = useState(false);
-
-  // Profile and Withdrawal states
-  const [profileName, setProfileName] = useState("");
-  const [profilePhone, setProfilePhone] = useState("");
-  const [profileLink, setProfileLink] = useState("");
-  const [profileTiktok, setProfileTiktok] = useState("");
-  const [profileInstagram, setProfileInstagram] = useState("");
-  const [profileYoutube, setProfileYoutube] = useState("");
-  const [updatingProfile, setUpdatingProfile] = useState(false);
-
-  // Withdrawal form
-  const [withdrawMethod, setWithdrawMethod] = useState<string>("express");
-  const [withdrawAmount, setWithdrawAmount] = useState<string>("");
-  const [withdrawIban, setWithdrawIban] = useState("");
-  const [withdrawHolder, setWithdrawHolder] = useState("");
-  const [withdrawPhone, setWithdrawPhone] = useState("");
-  const [withdrawPix, setWithdrawPix] = useState("");
-  const [isRequestingWithdraw, setIsRequestingWithdraw] = useState(false);
 
   useEffect(() => {
     if (profile) {
@@ -196,8 +203,9 @@ export default function UserAppPage() {
         .eq("id", user.id);
 
       if (error) throw error;
-      toast.success("Dados atualizados com sucesso!");
+      toast.success("Dados do perfil atualizados com sucesso!");
       await refreshProfile();
+      setIsSettingsOpen(false);
     } catch (err: any) {
       toast.error("Erro ao atualizar perfil: " + err.message);
     } finally {
@@ -221,7 +229,6 @@ export default function UserAppPage() {
 
     setIsRequestingWithdraw(true);
     try {
-      // Usar a RPC request_withdrawal que já lida com a reserva de saldo e tabela withdrawals
       const { data, error: wError } = await supabase.rpc("request_withdrawal", {
         p_amount: amount,
         p_method: withdrawMethod.toUpperCase(),
@@ -235,11 +242,11 @@ export default function UserAppPage() {
 
       if (wError) throw wError;
 
-      toast.success("Solicitação de saque enviada! Aguardando processamento.");
+      toast.success("Solicitação de levantamento enviada com sucesso!");
       setWithdrawAmount("");
       loadUserData();
     } catch (err: any) {
-      toast.error("Erro ao solicitar saque: " + err.message);
+      toast.error("Erro ao solicitar levantamento: " + err.message);
     } finally {
       setIsRequestingWithdraw(false);
     }
@@ -247,7 +254,7 @@ export default function UserAppPage() {
 
   const copyToClipboard = (text: string, label: string) => {
     navigator.clipboard.writeText(text);
-    toast.success(`${label} copiado!`);
+    toast.success(`${label} copiado com sucesso!`);
   };
 
   const getReferralLink = () => {
@@ -260,150 +267,67 @@ export default function UserAppPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col selection:bg-emerald-500 selection:text-white pb-24">
-      {/* Cabeçalho Operacional */}
-      <header className="border-b border-slate-800 bg-slate-900/90 backdrop-blur sticky top-0 z-30 px-4 py-3 flex items-center justify-between">
-        <div className="flex items-center gap-2.5">
-          <img src="/logo.png" alt="ADX Money" className="h-7 w-auto" />
-          <div className="flex flex-col">
-            <span className="text-xs font-bold text-white tracking-tight">
-              {profile?.name || user?.email?.split('@')[0]}
-            </span>
-            <span className="text-[9px] text-emerald-400 font-mono uppercase tracking-wider">Operador Ativo</span>
+    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans antialiased overflow-x-hidden select-none pb-24">
+      
+      {/* Header Nativo Android-Style */}
+      <header className="sticky top-0 z-40 bg-slate-900 border-b border-slate-800/80 px-4 py-3.5 flex items-center justify-between shadow-md">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 to-indigo-500 flex items-center justify-center shadow-lg shadow-indigo-900/30">
+            <img src="/logo.png" alt="ADX" className="h-5 w-auto" />
+          </div>
+          <div>
+            <h1 className="text-sm font-black text-white tracking-tight flex items-center gap-1.5 leading-none">
+              ADXmoney <span className="text-[9px] bg-indigo-500/20 text-indigo-400 px-1.5 py-0.5 rounded-full font-bold uppercase tracking-wider font-mono">v2</span>
+            </h1>
+            <p className="text-[10px] text-slate-400 font-medium mt-0.5">
+              Olá, <span className="text-slate-200 font-bold">{profile?.name?.split(' ')[0] || "Operador"}</span>
+            </p>
           </div>
         </div>
 
-        <Button
-          size="sm"
-          variant="ghost"
-          onClick={() => signOut()}
-          className="text-slate-400 hover:text-white hover:bg-slate-800 h-8 px-2"
-        >
-          <LogOut className="w-4 h-4" />
-        </Button>
+        <div className="flex items-center gap-1.5">
+          {/* Botão Notificação (Estilo Android) */}
+          <button 
+            onClick={() => toast.info("Não tem notificações novas no momento.")}
+            className="w-9 h-9 rounded-xl bg-slate-800/50 hover:bg-slate-800 flex items-center justify-center text-slate-300 transition-all active:scale-95"
+          >
+            <Bell className="w-4 h-4" />
+          </button>
+
+          {/* Avatar/Perfil do Usuário (Substitui a 5ª Aba de Conta) */}
+          <button
+            onClick={() => setIsSettingsOpen(true)}
+            className="w-9 h-9 rounded-xl bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400 transition-all active:scale-95"
+          >
+            <Settings className="w-4 h-4" />
+          </button>
+        </div>
       </header>
 
-      <main className="flex-1 max-w-lg w-full mx-auto p-4 space-y-6">
-        
-        {/* ABA: INÍCIO */}
-        {activeTab === "home" && (
-          <div className="space-y-6 animate-in fade-in duration-500">
-            {/* Bloco de Saldo */}
-            <Card className="bg-gradient-to-br from-indigo-600 via-indigo-700 to-indigo-900 border-none shadow-2xl relative overflow-hidden">
-              <div className="absolute top-0 right-0 p-4 opacity-10">
-                <Wallet className="w-24 h-24 rotate-12" />
-              </div>
-              <CardHeader className="pb-1">
-                <div className="flex justify-between items-start">
-                  <CardDescription className="text-indigo-200 text-[10px] font-bold uppercase tracking-widest">
-                    Saldo Disponível
-                  </CardDescription>
-                  <div className="flex items-center gap-1 bg-white/10 px-2 py-0.5 rounded-full border border-white/10">
-                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                    <span className="text-[9px] text-white/80 font-bold">Saques em 24h</span>
-                  </div>
-                </div>
-                <CardTitle className="text-4xl font-extrabold text-white font-mono tracking-tighter mt-1">
-                  {(wallet?.balance || 0).toLocaleString("pt-AO", { minimumFractionDigits: 2 })} <span className="text-xl font-normal opacity-80">Kz</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="pt-2 space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="text-[11px] text-indigo-100 flex items-center gap-1.5 bg-black/10 px-2 py-1 rounded-lg">
-                    <Lock className="w-3 h-3 opacity-60" />
-                    <span>Bloqueado: {(wallet?.reserved_balance || 0).toLocaleString("pt-AO")} Kz</span>
-                  </div>
-                  
-                  <Button
-                    onClick={() => setActiveTab("wallet")}
-                    className="bg-white text-indigo-700 hover:bg-indigo-50 text-xs h-9 px-6 font-extrabold rounded-xl shadow-xl hover:scale-105 active:scale-95 transition-all"
-                  >
-                    Levantar Agora
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+      {/* Main Container - Android-Style Viewport Expandido */}
+      <main className="flex-1 w-full mx-auto max-w-4xl px-4 py-5 space-y-6">
 
-            {/* Ações Rápidas */}
-            <div className="grid grid-cols-2 gap-4">
-              <button
-                onClick={() => setActiveTab("campaigns")}
-                className="flex flex-col items-center justify-center p-5 bg-slate-900 border border-slate-800 rounded-2xl hover:border-indigo-500/50 transition-all group"
-              >
-                <div className="w-12 h-12 bg-indigo-500/10 rounded-xl flex items-center justify-center text-indigo-400 group-hover:scale-110 transition-transform mb-3">
-                  <Megaphone className="w-6 h-6" />
-                </div>
-                <span className="text-sm font-bold text-white">Campanhas</span>
-                <span className="text-[10px] text-slate-500 mt-0.5">Ver Oportunidades</span>
-              </button>
-
-              <button
-                onClick={() => setActiveTab("account")}
-                className="flex flex-col items-center justify-center p-5 bg-slate-900 border border-slate-800 rounded-2xl hover:border-emerald-500/50 transition-all group"
-              >
-                <div className="w-12 h-12 bg-emerald-500/10 rounded-xl flex items-center justify-center text-emerald-400 group-hover:scale-110 transition-transform mb-3">
-                  <Share2 className="w-6 h-6" />
-                </div>
-                <span className="text-sm font-bold text-white">Afiliados</span>
-                <span className="text-[10px] text-slate-500 mt-0.5">Link de convite</span>
-              </button>
-            </div>
-
-            {/* Recentes */}
-            <div className="space-y-3">
-              <div className="flex items-center justify-between px-1">
-                <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Atividade Recente</h3>
-                <button onClick={() => setActiveTab("wallet")} className="text-[10px] text-indigo-400 hover:underline">Ver tudo</button>
-              </div>
-              {transactions.length === 0 ? (
-                <div className="bg-slate-900/40 border border-dashed border-slate-800 rounded-2xl p-6 text-center">
-                  <p className="text-xs text-slate-500">Nenhuma atividade recente.</p>
-                </div>
-              ) : (
-                <div className="bg-slate-900 rounded-2xl overflow-hidden border border-slate-800">
-                  {transactions.slice(0, 3).map((tx, idx) => (
-                    <div key={tx.id} className={`p-4 flex items-center justify-between ${idx !== 2 ? 'border-b border-slate-800' : ''}`}>
-                      <div className="flex items-center gap-3">
-                        <div className={`p-2 rounded-lg ${tx.amount > 0 ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'}`}>
-                          {tx.amount > 0 ? <Plus className="w-4 h-4" /> : <ArrowUpRight className="w-4 h-4" />}
-                        </div>
-                        <div>
-                          <p className="text-xs font-bold text-white">{tx.description || tx.type}</p>
-                          <p className="text-[10px] text-slate-500">{new Date(tx.created_at).toLocaleDateString()}</p>
-                        </div>
-                      </div>
-                      <span className={`text-xs font-mono font-bold ${tx.amount > 0 ? 'text-emerald-400' : 'text-red-400'}`}>
-                        {tx.amount > 0 ? '+' : ''}{tx.amount.toLocaleString()} Kz
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* ABA: CAMPANHAS */}
-        {activeTab === "campaigns" && user && (
-          <UserCampaignsHub userId={user.id} />
-        )}
-
-        {/* ABA: TAREFAS */}
+        {/* 1. ABA: TAREFAS */}
         {activeTab === "tasks" && (
-          <div className="space-y-5 animate-in slide-in-from-right-4 duration-300">
-            <div className="flex bg-slate-900 p-1 rounded-xl border border-slate-800">
+          <div className="space-y-5 animate-in fade-in slide-in-from-bottom-3 duration-200">
+            {/* Seletor Segmentado Nativo Android */}
+            <div className="flex bg-slate-900/90 p-1 rounded-xl border border-slate-800/80 shadow-inner">
               <button
                 onClick={() => setTasksSubTab("financial")}
-                className={`flex-1 py-2 text-[10px] font-bold rounded-lg transition-all ${
-                  tasksSubTab === "financial" ? "bg-indigo-600 text-white shadow-lg" : "text-slate-500 hover:text-slate-300"
+                className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${
+                  tasksSubTab === "financial"
+                    ? "bg-indigo-600 text-white shadow-md shadow-indigo-950/40"
+                    : "text-slate-400 hover:text-slate-200"
                 }`}
               >
-                Financeiras
+                Tarefas Operacionais
               </button>
               <button
                 onClick={() => setTasksSubTab("community")}
-                className={`flex-1 py-2 text-[10px] font-bold rounded-lg transition-all ${
-                  tasksSubTab === "community" ? "bg-indigo-600 text-white shadow-lg" : "text-slate-500 hover:text-slate-300"
+                className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${
+                  tasksSubTab === "community"
+                    ? "bg-indigo-600 text-white shadow-md shadow-indigo-950/40"
+                    : "text-slate-400 hover:text-slate-200"
                 }`}
               >
                 Comunitárias
@@ -412,45 +336,47 @@ export default function UserAppPage() {
 
             {tasksSubTab === "financial" ? (
               <div className="space-y-4">
-                <div>
-                  <h2 className="text-xl font-extrabold text-white">Tarefas Operacionais</h2>
-                  <p className="text-xs text-slate-400 mt-1">Execute as atividades para aumentar o seu saldo.</p>
+                <div className="px-1">
+                  <h2 className="text-base font-extrabold text-white flex items-center gap-2">
+                    <Layers className="w-5 h-5 text-indigo-400" /> Tarefas Remuneradas
+                  </h2>
+                  <p className="text-xs text-slate-400 mt-1">Siga, curta ou comente para receber recompensas em tempo real.</p>
                 </div>
 
                 {campaigns.length === 0 ? (
-                  <Card className="bg-slate-900 border-slate-800 border-dashed p-10 text-center">
-                    <Layers className="w-10 h-10 text-slate-700 mx-auto mb-3" />
-                    <p className="text-xs text-slate-500">Sem tarefas financeiras atribuídas no momento.</p>
-                  </Card>
+                  <div className="bg-slate-900/40 border border-dashed border-slate-800/80 rounded-2xl py-14 text-center">
+                    <Layers className="w-10 h-10 text-slate-700 mx-auto mb-3 opacity-35" />
+                    <p className="text-xs text-slate-400 font-medium">Sem tarefas financeiras no momento.</p>
+                    <p className="text-[10px] text-slate-500 mt-0.5">Volte mais tarde para novas oportunidades.</p>
+                  </div>
                 ) : (
-                  <div className="space-y-4">
+                  <div className="grid gap-3 sm:grid-cols-2">
                     {campaigns.map((c) => (
-                      <Card key={c.id} className="bg-slate-900 border-slate-800 overflow-hidden">
-                        <CardHeader className="pb-3">
+                      <div key={c.id} className="bg-slate-900 border border-slate-800/80 rounded-2xl p-4 flex flex-col justify-between hover:border-slate-700 transition-all shadow-sm">
+                        <div>
                           <div className="flex justify-between items-start mb-2">
-                            <Badge variant="outline" className="text-[9px] uppercase border-slate-700 text-slate-400">
+                            <Badge variant="outline" className="text-[9px] uppercase font-bold border-indigo-500/20 text-indigo-400 bg-indigo-500/5 px-2 py-0.5 h-auto">
                               {c.platform}
                             </Badge>
-                            <span className="text-xs font-black text-emerald-400 font-mono">
+                            <span className="text-sm font-black text-emerald-400 font-mono">
                               +{c.reward_amount.toLocaleString()} Kz
                             </span>
                           </div>
-                          <CardTitle className="text-sm font-bold text-white">{c.title}</CardTitle>
-                        </CardHeader>
-                        <CardContent className="text-xs text-slate-400 pb-4">
-                          {c.description}
-                        </CardContent>
-                        <CardFooter className="bg-slate-950/50 p-3 border-t border-slate-800 flex justify-between items-center">
-                          <Badge className={c.assignment_status === 'COMPLETED' ? 'bg-emerald-500/10 text-emerald-400 border-none' : 'bg-amber-500/10 text-amber-400 border-none'}>
+                          <h3 className="text-sm font-bold text-slate-100 line-clamp-1">{c.title}</h3>
+                          <p className="text-xs text-slate-400 mt-1 line-clamp-2 leading-relaxed">{c.description}</p>
+                        </div>
+                        
+                        <div className="mt-4 pt-3 border-t border-slate-800/60 flex items-center justify-between">
+                          <Badge className={c.assignment_status === 'COMPLETED' ? 'bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/10 border-none px-2 py-0.5' : 'bg-amber-500/10 text-amber-400 hover:bg-amber-500/10 border-none px-2 py-0.5'}>
                             {c.assignment_status === 'COMPLETED' ? 'Concluída' : 'Pendente'}
                           </Badge>
-                          <Button size="sm" className="h-7 text-[10px] bg-indigo-600 hover:bg-indigo-500" asChild>
+                          <Button size="sm" className="h-8 text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl shadow-md" asChild>
                             <a href={c.target_url} target="_blank" rel="noreferrer">
-                              Abrir Tarefa <ExternalLink className="w-3 h-3 ml-1" />
+                              Abrir <ExternalLink className="w-3 h-3 ml-1.5" />
                             </a>
                           </Button>
-                        </CardFooter>
-                      </Card>
+                        </div>
+                      </div>
                     ))}
                   </div>
                 )}
@@ -461,367 +387,422 @@ export default function UserAppPage() {
           </div>
         )}
 
-        {/* ABA: CARTEIRA E LEVANTAMENTO */}
-        {activeTab === "wallet" && (
-          <div className="space-y-6 animate-in slide-in-from-right-4 duration-300">
-            <div>
-              <h2 className="text-xl font-extrabold text-white">Carteira & Saques</h2>
-              <p className="text-xs text-slate-400 mt-1">Gerencie seus ganhos e solicite levantamentos.</p>
+        {/* 2. ABA: CAMPANHAS */}
+        {activeTab === "campaigns" && user && (
+          <div className="space-y-4 animate-in fade-in slide-in-from-bottom-3 duration-200">
+            <div className="px-1">
+              <h2 className="text-base font-extrabold text-white flex items-center gap-2">
+                <Megaphone className="w-5 h-5 text-indigo-400" /> Hub de Campanhas
+              </h2>
+              <p className="text-xs text-slate-400 mt-1">Explore e participe de campanhas de marketing estruturadas.</p>
+            </div>
+            <UserCampaignsHub userId={user.id} />
+          </div>
+        )}
+
+        {/* 3. ABA: AFILIADO */}
+        {activeTab === "affiliate" && (
+          <div className="space-y-5 animate-in fade-in slide-in-from-bottom-3 duration-200">
+            <div className="px-1">
+              <h2 className="text-base font-extrabold text-white flex items-center gap-2">
+                <Gift className="w-5 h-5 text-indigo-400" /> Rede de Afiliados
+              </h2>
+              <p className="text-xs text-slate-400 mt-1">Indique novos operadores e fature comissão diretamente em saldo.</p>
             </div>
 
-            <Card className="bg-slate-900 border-slate-800">
-              <CardHeader className="pb-4">
-                <CardDescription className="text-xs text-slate-500">Saldo Disponível para Saque</CardDescription>
-                <CardTitle className="text-3xl font-black text-white font-mono tracking-tight">
-                  {(wallet?.balance || 0).toLocaleString("pt-AO")} <span className="text-sm font-normal text-slate-400">Kz</span>
-                </CardTitle>
-              </CardHeader>
-              
-              <form onSubmit={handleRequestWithdraw}>
-                <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <Label className="text-xs font-bold text-slate-300">Método de Recebimento</Label>
-                    <div className="grid grid-cols-2 gap-2">
-                      {[
-                        { id: 'express', label: 'Express', img: '/icon-express.jpg' },
-                        { id: 'unitel', label: 'Unitel Money', img: '/icon-unitel.jpg' },
-                        { id: 'iban', label: 'IBAN', img: '/icon-iban.jpg' },
-                        { id: 'pix', label: 'PIX', img: '/icon-pix.jpg' }
-                      ].map((method) => (
-                        <button
-                          key={method.id}
-                          type="button"
-                          onClick={() => setWithdrawMethod(method.id)}
-                          className={`flex items-center gap-2 p-3 rounded-xl border text-left transition-all ${
-                            withdrawMethod === method.id
-                            ? 'bg-indigo-500/10 border-indigo-500 text-indigo-400'
-                            : 'bg-slate-950 border-slate-800 text-slate-500 hover:border-slate-700'
-                          }`}
-                        >
-                          <img src={method.img} alt={method.label} className="w-5 h-5 rounded-md object-cover" />
-                          <span className="text-xs font-bold">{method.label}</span>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
+            {/* Card de Informações/Estatísticas Finas */}
+            <div className="bg-slate-900 border border-slate-800/80 rounded-2xl p-5 relative overflow-hidden shadow-md">
+              <div className="absolute right-[-10px] top-[-10px] opacity-[0.03]">
+                <Gift className="w-32 h-32" />
+              </div>
 
-                  <div className="space-y-2">
-                    <Label className="text-xs font-bold text-slate-300">Valor do Saque</Label>
-                    <div className="relative">
-                      <Input
-                        type="number"
-                        placeholder="0.00"
-                        value={withdrawAmount}
-                        onChange={(e) => setWithdrawAmount(e.target.value)}
-                        className="bg-slate-950 border-slate-800 h-11 font-mono text-lg text-emerald-400"
-                        required
-                      />
-                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 font-bold">Kz</span>
-                    </div>
-                  </div>
-
-                  {/* Campos Dinâmicos conforme Método */}
-                  {withdrawMethod === 'iban' && (
-                    <div className="space-y-3 p-4 bg-slate-950 rounded-2xl border border-slate-800 animate-in fade-in zoom-in duration-200">
-                      <div className="space-y-1.5">
-                        <Label className="text-[10px] uppercase font-bold text-slate-500">Titular da Conta</Label>
-                        <Input 
-                          value={withdrawHolder} 
-                          onChange={(e) => setWithdrawHolder(e.target.value)}
-                          className="bg-slate-900 border-slate-800 text-xs" 
-                        />
-                      </div>
-                      <div className="space-y-1.5">
-                        <Label className="text-[10px] uppercase font-bold text-slate-500">IBAN</Label>
-                        <Input 
-                          placeholder="AO06..." 
-                          value={withdrawIban}
-                          onChange={(e) => setWithdrawIban(e.target.value)}
-                          className="bg-slate-900 border-slate-800 font-mono text-xs" 
-                        />
-                      </div>
-                    </div>
-                  )}
-
-                  {(withdrawMethod === 'express' || withdrawMethod === 'unitel') && (
-                    <div className="space-y-1.5 p-4 bg-slate-950 rounded-2xl border border-slate-800 animate-in fade-in zoom-in duration-200">
-                      <Label className="text-[10px] uppercase font-bold text-slate-500">Número de Telefone</Label>
-                      <Input 
-                        placeholder="9..." 
-                        value={withdrawPhone}
-                        onChange={(e) => setWithdrawPhone(e.target.value)}
-                        className="bg-slate-900 border-slate-800 font-mono" 
-                      />
-                    </div>
-                  )}
-
-                  {withdrawMethod === 'pix' && (
-                    <div className="space-y-1.5 p-4 bg-slate-950 rounded-2xl border border-slate-800 animate-in fade-in zoom-in duration-200">
-                      <Label className="text-[10px] uppercase font-bold text-slate-500">Chave PIX</Label>
-                      <Input 
-                        placeholder="E-mail, CPF ou Telefone" 
-                        value={withdrawPix}
-                        onChange={(e) => setWithdrawPix(e.target.value)}
-                        className="bg-slate-900 border-slate-800" 
-                      />
-                    </div>
-                  )}
-                </CardContent>
-                <CardFooter className="pt-2 flex flex-col gap-3">
-                  <Button
-                    type="submit"
-                    disabled={isRequestingWithdraw || !withdrawAmount || parseFloat(withdrawAmount) <= 0 || parseFloat(withdrawAmount) > (wallet?.balance || 0)}
-                    className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold h-11 rounded-xl shadow-lg shadow-indigo-950/50"
-                  >
-                    {isRequestingWithdraw ? <Loader2 className="w-5 h-5 animate-spin" /> : "Confirmar Levantamento"}
-                  </Button>
-                  <p className="text-[10px] text-slate-500 text-center flex items-center justify-center gap-1.5 italic">
-                    <Info className="w-3 h-3 text-indigo-400" />
-                    O valor solicitado será processado e pago num prazo de 24 horas úteis.
+              <div className="grid grid-cols-2 gap-4">
+                <div className="p-4 bg-slate-950/60 rounded-xl border border-slate-800/40">
+                  <p className="text-[10px] uppercase font-bold text-slate-400">Total Convidados</p>
+                  <p className="text-2xl font-black text-white font-mono mt-1">{affiliate?.total_referrals || 0}</p>
+                </div>
+                <div className="p-4 bg-slate-950/60 rounded-xl border border-slate-800/40">
+                  <p className="text-[10px] uppercase font-bold text-slate-400">Total Faturado</p>
+                  <p className="text-2xl font-black text-emerald-400 font-mono mt-1">
+                    {Number(affiliate?.total_earned || 0).toLocaleString()} Kz
                   </p>
-                </CardFooter>
-              </form>
-            </Card>
+                </div>
+              </div>
 
-            {/* Histórico Completo */}
+              {/* Bloco do Código */}
+              <div className="mt-5 space-y-2">
+                <Label className="text-[10px] uppercase font-bold text-slate-400">Código de Indicação</Label>
+                <div className="flex gap-2">
+                  <div className="flex-1 h-11 bg-slate-950/80 border border-slate-800 rounded-xl flex items-center justify-center font-mono text-base font-bold text-indigo-400 tracking-wider">
+                    {profile?.referral_code || "---"}
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => copyToClipboard(profile?.referral_code || "", "Código")}
+                    className="h-11 w-11 border-slate-800 bg-slate-900 text-slate-300 rounded-xl hover:bg-slate-800"
+                  >
+                    <Copy className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+
+              <div className="mt-4 pt-1">
+                <Button 
+                  onClick={() => copyToClipboard(getReferralLink(), "Link de Indicação")}
+                  className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold h-11 rounded-xl shadow-md transition-all flex items-center justify-center gap-2"
+                >
+                  <Share2 className="w-4 h-4" /> Copiar Link Completo
+                </Button>
+              </div>
+            </div>
+
+            {/* Regras Operacionais de Afiliados */}
+            <div className="bg-slate-900/40 border border-slate-800/60 rounded-2xl p-4 space-y-2">
+              <h4 className="text-xs font-bold text-slate-200">Como funciona o bónus?</h4>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                Compartilhe o seu link exclusivo. Quando um convidado se cadastrar e começar a operar na plataforma realizando tarefas, você recebe as recompensas em sua carteira automaticamente.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* 4. ABA: CARTEIRA */}
+        {activeTab === "wallet" && (
+          <div className="space-y-5 animate-in fade-in slide-in-from-bottom-3 duration-200">
+            <div className="px-1">
+              <h2 className="text-base font-extrabold text-white flex items-center gap-2">
+                <Wallet className="w-5 h-5 text-indigo-400" /> Minha Carteira
+              </h2>
+              <p className="text-xs text-slate-400 mt-1">Gerencie suas finanças, solicite levantamentos e veja sua atividade recente.</p>
+            </div>
+
+            {/* Card de Saldo Moderno */}
+            <div className="bg-slate-900 border border-slate-800/80 rounded-2xl p-5 shadow-lg relative overflow-hidden">
+              <div className="absolute right-4 top-4">
+                <span className="text-[10px] bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded-full font-bold">
+                  SLA 24H Úteis
+                </span>
+              </div>
+              
+              <div className="space-y-1">
+                <p className="text-[10px] uppercase font-bold text-slate-400">Saldo Disponível</p>
+                <p className="text-3xl font-black text-white font-mono">
+                  {(wallet?.balance || 0).toLocaleString("pt-AO", { minimumFractionDigits: 2 })} <span className="text-base font-normal text-slate-400">Kz</span>
+                </p>
+              </div>
+
+              <div className="mt-4 pt-3 border-t border-slate-800/60 flex items-center justify-between text-xs text-slate-400">
+                <span className="flex items-center gap-1.5 font-medium">
+                  <Lock className="w-3.5 h-3.5 text-slate-500" />
+                  Ganhos retidos: <span className="font-mono text-slate-200">{(wallet?.reserved_balance || 0).toLocaleString()} Kz</span>
+                </span>
+              </div>
+            </div>
+
+            {/* Formulário de Levantamento Avançado */}
+            <div className="bg-slate-900 border border-slate-800/80 rounded-2xl p-5 shadow-md space-y-4">
+              <h3 className="text-xs font-extrabold text-slate-200 uppercase tracking-wider">Solicitar Levantamento</h3>
+              
+              <form onSubmit={handleRequestWithdraw} className="space-y-4">
+                <div className="space-y-2">
+                  <Label className="text-xs font-bold text-slate-300">Método de Pagamento</Label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {[
+                      { id: 'express', label: 'Express', img: '/icon-express.jpg' },
+                      { id: 'unitel', label: 'Unitel Money', img: '/icon-unitel.jpg' },
+                      { id: 'iban', label: 'IBAN', img: '/icon-iban.jpg' },
+                      { id: 'pix', label: 'PIX', img: '/icon-pix.jpg' }
+                    ].map((method) => (
+                      <button
+                        key={method.id}
+                        type="button"
+                        onClick={() => setWithdrawMethod(method.id)}
+                        className={`flex items-center gap-2 p-2.5 rounded-xl border text-left transition-all ${
+                          withdrawMethod === method.id
+                            ? 'bg-indigo-500/10 border-indigo-500 text-indigo-400'
+                            : 'bg-slate-950 border-slate-800/80 text-slate-400 hover:border-slate-700'
+                        }`}
+                      >
+                        <img src={method.img} alt={method.label} className="w-5 h-5 rounded-md object-cover" />
+                        <span className="text-xs font-bold">{method.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label className="text-xs font-bold text-slate-300">Valor</Label>
+                  <div className="relative">
+                    <Input
+                      type="number"
+                      placeholder="Ex: 5000"
+                      value={withdrawAmount}
+                      onChange={(e) => setWithdrawAmount(e.target.value)}
+                      className="bg-slate-950 border-slate-800/80 h-10 font-mono text-base text-emerald-400 focus:border-indigo-500"
+                      required
+                    />
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-xs">Kz</span>
+                  </div>
+                </div>
+
+                {/* Formulários Dinâmicos Android-Style */}
+                {withdrawMethod === 'iban' && (
+                  <div className="space-y-3 p-4 bg-slate-950/80 rounded-xl border border-slate-800/60 animate-in fade-in duration-200">
+                    <div className="space-y-1.5">
+                      <Label className="text-[10px] uppercase font-bold text-slate-400">Titular da Conta Bancária</Label>
+                      <Input 
+                        value={withdrawHolder} 
+                        onChange={(e) => setWithdrawHolder(e.target.value)}
+                        className="bg-slate-900 border-slate-800 text-xs h-9" 
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-[10px] uppercase font-bold text-slate-400">Número do IBAN</Label>
+                      <Input 
+                        placeholder="AO06..." 
+                        value={withdrawIban}
+                        onChange={(e) => setWithdrawIban(e.target.value)}
+                        className="bg-slate-900 border-slate-800 font-mono text-xs h-9" 
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {(withdrawMethod === 'express' || withdrawMethod === 'unitel') && (
+                  <div className="space-y-1.5 p-4 bg-slate-950/80 rounded-xl border border-slate-800/60 animate-in fade-in duration-200">
+                    <Label className="text-[10px] uppercase font-bold text-slate-400">Número de Telefone Associado</Label>
+                    <Input 
+                      placeholder="9..." 
+                      value={withdrawPhone}
+                      onChange={(e) => setWithdrawPhone(e.target.value)}
+                      className="bg-slate-900 border-slate-800 font-mono text-xs h-9" 
+                    />
+                  </div>
+                )}
+
+                {withdrawMethod === 'pix' && (
+                  <div className="space-y-1.5 p-4 bg-slate-950/80 rounded-xl border border-slate-800/60 animate-in fade-in duration-200">
+                    <Label className="text-[10px] uppercase font-bold text-slate-400">Chave PIX (E-mail, CPF ou Telefone)</Label>
+                    <Input 
+                      placeholder="Digite a chave pix" 
+                      value={withdrawPix}
+                      onChange={(e) => setWithdrawPix(e.target.value)}
+                      className="bg-slate-900 border-slate-800 text-xs h-9" 
+                    />
+                  </div>
+                )}
+
+                <Button
+                  type="submit"
+                  disabled={isRequestingWithdraw || !withdrawAmount || parseFloat(withdrawAmount) <= 0 || parseFloat(withdrawAmount) > (wallet?.balance || 0)}
+                  className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold h-11 rounded-xl shadow-lg transition-all"
+                >
+                  {isRequestingWithdraw ? <Loader2 className="w-5 h-5 animate-spin" /> : "Solicitar Saque"}
+                </Button>
+              </form>
+            </div>
+
+            {/* Extrato Nativo / Transações */}
             <div className="space-y-3">
-              <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider ml-1">Histórico Operacional</h3>
-              <div className="bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden divide-y divide-slate-800">
-                {transactions.length === 0 ? (
-                  <div className="p-8 text-center text-slate-600 text-xs italic">Nenhum registro encontrado.</div>
-                ) : (
-                  transactions.map((tx) => (
-                    <div key={tx.id} className="p-4 flex items-center justify-between">
+              <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider px-1">Histórico de Transações</h3>
+              
+              {transactions.length === 0 ? (
+                <div className="bg-slate-900/20 border border-slate-800 rounded-2xl p-8 text-center text-xs text-slate-500 italic">
+                  Nenhuma transação encontrada.
+                </div>
+              ) : (
+                <div className="bg-slate-900 border border-slate-800/80 rounded-2xl overflow-hidden divide-y divide-slate-800/60 shadow-md">
+                  {transactions.map((tx) => (
+                    <div key={tx.id} className="p-4 flex items-center justify-between hover:bg-slate-900/40 transition-colors">
                       <div className="flex gap-3">
-                        <div className={`p-2 rounded-lg h-fit ${tx.amount > 0 ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'}`}>
-                          {tx.amount > 0 ? <Plus className="w-3.5 h-3.5" /> : <ArrowUpRight className="w-3.5 h-3.5" />}
+                        <div className={`p-2 rounded-xl h-fit ${tx.amount > 0 ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'}`}>
+                          {tx.amount > 0 ? <Plus className="w-4 h-4" /> : <ArrowUpRight className="w-4 h-4" />}
                         </div>
                         <div>
-                          <p className="text-xs font-bold text-white">{tx.description || tx.type}</p>
-                          <p className="text-[10px] text-slate-500">{new Date(tx.created_at).toLocaleString()}</p>
+                          <p className="text-xs font-bold text-slate-100">{tx.description || tx.type}</p>
+                          <p className="text-[10px] text-slate-500 font-medium">{new Date(tx.created_at).toLocaleString()}</p>
                         </div>
                       </div>
                       <div className="text-right">
                         <p className={`text-xs font-mono font-bold ${tx.amount > 0 ? 'text-emerald-400' : 'text-red-400'}`}>
                           {tx.amount > 0 ? '+' : ''}{tx.amount.toLocaleString()} Kz
                         </p>
-                        <p className="text-[9px] text-slate-600 uppercase font-bold">{tx.status}</p>
+                        <span className="text-[8px] font-bold uppercase tracking-wider bg-slate-800 px-1.5 py-0.5 rounded-full text-slate-400">
+                          {tx.status}
+                        </span>
                       </div>
                     </div>
-                  ))
-                )}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* ABA: CONTA & AFILIADOS */}
-        {activeTab === "account" && (
-          <div className="space-y-6 animate-in slide-in-from-right-4 duration-300">
-            <div>
-              <h2 className="text-xl font-extrabold text-white">Conta & Afiliados</h2>
-              <p className="text-xs text-slate-400 mt-1">O seu código de convite e dados de perfil.</p>
-            </div>
-
-            {/* Programa de Afiliados */}
-            <Card className="bg-gradient-to-br from-slate-900 to-slate-950 border-slate-800 relative overflow-hidden">
-              <div className="absolute -right-4 -top-4 opacity-5">
-                <Gift className="w-32 h-32" />
-              </div>
-              <CardHeader className="pb-3">
-                <Badge className="w-fit mb-2 bg-emerald-500/10 text-emerald-400 border-none">Programa de Ganhos</Badge>
-                <CardTitle className="text-base font-bold text-white">Convide Amigos</CardTitle>
-                <CardDescription className="text-xs text-slate-500">Ganhe bónus por cada operador ativo que utilizar o seu código.</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-5">
-                <div className="space-y-2">
-                  <Label className="text-[10px] uppercase font-bold text-slate-500">O seu Código de Convite</Label>
-                  <div className="flex gap-2">
-                    <div className="flex-1 h-11 bg-slate-950 border border-slate-800 rounded-xl flex items-center justify-center font-mono text-lg font-bold text-emerald-400 tracking-wider">
-                      {profile?.referral_code || "---"}
-                    </div>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() => copyToClipboard(profile?.referral_code || "", "Código")}
-                      className="h-11 w-11 border-slate-800 bg-slate-900 text-slate-400"
-                    >
-                      <Copy className="w-4 h-4" />
-                    </Button>
-                  </div>
+                  ))}
                 </div>
-
-                <div className="p-4 bg-slate-950 rounded-xl border border-slate-800 flex items-center justify-between">
-                  <div className="space-y-1">
-                    <p className="text-[10px] text-slate-500 font-bold uppercase tracking-tight">Total de Convidados</p>
-                    <p className="text-xl font-black text-white font-mono">{affiliate?.total_referrals || 0}</p>
-                  </div>
-                  <div className="w-px h-8 bg-slate-800" />
-                  <div className="space-y-1 text-right">
-                    <p className="text-[10px] text-slate-500 font-bold uppercase tracking-tight">Ganhos de Indicação</p>
-                    <p className="text-xl font-black text-emerald-400 font-mono">{Number(affiliate?.total_earned || 0).toLocaleString()} Kz</p>
-                  </div>
-                </div>
-                
-                <Button 
-                  onClick={() => copyToClipboard(getReferralLink(), "Link de Convite")}
-                  className="w-full bg-slate-100 text-slate-950 hover:bg-slate-200 font-bold h-11 rounded-xl"
-                >
-                  <Share2 className="w-4 h-4 mr-2" /> Copiar Link de Convite
-                </Button>
-              </CardContent>
-            </Card>
-
-            {/* Perfil */}
-            <Card className="bg-slate-900 border-slate-800">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-bold text-white">Dados Operacionais</CardTitle>
-                <CardDescription className="text-xs text-slate-500">Mantenha seus dados atualizados para validação.</CardDescription>
-              </CardHeader>
-              <form onSubmit={handleUpdateProfile}>
-                <CardContent className="space-y-4">
-                  <div className="space-y-1.5">
-                    <Label className="text-[10px] uppercase font-bold text-slate-500">Nome Completo</Label>
-                    <Input 
-                      value={profileName} 
-                      onChange={(e) => setProfileName(e.target.value)}
-                      className="bg-slate-950 border-slate-800 text-sm h-11" 
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label className="text-[10px] uppercase font-bold text-slate-500">Telefone / WhatsApp</Label>
-                    <Input 
-                      value={profilePhone} 
-                      onChange={(e) => setProfilePhone(e.target.value)}
-                      className="bg-slate-950 border-slate-800 text-sm h-11" 
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label className="text-[10px] uppercase font-bold text-slate-500">TikTok Handle</Label>
-                    <div className="relative">
-                      <TiktokIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
-                      <Input
-                        value={profileTiktok}
-                        onChange={(e) => setProfileTiktok(e.target.value)}
-                        placeholder="@usuario"
-                        className="bg-slate-950 border-slate-800 text-sm h-11 pl-10"
-                      />
-                    </div>
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label className="text-[10px] uppercase font-bold text-slate-500">Instagram Handle</Label>
-                    <div className="relative">
-                      <InstagramIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
-                      <Input
-                        value={profileInstagram}
-                        onChange={(e) => setProfileInstagram(e.target.value)}
-                        placeholder="@usuario"
-                        className="bg-slate-950 border-slate-800 text-sm h-11 pl-10"
-                      />
-                    </div>
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label className="text-[10px] uppercase font-bold text-slate-500">Canal YouTube</Label>
-                    <div className="relative">
-                      <YoutubeIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
-                      <Input
-                        value={profileYoutube}
-                        onChange={(e) => setProfileYoutube(e.target.value)}
-                        placeholder="URL ou @canal"
-                        className="bg-slate-950 border-slate-800 text-sm h-11 pl-10"
-                      />
-                    </div>
-                  </div>
-                  <div className="space-y-1.5 pt-2">
-                    <Label className="text-[10px] uppercase font-bold text-slate-500 text-indigo-400">Rede Social Principal (Geral)</Label>
-                    <Input
-                      value={profileLink}
-                      onChange={(e) => setProfileLink(e.target.value)}
-                      placeholder="Link de perfil principal"
-                      className="bg-slate-950 border-slate-800 text-sm h-11"
-                    />
-                  </div>
-                </CardContent>
-                <CardFooter className="pt-2 border-t border-slate-800">
-                  <Button 
-                    type="submit" 
-                    disabled={updatingProfile}
-                    className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold h-11 rounded-xl"
-                  >
-                    {updatingProfile ? <Loader2 className="w-4 h-4 animate-spin" /> : "Guardar Alterações"}
-                  </Button>
-                </CardFooter>
-              </form>
-            </Card>
+              )}
+            </div>
           </div>
         )}
 
       </main>
 
-      {/* Barra de Navegação Inferior (App Estilo Mobile-First) */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur-xl border-t border-slate-800 z-40 px-6 py-3">
-        <div className="max-w-md mx-auto flex items-center justify-between">
+      {/* MODAL CONFIGURAÇÕES / MEU PERFIL (Estilo Slide-Up / Bottom-Sheet Android) */}
+      <Dialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
+        <DialogContent className="bg-slate-900 border-slate-800 text-slate-100 sm:rounded-2xl max-h-[85vh] overflow-y-auto w-full max-w-md p-5 shadow-2xl">
+          <DialogHeader className="relative border-b border-slate-800 pb-3">
+            <DialogTitle className="text-base font-extrabold text-white flex items-center gap-2">
+              <UserIcon className="w-5 h-5 text-indigo-400" /> Configurações de Perfil
+            </DialogTitle>
+            <DialogDescription className="text-xs text-slate-400 mt-1">
+              Mantenha seus dados e redes sociais atualizados para validações de tarefas.
+            </DialogDescription>
+          </DialogHeader>
+
+          <form onSubmit={handleUpdateProfile} className="space-y-4 py-4">
+            <div className="space-y-1.5">
+              <Label className="text-[10px] uppercase font-bold text-slate-400">Nome Completo</Label>
+              <Input 
+                value={profileName} 
+                onChange={(e) => setProfileName(e.target.value)}
+                className="bg-slate-950 border-slate-800 text-xs h-10 focus:border-indigo-500" 
+                required
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-[10px] uppercase font-bold text-slate-400">Telefone / WhatsApp</Label>
+              <Input 
+                value={profilePhone} 
+                onChange={(e) => setProfilePhone(e.target.value)}
+                className="bg-slate-950 border-slate-800 text-xs h-10 focus:border-indigo-500" 
+                required
+              />
+            </div>
+            
+            <div className="space-y-3 pt-1">
+              <span className="text-[10px] font-black text-indigo-400 uppercase tracking-widest block">Perfis Sociais</span>
+              
+              <div className="space-y-1.5">
+                <Label className="text-[10px] uppercase font-bold text-slate-400">TikTok Handle</Label>
+                <div className="relative">
+                  <TiktokIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500" />
+                  <Input
+                    value={profileTiktok}
+                    onChange={(e) => setProfileTiktok(e.target.value)}
+                    placeholder="@usuario"
+                    className="bg-slate-950 border-slate-800 text-xs h-10 pl-9 focus:border-indigo-500"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <Label className="text-[10px] uppercase font-bold text-slate-400">Instagram Handle</Label>
+                <div className="relative">
+                  <InstagramIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500" />
+                  <Input
+                    value={profileInstagram}
+                    onChange={(e) => setProfileInstagram(e.target.value)}
+                    placeholder="@usuario"
+                    className="bg-slate-950 border-slate-800 text-xs h-10 pl-9 focus:border-indigo-500"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <Label className="text-[10px] uppercase font-bold text-slate-400">Canal YouTube</Label>
+                <div className="relative">
+                  <YoutubeIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500" />
+                  <Input
+                    value={profileYoutube}
+                    onChange={(e) => setProfileYoutube(e.target.value)}
+                    placeholder="URL ou @canal"
+                    className="bg-slate-950 border-slate-800 text-xs h-10 pl-9 focus:border-indigo-500"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <Label className="text-[10px] uppercase font-bold text-slate-400">Rede Social Principal (Geral)</Label>
+                <Input
+                  value={profileLink}
+                  onChange={(e) => setProfileLink(e.target.value)}
+                  placeholder="Link de perfil principal"
+                  className="bg-slate-950 border-slate-800 text-xs h-10 focus:border-indigo-500"
+                />
+              </div>
+            </div>
+
+            <div className="pt-4 border-t border-slate-800 flex flex-col gap-2">
+              <Button 
+                type="submit" 
+                disabled={updatingProfile}
+                className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold h-10 rounded-xl"
+              >
+                {updatingProfile ? <Loader2 className="w-4 h-4 animate-spin" /> : "Salvar Alterações"}
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => signOut()}
+                className="w-full text-rose-500 hover:text-rose-400 hover:bg-rose-500/5 h-10 rounded-xl font-bold gap-2"
+              >
+                <LogOut className="w-4 h-4" /> Encerrar Sessão
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Bottom Navigation Nativo Android */}
+      <nav className="fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur-xl border-t border-slate-800/80 z-40 px-4 py-2.5 shadow-2xl">
+        <div className="max-w-xl mx-auto flex items-center justify-around">
+          
           <button
-            onClick={() => setActiveTab("home")}
-            className={`flex flex-col items-center justify-center transition-all ${
-              activeTab === "home" ? "text-indigo-400 scale-110" : "text-slate-500 hover:text-slate-300"
+            onClick={() => setActiveTab("tasks")}
+            className={`flex flex-col items-center justify-center transition-all w-16 ${
+              activeTab === "tasks" ? "text-indigo-400 scale-105" : "text-slate-500 hover:text-slate-300"
             }`}
           >
-            <div className={`p-1.5 rounded-lg ${activeTab === "home" ? "bg-indigo-500/10" : ""}`}>
-              <Smartphone className="w-5 h-5" />
+            <div className={`p-1 rounded-xl transition-all ${activeTab === "tasks" ? "bg-indigo-500/10 text-indigo-400" : "text-slate-500"}`}>
+              <Layers className="w-5 h-5" />
             </div>
-            <span className="text-[9px] mt-1 font-bold">Início</span>
+            <span className="text-[9px] mt-1 font-extrabold tracking-tight">Tarefas</span>
           </button>
 
           <button
             onClick={() => setActiveTab("campaigns")}
-            className={`flex flex-col items-center justify-center transition-all ${
-              activeTab === "campaigns" ? "text-indigo-400 scale-110" : "text-slate-500 hover:text-slate-300"
+            className={`flex flex-col items-center justify-center transition-all w-16 ${
+              activeTab === "campaigns" ? "text-indigo-400 scale-105" : "text-slate-500 hover:text-slate-300"
             }`}
           >
-            <div className={`p-1.5 rounded-lg ${activeTab === "campaigns" ? "bg-indigo-500/10" : ""}`}>
+            <div className={`p-1 rounded-xl transition-all ${activeTab === "campaigns" ? "bg-indigo-500/10 text-indigo-400" : "text-slate-500"}`}>
               <Megaphone className="w-5 h-5" />
             </div>
-            <span className="text-[9px] mt-1 font-bold">Campanhas</span>
+            <span className="text-[9px] mt-1 font-extrabold tracking-tight">Campanhas</span>
           </button>
 
           <button
-            onClick={() => setActiveTab("tasks")}
-            className={`flex flex-col items-center justify-center transition-all ${
-              activeTab === "tasks" ? "text-indigo-400 scale-110" : "text-slate-500 hover:text-slate-300"
+            onClick={() => setActiveTab("affiliate")}
+            className={`flex flex-col items-center justify-center transition-all w-16 ${
+              activeTab === "affiliate" ? "text-indigo-400 scale-105" : "text-slate-500 hover:text-slate-300"
             }`}
           >
-            <div className={`p-1.5 rounded-lg ${activeTab === "tasks" ? "bg-indigo-500/10" : ""}`}>
-              <Layers className="w-5 h-5" />
+            <div className={`p-1 rounded-xl transition-all ${activeTab === "affiliate" ? "bg-indigo-500/10 text-indigo-400" : "text-slate-500"}`}>
+              <Gift className="w-5 h-5" />
             </div>
-            <span className="text-[9px] mt-1 font-bold">Tarefas</span>
+            <span className="text-[9px] mt-1 font-extrabold tracking-tight">Afiliado</span>
           </button>
 
           <button
             onClick={() => setActiveTab("wallet")}
-            className={`flex flex-col items-center justify-center transition-all ${
-              activeTab === "wallet" ? "text-indigo-400 scale-110" : "text-slate-500 hover:text-slate-300"
+            className={`flex flex-col items-center justify-center transition-all w-16 ${
+              activeTab === "wallet" ? "text-indigo-400 scale-105" : "text-slate-500 hover:text-slate-300"
             }`}
           >
-            <div className={`p-1.5 rounded-lg ${activeTab === "wallet" ? "bg-indigo-500/10" : ""}`}>
+            <div className={`p-1 rounded-xl transition-all ${activeTab === "wallet" ? "bg-indigo-500/10 text-indigo-400" : "text-slate-500"}`}>
               <Wallet className="w-5 h-5" />
             </div>
-            <span className="text-[9px] mt-1 font-bold">Carteira</span>
+            <span className="text-[9px] mt-1 font-extrabold tracking-tight">Carteira</span>
           </button>
 
-          <button
-            onClick={() => setActiveTab("account")}
-            className={`flex flex-col items-center justify-center transition-all ${
-              activeTab === "account" ? "text-indigo-400 scale-110" : "text-slate-500 hover:text-slate-300"
-            }`}
-          >
-            <div className={`p-1.5 rounded-lg ${activeTab === "account" ? "bg-indigo-500/10" : ""}`}>
-              <UserIcon className="w-5 h-5" />
-            </div>
-            <span className="text-[9px] mt-1 font-bold">Conta</span>
-          </button>
         </div>
       </nav>
+
     </div>
   );
 }
