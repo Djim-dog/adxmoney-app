@@ -78,6 +78,10 @@ export default function UserAppPage() {
   const [profileYoutube, setProfileYoutube] = useState("");
   const [updatingProfile, setUpdatingProfile] = useState(false);
 
+  // Simulador de ganhos
+  const [simulatorValue, setSimulatorValue] = useState(1);
+  const EARNING_PER_MEMBER = 500;
+
   // Withdrawal form
   const [withdrawMethod, setWithdrawMethod] = useState<string>("express");
   const [withdrawAmount, setWithdrawAmount] = useState<string>("");
@@ -466,8 +470,44 @@ export default function UserAppPage() {
             <div className="bg-lime-100/50 border border-lime-200 rounded-3xl p-6 space-y-3">
               <h4 className="text-sm font-black text-slate-900 uppercase">Como funcionam os ganhos?</h4>
               <p className="text-xs text-slate-600 leading-relaxed font-medium">
-                Ao compartilhar seu link, cada novo usuário que se cadastrar se torna seu afiliado. Você recebe uma comissão automática por cada tarefa paga que eles concluírem na plataforma.
+                Ao compartilhar seu link, você recebe <span className="text-emerald-700 font-bold">500 Kz</span> por cada novo membro que se cadastrar através da sua indicação. Além disso, você recebe uma comissão automática por cada tarefa paga que seus afiliados concluírem na plataforma.
               </p>
+            </div>
+
+            {/* Simulador de Ganhos */}
+            <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm space-y-6">
+              <div className="space-y-2">
+                <h4 className="text-sm font-black text-slate-900 uppercase">Simulador de Ganhos ADX</h4>
+                <p className="text-[11px] text-slate-500 font-medium">Arraste a barra e verifique quanto podes ganhar com indicações ADX</p>
+              </div>
+
+              <div className="space-y-8 py-2">
+                <div className="relative pt-6">
+                  <input
+                    type="range"
+                    min="1"
+                    max="50000"
+                    step="1"
+                    value={simulatorValue}
+                    onChange={(e) => setSimulatorValue(parseInt(e.target.value))}
+                    className="w-full h-2 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-emerald-600"
+                  />
+                  <div className="flex justify-between mt-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                    <span>1 Usuário</span>
+                    <span>50.000 Usuários</span>
+                  </div>
+                </div>
+
+                <div className="bg-emerald-50 rounded-2xl p-5 border border-emerald-100 flex flex-col items-center justify-center text-center">
+                  <p className="text-[10px] font-black uppercase text-emerald-600 tracking-widest mb-1">Potencial de Ganho Estimado</p>
+                  <p className="text-3xl font-black text-slate-900 font-mono">
+                    {(simulatorValue * EARNING_PER_MEMBER).toLocaleString("pt-AO")} <span className="text-sm">Kz</span>
+                  </p>
+                  <p className="text-[11px] text-slate-400 mt-2 font-medium">
+                    Baseado em {simulatorValue.toLocaleString()} indicações diretas
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
         )}
