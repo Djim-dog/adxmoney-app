@@ -82,14 +82,58 @@ export default function UserAppPage() {
   const [simulatorValue, setSimulatorValue] = useState(1);
   const EARNING_PER_MEMBER = 500;
 
+  // Remitly dataset
+  const REMITLY_COUNTRIES = {
+    "Angola": {
+      code: "+244",
+      cities: ["Luanda", "Benguela", "Huambo", "Lubango", "Cabinda", "Soyo", "Malanje", "Kuito", "Uíge", "Namibe"]
+    },
+    "Brasil": {
+      code: "+55",
+      cities: ["São Paulo", "Rio de Janeiro", "Brasília", "Salvador", "Fortaleza", "Belo Horizonte", "Curitiba", "Manaus", "Recife", "Porto Alegre"]
+    },
+    "Portugal": {
+      code: "+351",
+      cities: ["Lisboa", "Porto", "Amadora", "Braga", "Coimbra", "Funchal", "Setúbal", "Vila Nova de Gaia", "Almada"]
+    },
+    "Moçambique": {
+      code: "+258",
+      cities: ["Maputo", "Matola", "Beira", "Nampula", "Chimoio", "Nacala", "Quelimane", "Tete"]
+    },
+    "Cabo Verde": {
+      code: "+238",
+      cities: ["Praia", "Mindelo", "Santa Maria", "Espargos", "Assomada", "Porto Novo"]
+    }
+  } as const;
+
+  type RemitlyCountryKey = keyof typeof REMITLY_COUNTRIES;
+
   // Withdrawal form
   const [withdrawMethod, setWithdrawMethod] = useState<string>("express");
   const [withdrawAmount, setWithdrawAmount] = useState<string>("");
   const [withdrawIban, setWithdrawIban] = useState("");
   const [withdrawHolder, setWithdrawHolder] = useState("");
   const [withdrawPhone, setWithdrawPhone] = useState("");
-  const [withdrawPix, setWithdrawPix] = useState("");
+  
+  // Remitly specific fields
+  const [remitlyFullName, setRemitlyFullName] = useState("");
+  const [remitlyCountry, setRemitlyCountry] = useState<RemitlyCountryKey>("Angola");
+  const [remitlyCity, setRemitlyCity] = useState("Luanda");
+  const [remitlyPhone, setRemitlyPhone] = useState("+244 ");
+  const [remitlyEmail, setRemitlyEmail] = useState("");
+  const [remitlyDeliveryMethod, setRemitlyDeliveryMethod] = useState("Conta bancária");
+  const [remitlyCurrency, setRemitlyCurrency] = useState("Kz (AOA)");
+  
   const [isRequestingWithdraw, setIsRequestingWithdraw] = useState(false);
+
+  const handleRemitlyCountryChange = (country: RemitlyCountryKey) => {
+    setRemitlyCountry(country);
+    const countryData = REMITLY_COUNTRIES[country];
+    if (countryData) {
+      setRemitlyCity(countryData.cities[0]);
+      setRemitlyPhone(countryData.code + " ");
+    }
+  };
 
   useEffect(() => {
     const checkSuspension = async () => {
@@ -238,15 +282,28 @@ export default function UserAppPage() {
 
     setIsRequestingWithdraw(true);
     try {
+      const details: any = {};
+      if (withdrawMethod === 'iban') {
+        details.titular = withdrawHolder;
+        details.iban = withdrawIban;
+      } else if (withdrawMethod === 'express' || withdrawMethod === 'unitel') {
+        details.telefone = withdrawPhone;
+      } else if (withdrawMethod === 'remitly') {
+        details.remitly = {
+          nome_beneficiario: remitlyFullName,
+          pais: remitlyCountry,
+          cidade: remitlyCity,
+          telefone: remitlyPhone,
+          email: remitlyEmail,
+          metodo_recebimento: remitlyDeliveryMethod,
+          moeda_recebimento: remitlyCurrency
+        };
+      }
+
       const { data, error: wError } = await supabase.rpc("request_withdrawal", {
         p_amount: amount,
         p_method: withdrawMethod.toUpperCase(),
-        p_payment_details: {
-          titular: withdrawMethod === 'iban' ? withdrawHolder : (user?.user_metadata?.name || null),
-          iban: withdrawMethod === 'iban' ? withdrawIban : null,
-          telefone: (withdrawMethod === 'express' || withdrawMethod === 'unitel') ? withdrawPhone : null,
-          pix: withdrawMethod === 'pix' ? withdrawPix : null
-        }
+        p_payment_details: details
       });
 
       if (wError) throw wError;
@@ -550,7 +607,7 @@ export default function UserAppPage() {
                       { id: 'express', label: 'Multicaixa Express', icon: '/icons/express.jpg' },
                       { id: 'unitel', label: 'Unitel Money', icon: '/icons/unitel.jpg' },
                       { id: 'iban', label: 'Transferência (IBAN)', icon: '/icons/iban.jpg' },
-                      { id: 'pix', label: 'PIX Instantâneo', icon: '/icons/pix.jpg' }
+                      { id: 'remitly', label: 'Remitly', icon: '/icons/remitly.jpg' }
                     ].map((method) => (
                       <button
                         key={method.id}
@@ -593,19 +650,19 @@ export default function UserAppPage() {
                   <div className="space-y-4 p-5 bg-slate-50 rounded-2xl border border-slate-100 animate-in fade-in duration-300">
                     <div className="space-y-2">
                       <Label className="text-[10px] font-black uppercase text-slate-500">Titular da Conta</Label>
-                      <Input 
-                        value={withdrawHolder} 
+                      <Input
+                        value={withdrawHolder}
                         onChange={(e) => setWithdrawHolder(e.target.value)}
-                        className="bg-white border-slate-100 text-sm h-11 rounded-xl" 
+                        className="bg-white border-slate-100 text-sm h-11 rounded-xl"
                       />
                     </div>
                     <div className="space-y-2">
                       <Label className="text-[10px] font-black uppercase text-slate-500">IBAN para Crédito</Label>
-                      <Input 
-                        placeholder="AO06..." 
+                      <Input
+                        placeholder="AO06..."
                         value={withdrawIban}
                         onChange={(e) => setWithdrawIban(e.target.value)}
-                        className="bg-white border-slate-100 font-mono text-sm h-11 rounded-xl" 
+                        className="bg-white border-slate-100 font-mono text-sm h-11 rounded-xl"
                       />
                     </div>
                   </div>
@@ -614,23 +671,122 @@ export default function UserAppPage() {
                 {(withdrawMethod === 'express' || withdrawMethod === 'unitel') && (
                   <div className="p-5 bg-slate-50 rounded-2xl border border-slate-100 animate-in fade-in duration-300">
                     <Label className="text-[10px] font-black uppercase text-slate-500">Número de Telefone</Label>
-                    <Input 
-                      placeholder="9xx xxx xxx" 
+                    <Input
+                      placeholder="9xx xxx xxx"
                       value={withdrawPhone}
                       onChange={(e) => setWithdrawPhone(e.target.value)}
-                      className="bg-white border-slate-100 font-mono text-sm h-11 rounded-xl mt-2" 
+                      className="bg-white border-slate-100 font-mono text-sm h-11 rounded-xl mt-2"
                     />
                   </div>
                 )}
 
-                {withdrawMethod === 'pix' && (
-                  <div className="p-5 bg-slate-50 rounded-2xl border border-slate-100 animate-in fade-in duration-300">
-                    <Label className="text-[10px] font-black uppercase text-slate-500">Chave PIX</Label>
-                    <Input 
-                      placeholder="E-mail, CPF ou Telefone" 
-                      value={withdrawPix}
-                      onChange={(e) => setWithdrawPix(e.target.value)}
-                      className="bg-white border-slate-100 text-sm h-11 rounded-xl mt-2" 
+                {withdrawMethod === 'remitly' && (
+                  <div className="space-y-4 p-5 bg-slate-50 rounded-2xl border border-slate-100 animate-in fade-in duration-300">
+                    <div className="space-y-2">
+                      <Label className="text-[10px] font-black uppercase text-slate-500">Nome completo do beneficiário</Label>
+                      <Input
+                        placeholder="Nome completo"
+                        value={remitlyFullName}
+                        onChange={(e) => setRemitlyFullName(e.target.value)}
+                        className="bg-white border-slate-100 text-sm h-11 rounded-xl"
+                        required
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-2">
+                        <Label className="text-[10px] font-black uppercase text-slate-500">País do beneficiário</Label>
+                        <select
+                          value={remitlyCountry}
+                          onChange={(e) => handleRemitlyCountryChange(e.target.value as any)}
+                          className="w-full bg-white border border-slate-100 text-xs h-11 rounded-xl px-3 outline-none focus:border-emerald-500 text-slate-700 font-black uppercase"
+                          required
+                        >
+                          {Object.keys(REMITLY_COUNTRIES).map((c) => (
+                            <option key={c} value={c}>{c}</option>
+                          ))}
+                        </select>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label className="text-[10px] font-black uppercase text-slate-500">Cidade</Label>
+                        <select
+                          value={remitlyCity}
+                          onChange={(e) => setRemitlyCity(e.target.value)}
+                          className="w-full bg-white border border-slate-100 text-xs h-11 rounded-xl px-3 outline-none focus:border-emerald-500 text-slate-700 font-black uppercase"
+                          required
+                        >
+                          {REMITLY_COUNTRIES[remitlyCountry]?.cities.map((city) => (
+                            <option key={city} value={city}>{city}</option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="text-[10px] font-black uppercase text-slate-500">Número de Telefone</Label>
+                      <Input
+                        placeholder="Telefone do beneficiário"
+                        value={remitlyPhone}
+                        onChange={(e) => setRemitlyPhone(e.target.value)}
+                        className="bg-white border-slate-100 font-mono text-sm h-11 rounded-xl"
+                        required
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="text-[10px] font-black uppercase text-slate-500">E-mail</Label>
+                      <Input
+                        type="email"
+                        placeholder="exemplo@email.com"
+                        value={remitlyEmail}
+                        onChange={(e) => setRemitlyEmail(e.target.value)}
+                        className="bg-white border-slate-100 text-sm h-11 rounded-xl"
+                        required
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="text-[10px] font-black uppercase text-slate-500">Método de recebimento</Label>
+                      <div className="grid grid-cols-3 gap-1.5">
+                        {["Conta bancária", "Carteira móvel", "Levantamento em dinheiro"].map((m) => (
+                          <button
+                            key={m}
+                            type="button"
+                            onClick={() => setRemitlyDeliveryMethod(m)}
+                            className={`p-2 rounded-xl border text-center text-[8px] font-black uppercase tracking-tight transition-all ${
+                              remitlyDeliveryMethod === m
+                                ? "bg-emerald-600 border-emerald-600 text-white shadow-md shadow-emerald-50"
+                                : "bg-white border-slate-100 text-slate-600 hover:border-slate-200"
+                            }`}
+                          >
+                            {m}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="text-[10px] font-black uppercase text-slate-500">Moeda de recebimento</Label>
+                      <div className="grid grid-cols-4 gap-1.5">
+                        {["Kz (AOA)", "USD", "EUR", "BRL"].map((curr) => (
+                          <button
+                            key={curr}
+                            type="button"
+                            onClick={() => setRemitlyCurrency(curr)}
+                            className={`p-2 rounded-xl border text-center text-[9px] font-black tracking-tight transition-all ${
+                              remitlyCurrency === curr
+                                ? "bg-emerald-600 border-emerald-600 text-white shadow-md shadow-emerald-50"
+                                : "bg-white border-slate-100 text-slate-600 hover:border-slate-200"
+                            }`}
+                          >
+                            {curr}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
                     />
                   </div>
                 )}

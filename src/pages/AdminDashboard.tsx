@@ -1026,10 +1026,35 @@ export const AdminDashboardPage: React.FC = () => {
                             </Badge>
                           </div>
                         </div>
-                        <div className="bg-slate-50 p-3 rounded-2xl border border-slate-100 text-[10px] text-slate-500 font-bold uppercase flex flex-wrap gap-4">
-                          <span>Método: <strong className="text-slate-900">{w.method}</strong></span>
-                          {w.payment_details?.telefone && <span>Telefone: <strong className="text-slate-900 font-mono">{w.payment_details.telefone}</strong></span>}
-                          {w.payment_details?.iban && <span>IBAN: <strong className="text-slate-900 font-mono">{w.payment_details.iban}</strong></span>}
+                        <div className="bg-slate-50 p-3 rounded-2xl border border-slate-100 text-[10px] text-slate-500 font-bold uppercase flex flex-col gap-2">
+                          <div className="flex flex-wrap gap-4 items-center">
+                            <span>Método: <strong className="text-slate-900">{w.method}</strong></span>
+                            {w.payment_details?.telefone && <span>Telefone: <strong className="text-slate-900 font-mono">{w.payment_details.telefone}</strong></span>}
+                            {w.payment_details?.iban && <span>IBAN: <strong className="text-slate-900 font-mono">{w.payment_details.iban}</strong></span>}
+                            {w.payment_details?.titular && <span>Titular: <strong className="text-slate-900">{w.payment_details.titular}</strong></span>}
+                          </div>
+
+                          {w.payment_details?.remitly && (
+                            <div className="pt-2 border-t border-slate-200/60 grid grid-cols-2 md:grid-cols-4 gap-2 text-[10px] text-slate-600 font-medium normal-case">
+                              <div>
+                                <span className="text-slate-400 font-black uppercase text-[9px] block">Beneficiário</span>
+                                <strong className="text-slate-900 font-bold">{w.payment_details.remitly.nome_beneficiario}</strong>
+                              </div>
+                              <div>
+                                <span className="text-slate-400 font-black uppercase text-[9px] block">Local</span>
+                                <strong className="text-slate-900">{w.payment_details.remitly.cidade}, {w.payment_details.remitly.pais}</strong>
+                              </div>
+                              <div>
+                                <span className="text-slate-400 font-black uppercase text-[9px] block">Contacto</span>
+                                <strong className="text-slate-900 font-mono">{w.payment_details.remitly.telefone}</strong>
+                                {w.payment_details.remitly.email && <span className="block text-[9px] text-slate-500 font-mono lowercase">{w.payment_details.remitly.email}</span>}
+                              </div>
+                              <div>
+                                <span className="text-slate-400 font-black uppercase text-[9px] block">Recebimento</span>
+                                <strong className="text-slate-900">{w.payment_details.remitly.metodo_recebimento} ({w.payment_details.remitly.moeda_recebimento})</strong>
+                              </div>
+                            </div>
+                          )}
                         </div>
                       </div>
 
