@@ -24,8 +24,3 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({
     </div>
   );
 };
-        </div>
-      </div>
-    </div>
-  );
-};
