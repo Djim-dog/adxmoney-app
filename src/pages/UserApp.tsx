@@ -23,7 +23,9 @@ import {
   Info,
   Clock,
   MessageSquare,
-  X
+  X,
+  Eye,
+  EyeOff
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -65,6 +67,9 @@ export default function UserAppPage() {
   const [isAboutOpen, setIsAboutOpen] = useState(false);
   const [isPrivacyOpen, setIsPrivacyOpen] = useState(false);
   const [isFaqOpen, setIsFaqOpen] = useState(false);
+
+  // Espelho de saldo ocultável na home
+  const [hideBalanceHome, setHideBalanceHome] = useState(false);
   const [profileName, setProfileName] = useState("");
   const [profilePhone, setProfilePhone] = useState("");
   const [profileLink, setProfileLink] = useState("");
@@ -313,6 +318,27 @@ export default function UserAppPage() {
         {/* 1. ABA: TAREFAS */}
         {activeTab === "tasks" && (
           <div className="space-y-6 animate-in fade-in slide-in-from-bottom-3 duration-300">
+            {/* Espelho da Carteira no topo da Home */}
+            <div className="bg-gradient-to-br from-emerald-600 to-emerald-800 rounded-3xl p-6 text-white shadow-xl shadow-emerald-600/20 relative overflow-hidden">
+              <div className="absolute right-0 top-0 translate-x-4 -translate-y-4 w-40 h-40 bg-white/10 rounded-full blur-2xl"></div>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs uppercase tracking-widest text-emerald-100 font-bold">Saldo Disponível</span>
+                <button
+                  onClick={() => setHideBalanceHome(!hideBalanceHome)}
+                  className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-all"
+                  title={hideBalanceHome ? "Mostrar saldo" : "Ocultar saldo"}
+                >
+                  {hideBalanceHome ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                </button>
+              </div>
+              <h2 className="text-3xl font-black tracking-tight mb-2">
+                {hideBalanceHome ? "••••••••" : `${wallet ? wallet.balance.toLocaleString("pt-PT", { minimumFractionDigits: 2 }) : "0.00"} Kz`}
+              </h2>
+              <div className="text-[11px] text-emerald-200 font-medium">
+                Retido: {hideBalanceHome ? "••••" : `${wallet ? wallet.reserved_balance.toLocaleString("pt-PT", { minimumFractionDigits: 2 }) : "0.00"} Kz`}
+              </div>
+            </div>
+
             {/* Seletor Segmentado */}
             <div className="flex bg-white p-1 rounded-3xl border border-slate-200 shadow-sm">
               <button
