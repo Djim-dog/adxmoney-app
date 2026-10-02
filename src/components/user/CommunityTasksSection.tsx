@@ -93,7 +93,7 @@ export const CommunityTasksSection: React.FC = () => {
 
       const newLimits = { ...limits };
       platforms.forEach(p => {
-        const count = queueData?.filter(q => q.community_tasks?.platform === p.id).length || 0;
+        const count = queueData?.filter(q => q.community_tasks?.platform?.toLowerCase() === p.id.toLowerCase()).length || 0;
         newLimits[p.id] = { current: count, max: configuredLimits[p.id] || 100 };
       });
       setLimits(newLimits);
@@ -141,7 +141,7 @@ export const CommunityTasksSection: React.FC = () => {
     }
   };
 
-  const filteredTasks = tasks.filter(t => t.platform === activePlatform);
+  const filteredTasks = tasks.filter(t => t.platform?.toLowerCase() === activePlatform.toLowerCase());
 
   if (loading) return <div className="py-20 flex justify-center"><Loader2 className="w-8 h-8 text-emerald-600 animate-spin" /></div>;
 

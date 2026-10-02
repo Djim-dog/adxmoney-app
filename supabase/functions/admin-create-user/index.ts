@@ -26,7 +26,7 @@ serve(async (req) => {
       })
     }
 
-    const { email, password, name, phone, role, first_login, primary_link, tiktok, instagram, youtube, country } = await req.json()
+    const { email, password, name, phone, role, first_login, primary_link, tiktok, instagram, youtube, facebook, country } = await req.json()
 
     const cleanEmail = email ? email.trim().toLowerCase() : '';
     const cleanPhone = phone ? phone.trim() : '';
@@ -75,11 +75,11 @@ serve(async (req) => {
       email: cleanEmail,
       password: password,
       email_confirm: true,
-      user_metadata: { 
-        name, 
-        role, 
+      user_metadata: {
+        name,
+        role,
         phone: cleanPhone,
-        first_login: first_login ?? true 
+        first_login: first_login ?? true
       },
     })
 
@@ -110,6 +110,7 @@ serve(async (req) => {
         tiktok: tiktok ? tiktok.trim() : null,
         instagram: instagram ? instagram.trim() : null,
         youtube: youtube ? youtube.trim() : null,
+        facebook: facebook ? facebook.trim() : null,
         country: country || 'Angola',
         is_active: true,
         updated_at: new Date().toISOString()
