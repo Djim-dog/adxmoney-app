@@ -3,12 +3,13 @@ import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import {
-  LayoutDashboard, Users, Layers, ArrowUpRight, History, Settings, LogOut,
-  RefreshCw, Loader2, Megaphone, Target, CheckCircle2, PlayCircle, Info
+  LayoutDashboard, Users, Layers, ArrowUpRight, Megaphone, 
+  RefreshCw, Loader2, CheckCircle2, XCircle, Trash2, ShieldCheck,
+  Settings, UserPlus, PlayCircle, Info
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 
 export const AdminDashboardPage: React.FC = () => {
@@ -19,6 +20,7 @@ export const AdminDashboardPage: React.FC = () => {
   const [usersList, setUsersList] = useState<any[]>([]);
   const [withdrawalsList, setWithdrawalsList] = useState<any[]>([]);
   const [campaignRequests, setCampaignRequests] = useState<any[]>([]);
+  const [campaignsList, setCampaignsList] = useState<any[]>([]);
 
   const loadAdminData = async () => {
     setLoading(true);
@@ -31,6 +33,8 @@ export const AdminDashboardPage: React.FC = () => {
       setUsersList(users || []);
       setWithdrawalsList(withData || []);
       setCampaignRequests(reqs || []);
+      setCampaignsList(camps || []);
+      
       setStats({
         totalUsers: users?.length || 0,
         activeCampaigns: (camps || []).filter(c => c.status === "ACTIVE").length,
@@ -38,7 +42,7 @@ export const AdminDashboardPage: React.FC = () => {
         pendingCampaignRequests: (reqs || []).filter(r => r.status === "pendente").length,
       });
     } catch (err) {
-      toast.error("Erro ao carregar dados.");
+      toast.error("Erro ao carregar dados administrativos.");
     } finally {
       setLoading(false);
     }
@@ -55,11 +59,13 @@ export const AdminDashboardPage: React.FC = () => {
     } catch { toast.error("Erro ao processar."); }
   };
 
-  const handlePrepareWhatsAppAffiliate = (campaign: any, participants: any[]) => {
-    const phone = campaign.requester_phone || "+244900000000";
-    const completedCount = participants.filter(p => p.status === "COMPLETED").length;
-    const message = `Relatório: ${campaign.title}\nParticipantes: ${participants.length}\nConcluídos: ${completedCount}`;
-    window.open(`https://wa.me/${phone.replace(/\D/g, '')}?text=${encodeURIComponent(message)}`, '_blank');
+  const handleUpdateCampaignRequestStatus = async (id: string, status: "aprovada" | "rejeitada") => {
+    try {
+      const { error } = await supabase.from("campaign_requests").update({ status }).eq("id", id);
+      if (error) throw error;
+      toast.success("Status atualizado.");
+      loadAdminData();
+    } catch { toast.error("Erro ao atualizar status."); }
   };
 
   return (
@@ -80,10 +86,11 @@ export const AdminDashboardPage: React.FC = () => {
           {[
             { id: "dashboard", label: "Visão Geral", icon: <LayoutDashboard /> },
             { id: "users", label: "Operadores", icon: <Users /> },
+            { id: "campaigns", label: "Campanhas", icon: <Layers /> },
             { id: "campaignRequests", label: "Solicitações", icon: <Megaphone /> },
             { id: "withdrawals", label: "Levantamentos", icon: <ArrowUpRight /> },
           ].map((item) => (
-            <button key={item.id} onClick={() => setActiveSection(item.id as any)} className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-[11px] font-black uppercase ${activeSection === item.id ? "bg-emerald-600 text-white" : "text-slate-400 hover:bg-slate-50"}`}>
+            <button key={item.id} onClick={() => setActiveSection(item.id as any)} className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-[11px] font-black uppercase ${activeSection === item.id ? "bg-emerald-600 text-white shadow-lg shadow-emerald-100" : "text-slate-400 hover:bg-slate-50"}`}>
               {item.icon} {item.label}
             </button>
           ))}
@@ -101,15 +108,42 @@ export const AdminDashboardPage: React.FC = () => {
             </div>
           )}
 
+          {activeSection === "campaigns" && (
+            <div className="bg-white rounded-3xl shadow-xl shadow-slate-100 p-6">
+              <h2 className="text-xl font-black mb-6">Campanhas Ativas</h2>
+              {campaignsList.map(c => (
+                <div key={c.id} className="flex justify-between items-center py-4 border-b border-slate-50">
+                    <div><p className="font-black">{c.title}</p><p className="text-xs text-slate-400">{c.platform}</p></div>
+                    <Badge className="bg-emerald-100 text-emerald-700">{c.status}</Badge>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {activeSection === "campaignRequests" && (
+            <div className="bg-white rounded-3xl shadow-xl shadow-slate-100 p-6">
+              <h2 className="text-xl font-black mb-6">Solicitações de Campanhas</h2>
+              {campaignRequests.map(r => (
+                <div key={r.id} className="flex justify-between items-center py-4 border-b border-slate-50">
+                    <div><p className="font-black">{r.title}</p><p className="text-xs text-slate-400">Requerente: {r.profiles?.name}</p></div>
+                    <div className="flex gap-2">
+                        <Button size="sm" onClick={() => handleUpdateCampaignRequestStatus(r.id, "aprovada")} className="bg-emerald-600 rounded-xl text-[10px]">Aprovar</Button>
+                        <Button size="sm" onClick={() => handleUpdateCampaignRequestStatus(r.id, "rejeitada")} className="bg-rose-600 rounded-xl text-[10px]">Rejeitar</Button>
+                    </div>
+                </div>
+              ))}
+            </div>
+          )}
+
           {activeSection === "withdrawals" && (
             <div className="bg-white rounded-3xl shadow-xl shadow-slate-100 p-6">
               <h2 className="text-xl font-black mb-6">Levantamentos Pendentes</h2>
               {withdrawalsList.filter(w => w.status === 'PENDING').map(w => (
-                <div key={w.id} className="flex justify-between items-center py-4 border-b">
+                <div key={w.id} className="flex justify-between items-center py-4 border-b border-slate-50">
                   <div><p className="font-black">{w.profiles?.name}</p><p className="text-xs text-slate-400">Método: {w.method}</p></div>
                   <div className="flex items-center gap-4">
                     <p className="font-mono font-black text-lg">{Number(w.amount).toLocaleString()} Kz</p>
-                    <Button size="sm" onClick={() => handleProcessWithdrawal(w.id, "PAID")} className="bg-emerald-600 rounded-xl">Pagar</Button>
+                    <Button size="sm" onClick={() => handleProcessWithdrawal(w.id, "PAID")} className="bg-emerald-600 rounded-xl text-[10px]">Pagar</Button>
                   </div>
                 </div>
               ))}
