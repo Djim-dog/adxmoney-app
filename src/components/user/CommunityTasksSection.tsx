@@ -72,7 +72,9 @@ export const CommunityTasksSection: React.FC = () => {
     try {
       const { data, error } = await supabase.rpc('fetch_or_assign_community_tasks');
       if (error) throw error;
-      setTasks(data || []);
+      
+      const loadedTasks = data || [];
+      setTasks(loadedTasks);
 
       const { data: limitData } = await supabase
         .from('community_settings')
@@ -82,19 +84,44 @@ export const CommunityTasksSection: React.FC = () => {
       
       const configuredLimits = limitData?.value || { tiktok: 100, instagram: 100, youtube: 100 };
 
-      const { data: queueData } = await supabase
-        .from('task_distribution_queue')
-        .select(`
-          task_id,
-          community_tasks(platform)
-        `)
-        .eq('user_id', (await supabase.auth.getUser()).data.user?.id)
-        .gte('assigned_at', new Date().toISOString().split('T')[0]);
+      // Calcular contagem de tarefas atuais de forma segura utilizando as tarefas ativas e a base local
+      const counts: Record<string, number> = { tiktok: 0, instagram: 0, youtube: 0 };
+      
+      // Buscar contagem diretamente por query segura sem joins complexos
+      const userId = (await supabase.auth.getUser()).data.user?.id;
+      if (userId) {
+        const todayStr = new Date().toLocaleDateString('en-CA'); // Formato YYYY-MM-DD seguro
+        const { data: queueCountData } = await supabase
+          .from('task_distribution_queue')
+          .select('id, task_id, assigned_at')
+          .eq('user_id', userId)
+          .gte('assigned_at', todayStr + 'T00:00:00');
+
+        if (queueCountData && queueCountData.length > 0) {
+          const taskIds = queueCountData.map((q: any) => q.task_id);
+          const { data: tasksPlatformData } = await supabase
+            .from('community_tasks')
+            .select('id, platform')
+            .in('id', taskIds);
+
+          if (tasksPlatformData) {
+            const platformMap = new Map(tasksPlatformData.map((t: any) => [t.id, t.platform?.toLowerCase()]));
+            queueCountData.forEach((q: any) => {
+              const plat = platformMap.get(q.task_id);
+              if (plat && counts[plat] !== undefined) {
+                counts[plat]++;
+              }
+            });
+          }
+        }
+      }
 
       const newLimits = { ...limits };
       platforms.forEach(p => {
-        const count = queueData?.filter((q: any) => q.community_tasks?.platform?.toLowerCase() === p.id.toLowerCase()).length || 0;
-        newLimits[p.id] = { current: count, max: (configuredLimits as any)[p.id] || 100 };
+        newLimits[p.id] = {
+          current: counts[p.id] || 0,
+          max: (configuredLimits as any)[p.id] || 100
+        };
       });
       setLimits(newLimits);
 
