@@ -29,7 +29,6 @@ import { CommunityTasksSection } from "@/components/user/CommunityTasksSection";
 import {
   Video as TiktokIcon,
   Instagram as InstagramIcon,
-  Youtube as YoutubeIcon,
   User as UserIcon
 } from "lucide-react";
 
@@ -492,10 +491,10 @@ export default function UserAppPage() {
                   <Label className="text-xs font-black text-slate-400 uppercase">Escolha o Método</Label>
                   <div className="grid grid-cols-2 gap-3">
                     {[
-                      { id: 'express', label: 'Multicaixa', icon: <Plus className="w-5 h-5" /> },
-                      { id: 'unitel', label: 'Unitel Money', icon: <Plus className="w-5 h-5" /> },
-                      { id: 'iban', label: 'Transferência', icon: <Plus className="w-5 h-5" /> },
-                      { id: 'pix', label: 'PIX Instantâneo', icon: <Plus className="w-5 h-5" /> }
+                      { id: 'express', label: 'Multicaixa', icon: '/express-logo.png' },
+                      { id: 'unitel', label: 'Unitel Money', icon: '/unitel-logo.png' },
+                      { id: 'iban', label: 'Transferência', icon: '/iban-logo.png' },
+                      { id: 'pix', label: 'PIX Instantâneo', icon: '/pix-logo.png' }
                     ].map((method) => (
                       <button
                         key={method.id}
@@ -504,9 +503,14 @@ export default function UserAppPage() {
                         className={`flex items-center justify-center gap-3 p-4 rounded-2xl border text-sm font-black transition-all ${
                           withdrawMethod === method.id
                             ? 'bg-emerald-600 border-emerald-600 text-white shadow-lg shadow-emerald-100'
-                            : 'bg-white border-slate-100 text-slate-400 hover:border-slate-200'
+                            : 'bg-white border-slate-100 text-slate-700 hover:border-slate-200'
                         }`}
                       >
+                        <img
+                          src={method.icon}
+                          alt={method.label}
+                          className={`w-5 h-5 object-contain ${withdrawMethod === method.id ? 'brightness-0 invert' : ''}`}
+                        />
                         {method.label}
                       </button>
                     ))}
@@ -661,7 +665,7 @@ export default function UserAppPage() {
               
               <div className="space-y-2">
                 <Label className="text-[10px] font-black uppercase text-slate-400 tracking-widest flex items-center gap-2">
-                   <TiktokIcon className="w-3 h-3" /> TikTok Handle
+                   <img src="/tiktok-logo.png" alt="TikTok" className="w-3 h-3 object-contain" /> TikTok Handle
                 </Label>
                 <Input
                   value={profileTiktok}
@@ -673,7 +677,7 @@ export default function UserAppPage() {
 
               <div className="space-y-2">
                 <Label className="text-[10px] font-black uppercase text-slate-400 tracking-widest flex items-center gap-2">
-                   <InstagramIcon className="w-3 h-3" /> Instagram Handle
+                   <img src="/instagram-logo.png" alt="Instagram" className="w-3 h-3 object-contain" /> Instagram Handle
                 </Label>
                 <Input
                   value={profileInstagram}
@@ -685,7 +689,7 @@ export default function UserAppPage() {
 
               <div className="space-y-2">
                 <Label className="text-[10px] font-black uppercase text-slate-400 tracking-widest flex items-center gap-2">
-                   <YoutubeIcon className="w-3 h-3" /> YouTube Channel
+                   <img src="/youtube-logo.png" alt="YouTube" className="w-3 h-3 object-contain" /> YouTube Channel
                 </Label>
                 <Input
                   value={profileYoutube}

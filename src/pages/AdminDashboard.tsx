@@ -1322,10 +1322,30 @@ export const AdminDashboardPage: React.FC = () => {
                     <SelectValue placeholder="Selecione" />
                   </SelectTrigger>
                   <SelectContent className="bg-white border-slate-100 rounded-2xl">
-                    <SelectItem value="TikTok" className="text-xs font-bold">TikTok</SelectItem>
-                    <SelectItem value="Instagram" className="text-xs font-bold">Instagram</SelectItem>
-                    <SelectItem value="YouTube" className="text-xs font-bold">YouTube</SelectItem>
-                    <SelectItem value="Facebook" className="text-xs font-bold">Facebook</SelectItem>
+                    <SelectItem value="TikTok" className="text-xs font-bold">
+                      <div className="flex items-center gap-2">
+                        <img src="/tiktok-logo.png" alt="TikTok" className="w-4 h-4 object-contain" />
+                        TikTok
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="Instagram" className="text-xs font-bold">
+                      <div className="flex items-center gap-2">
+                        <img src="/instagram-logo.png" alt="Instagram" className="w-4 h-4 object-contain" />
+                        Instagram
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="YouTube" className="text-xs font-bold">
+                      <div className="flex items-center gap-2">
+                        <img src="/youtube-logo.png" alt="YouTube" className="w-4 h-4 object-contain" />
+                        YouTube
+                      </div>
+                    </SelectItem>
+                    <SelectItem value="Facebook" className="text-xs font-bold">
+                      <div className="flex items-center gap-2">
+                        <img src="/facebook-logo.png" alt="Facebook" className="w-4 h-4 object-contain" />
+                        Facebook
+                      </div>
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
