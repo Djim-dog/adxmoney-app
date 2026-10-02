@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
+import { Mail, Lock, Loader2 } from "lucide-react";
 import { SplashScreen } from "@/components/SplashScreen";
 
 const Login: React.FC = () => {
