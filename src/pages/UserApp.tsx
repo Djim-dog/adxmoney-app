@@ -885,9 +885,9 @@ export default function UserAppPage() {
             <Button
               onClick={() => { setIsMenuOpen(false); signOut(); }}
               variant="destructive"
-              className="w-full h-10 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 font-black text-[10px] uppercase tracking-widest gap-2 border border-rose-200 hidden"
+              className="w-full h-11 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 font-black text-[11px] uppercase tracking-widest gap-2 border border-rose-200 transition-all active:scale-95"
             >
-              <LogOut className="w-3.5 h-3.5" /> Terminar Sessão
+              <LogOut className="w-4 h-4" /> Terminar Sessão
             </Button>
           </div>
         </DialogContent>
