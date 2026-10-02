@@ -409,12 +409,6 @@ export default function UserAppPage() {
         {/* 2. ABA: CAMPANHAS */}
         {activeTab === "campaigns" && user && (
           <div className="space-y-6 animate-in fade-in slide-in-from-bottom-3 duration-300">
-            <div className="px-1">
-              <h2 className="text-lg font-black text-slate-900 flex items-center gap-2">
-                <Megaphone className="w-6 h-6 text-emerald-600" /> Central de Campanhas
-              </h2>
-              <p className="text-sm text-slate-500 mt-1 font-medium">Participe de ações de marketing estruturadas e bônus extras.</p>
-            </div>
             <UserCampaignsHub userId={user.id} />
           </div>
         )}
@@ -746,7 +740,7 @@ export default function UserAppPage() {
       {/* Bottom Navigation */}
       {/* Modal / Sheet do Menu Três Pontos */}
       <Dialog open={isMenuOpen} onOpenChange={setIsMenuOpen}>
-        <DialogContent className="bg-white rounded-3xl border-none max-w-sm p-4 shadow-2xl">
+        <DialogContent className="bg-white rounded-3xl border-none max-w-[90vw] sm:max-w-sm p-4 shadow-2xl max-h-[90vh] overflow-y-auto">
           <div className="flex items-center justify-between pb-2 border-b border-slate-100">
             <button
               onClick={() => setIsMenuOpen(false)}
@@ -766,93 +760,93 @@ export default function UserAppPage() {
           <div className="space-y-1.5 py-3">
             <button
               onClick={() => { setIsMenuOpen(false); setIsNotificationsOpen(true); }}
-              className="w-full flex items-center justify-between p-2 rounded-xl hover:bg-slate-50 border border-transparent transition-all font-bold text-xs text-slate-700"
+              className="w-full flex items-center justify-between p-2 rounded-xl hover:bg-slate-50 border border-transparent transition-all font-bold text-xs text-slate-700 gap-2"
             >
-              <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
                   <Bell className="w-4.5 h-4.5" />
                 </div>
-                <span>Notificações</span>
+                <span className="truncate">Notificações</span>
               </div>
-              <span className="text-[10px] text-emerald-600 font-bold">Ver avisos</span>
+              <span className="text-[10px] text-emerald-600 font-bold shrink-0">Ver avisos</span>
             </button>
 
             <button
               onClick={() => { setIsMenuOpen(false); setIsSettingsOpen(true); }}
-              className="w-full flex items-center justify-between p-2 rounded-xl hover:bg-slate-50 border border-transparent transition-all font-bold text-xs text-slate-700"
+              className="w-full flex items-center justify-between p-2 rounded-xl hover:bg-slate-50 border border-transparent transition-all font-bold text-xs text-slate-700 gap-2"
             >
-              <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
                   <Settings className="w-4.5 h-4.5" />
                 </div>
-                <span>Configurações</span>
+                <span className="truncate">Configurações</span>
               </div>
-              <span className="text-[10px] text-slate-400 font-medium">Editar perfil</span>
+              <span className="text-[10px] text-slate-400 font-medium shrink-0">Editar perfil</span>
             </button>
 
             <button
               onClick={() => { setIsMenuOpen(false); setIsHistoryOpen(true); }}
-              className="w-full flex items-center justify-between p-2 rounded-xl hover:bg-slate-50 border border-transparent transition-all font-bold text-xs text-slate-700"
+              className="w-full flex items-center justify-between p-2 rounded-xl hover:bg-slate-50 border border-transparent transition-all font-bold text-xs text-slate-700 gap-2"
             >
-              <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
                   <Clock className="w-4.5 h-4.5" />
                 </div>
-                <span>Histórico</span>
+                <span className="truncate">Histórico</span>
               </div>
-              <span className="text-[10px] text-slate-400 font-medium">Atividades</span>
+              <span className="text-[10px] text-slate-400 font-medium shrink-0">Atividades</span>
             </button>
 
             <button
               onClick={() => { setIsMenuOpen(false); setIsSupportOpen(true); }}
-              className="w-full flex items-center justify-between p-2 rounded-xl hover:bg-slate-50 border border-transparent transition-all font-bold text-xs text-slate-700"
+              className="w-full flex items-center justify-between p-2 rounded-xl hover:bg-slate-50 border border-transparent transition-all font-bold text-xs text-slate-700 gap-2"
             >
-              <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
                   <MessageSquare className="w-4.5 h-4.5" />
                 </div>
-                <span>Apoio ao Cliente</span>
+                <span className="truncate">Apoio ao Cliente</span>
               </div>
-              <span className="text-[10px] text-slate-400 font-medium">WhatsApp</span>
+              <span className="text-[10px] text-slate-400 font-medium shrink-0">WhatsApp</span>
             </button>
 
             <button
               onClick={() => { setIsMenuOpen(false); setIsAboutOpen(true); }}
-              className="w-full flex items-center justify-between p-2 rounded-xl hover:bg-slate-50 border border-transparent transition-all font-bold text-xs text-slate-700"
+              className="w-full flex items-center justify-between p-2 rounded-xl hover:bg-slate-50 border border-transparent transition-all font-bold text-xs text-slate-700 gap-2"
             >
-              <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
                   <Info className="w-4.5 h-4.5" />
                 </div>
-                <span>Sobre ADXmoney</span>
+                <span className="truncate">Sobre ADXmoney</span>
               </div>
-              <span className="text-[10px] text-slate-400 font-medium">Info</span>
+              <span className="text-[10px] text-slate-400 font-medium shrink-0">Info</span>
             </button>
 
             <button
               onClick={() => { setIsMenuOpen(false); setIsPrivacyOpen(true); }}
-              className="w-full flex items-center justify-between p-2 rounded-xl hover:bg-slate-50 border border-transparent transition-all font-bold text-xs text-slate-700"
+              className="w-full flex items-center justify-between p-2 rounded-xl hover:bg-slate-50 border border-transparent transition-all font-bold text-xs text-slate-700 gap-2"
             >
-              <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
                   <Shield className="w-4.5 h-4.5" />
                 </div>
-                <span>Privacidade e Termos</span>
+                <span className="truncate">Privacidade e Termos</span>
               </div>
-              <span className="text-[10px] text-slate-400 font-medium">Regras</span>
+              <span className="text-[10px] text-slate-400 font-medium shrink-0">Regras</span>
             </button>
 
             <button
               onClick={() => { setIsMenuOpen(false); setIsFaqOpen(true); }}
-              className="w-full flex items-center justify-between p-2 rounded-xl hover:bg-slate-50 border border-transparent transition-all font-bold text-xs text-slate-700"
+              className="w-full flex items-center justify-between p-2 rounded-xl hover:bg-slate-50 border border-transparent transition-all font-bold text-xs text-slate-700 gap-2"
             >
-              <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
                   <HelpCircle className="w-4.5 h-4.5" />
                 </div>
-                <span>Perguntas Frequentes</span>
+                <span className="truncate">Perguntas Frequentes</span>
               </div>
-              <span className="text-[10px] text-slate-400 font-medium">Dúvidas</span>
+              <span className="text-[10px] text-slate-400 font-medium shrink-0">Dúvidas</span>
             </button>
           </div>
 
