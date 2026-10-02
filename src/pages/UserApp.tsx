@@ -2,43 +2,26 @@ import React, { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Navigate, useNavigate } from "react-router-dom";
-import { WithdrawModal } from "@/components/user/WithdrawModal";
 import {
   Layers,
   Wallet,
-  History,
-  User as UserIcon,
   LogOut,
   ArrowUpRight,
-  ChevronRight,
-  TrendingUp,
-  Share2,
   ExternalLink,
   Loader2,
   Copy,
   Plus,
-  Banknote,
-  PhoneCall,
-  Smartphone,
-  CreditCard,
   Gift,
-  Search,
   Lock,
   Megaphone,
-  Info,
   Settings,
   Bell,
-  CheckCircle,
-  HelpCircle,
-  X
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { toast } from "sonner";
 
 import { UserCampaignsHub } from "@/components/user/UserCampaignsHub";
@@ -46,14 +29,15 @@ import { CommunityTasksSection } from "@/components/user/CommunityTasksSection";
 import {
   Video as TiktokIcon,
   Instagram as InstagramIcon,
-  Youtube as YoutubeIcon
+  Youtube as YoutubeIcon,
+  User as UserIcon
 } from "lucide-react";
 
 export default function UserAppPage() {
   const { user, profile, signOut, refreshProfile } = useAuth();
   const navigate = useNavigate();
 
-  // Android Navigation Tabs: "tasks" | "campaigns" | "affiliate" | "wallet"
+  // Navigation Tabs: "tasks" | "campaigns" | "affiliate" | "wallet"
   const [activeTab, setActiveTab] = useState<"tasks" | "campaigns" | "affiliate" | "wallet">("tasks");
   const [tasksSubTab, setTasksSubTab] = useState<"financial" | "community">("financial");
 
@@ -267,112 +251,112 @@ export default function UserAppPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans antialiased overflow-x-hidden select-none pb-24">
+    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans antialiased overflow-x-hidden select-none pb-24">
       
-      {/* Header Nativo Android-Style */}
-      <header className="sticky top-0 z-40 bg-slate-900 border-b border-slate-800/80 px-4 py-3.5 flex items-center justify-between shadow-md">
+      {/* Header */}
+      <header className="sticky top-0 z-40 bg-white border-b border-slate-200 px-4 py-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 to-indigo-500 flex items-center justify-center shadow-lg shadow-indigo-900/30">
-            <img src="/logo.png" alt="ADX" className="h-5 w-auto" />
+          <div className="w-10 h-10 rounded-2xl bg-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-100">
+            <img src="/logo.png" alt="ADX" className="h-6 w-auto brightness-0 invert" />
           </div>
           <div>
-            <h1 className="text-sm font-black text-white tracking-tight flex items-center gap-1.5 leading-none">
-              ADXmoney <span className="text-[9px] bg-indigo-500/20 text-indigo-400 px-1.5 py-0.5 rounded-full font-bold uppercase tracking-wider font-mono">v2</span>
+            <h1 className="text-base font-black text-slate-900 tracking-tight flex items-center gap-1.5 leading-none">
+              ADXmoney <span className="text-[9px] bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded-full font-bold uppercase tracking-wider">v2</span>
             </h1>
-            <p className="text-[10px] text-slate-400 font-medium mt-0.5">
-              Olá, <span className="text-slate-200 font-bold">{profile?.name?.split(' ')[0] || "Operador"}</span>
+            <p className="text-[11px] text-slate-400 font-medium mt-0.5">
+              Operador: <span className="text-emerald-600 font-bold">{profile?.name?.split(' ')[0] || "Usuário"}</span>
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-1.5">
-          {/* Botão Notificação (Estilo Android) */}
+        <div className="flex items-center gap-2">
           <button 
             onClick={() => toast.info("Não tem notificações novas no momento.")}
-            className="w-9 h-9 rounded-xl bg-slate-800/50 hover:bg-slate-800 flex items-center justify-center text-slate-300 transition-all active:scale-95"
+            className="w-10 h-10 rounded-2xl bg-slate-100 hover:bg-slate-200 flex items-center justify-center text-slate-500 transition-all active:scale-95"
           >
-            <Bell className="w-4 h-4" />
+            <Bell className="w-5 h-5" />
           </button>
 
-          {/* Avatar/Perfil do Usuário (Substitui a 5ª Aba de Conta) */}
           <button
             onClick={() => setIsSettingsOpen(true)}
-            className="w-9 h-9 rounded-xl bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400 transition-all active:scale-95"
+            className="w-10 h-10 rounded-2xl bg-emerald-50 hover:bg-emerald-100 flex items-center justify-center text-emerald-600 transition-all active:scale-95 border border-emerald-100"
           >
-            <Settings className="w-4 h-4" />
+            <Settings className="w-5 h-5" />
           </button>
         </div>
       </header>
 
-      {/* Main Container - Android-Style Viewport Expandido */}
-      <main className="flex-1 w-full mx-auto max-w-4xl px-4 py-5 space-y-6">
+      {/* Main Container */}
+      <main className="flex-1 w-full mx-auto max-w-4xl px-4 py-6 space-y-8">
 
         {/* 1. ABA: TAREFAS */}
         {activeTab === "tasks" && (
-          <div className="space-y-5 animate-in fade-in slide-in-from-bottom-3 duration-200">
-            {/* Seletor Segmentado Nativo Android */}
-            <div className="flex bg-slate-900/90 p-1 rounded-xl border border-slate-800/80 shadow-inner">
+          <div className="space-y-6 animate-in fade-in slide-in-from-bottom-3 duration-300">
+            {/* Seletor Segmentado */}
+            <div className="flex bg-white p-1 rounded-3xl border border-slate-200 shadow-sm">
               <button
                 onClick={() => setTasksSubTab("financial")}
-                className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${
+                className={`flex-1 py-2.5 text-xs font-black rounded-2xl transition-all ${
                   tasksSubTab === "financial"
-                    ? "bg-indigo-600 text-white shadow-md shadow-indigo-950/40"
-                    : "text-slate-400 hover:text-slate-200"
+                    ? "bg-emerald-600 text-white shadow-md shadow-emerald-100"
+                    : "text-slate-400 hover:text-slate-600"
                 }`}
               >
-                Tarefas Operacionais
+                TAREFAS FINANCEIRAS
               </button>
               <button
                 onClick={() => setTasksSubTab("community")}
-                className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${
+                className={`flex-1 py-2.5 text-xs font-black rounded-2xl transition-all ${
                   tasksSubTab === "community"
-                    ? "bg-indigo-600 text-white shadow-md shadow-indigo-950/40"
-                    : "text-slate-400 hover:text-slate-200"
+                    ? "bg-emerald-600 text-white shadow-md shadow-emerald-100"
+                    : "text-slate-400 hover:text-slate-600"
                 }`}
               >
-                Comunitárias
+                COMUNITÁRIAS
               </button>
             </div>
 
             {tasksSubTab === "financial" ? (
-              <div className="space-y-4">
+              <div className="space-y-5">
                 <div className="px-1">
-                  <h2 className="text-base font-extrabold text-white flex items-center gap-2">
-                    <Layers className="w-5 h-5 text-indigo-400" /> Tarefas Remuneradas
+                  <h2 className="text-lg font-black text-slate-900 flex items-center gap-2">
+                    <Layers className="w-6 h-6 text-emerald-600" /> Atividades Disponíveis
                   </h2>
-                  <p className="text-xs text-slate-400 mt-1">Siga, curta ou comente para receber recompensas em tempo real.</p>
+                  <p className="text-sm text-slate-500 mt-1 font-medium">Conclua as tarefas para creditar o seu saldo em tempo real.</p>
                 </div>
 
                 {campaigns.length === 0 ? (
-                  <div className="bg-slate-900/40 border border-dashed border-slate-800/80 rounded-2xl py-14 text-center">
-                    <Layers className="w-10 h-10 text-slate-700 mx-auto mb-3 opacity-35" />
-                    <p className="text-xs text-slate-400 font-medium">Sem tarefas financeiras no momento.</p>
-                    <p className="text-[10px] text-slate-500 mt-0.5">Volte mais tarde para novas oportunidades.</p>
+                  <div className="bg-white border border-slate-200 rounded-3xl py-16 text-center shadow-sm">
+                    <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                      <Layers className="w-8 h-8 text-slate-300" />
+                    </div>
+                    <p className="text-sm text-slate-600 font-bold uppercase tracking-tight">Sem tarefas financeiras no momento</p>
+                    <p className="text-xs text-slate-400 mt-1">Aguarde novas oportunidades de ganhos.</p>
                   </div>
                 ) : (
-                  <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="grid gap-4 sm:grid-cols-2">
                     {campaigns.map((c) => (
-                      <div key={c.id} className="bg-slate-900 border border-slate-800/80 rounded-2xl p-4 flex flex-col justify-between hover:border-slate-700 transition-all shadow-sm">
+                      <div key={c.id} className="bg-white border border-slate-100 rounded-3xl p-5 flex flex-col justify-between hover:shadow-xl hover:shadow-slate-200/50 transition-all shadow-md group">
                         <div>
-                          <div className="flex justify-between items-start mb-2">
-                            <Badge variant="outline" className="text-[9px] uppercase font-bold border-indigo-500/20 text-indigo-400 bg-indigo-500/5 px-2 py-0.5 h-auto">
+                          <div className="flex justify-between items-start mb-3">
+                            <Badge className="text-[10px] uppercase font-black border-none text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full">
                               {c.platform}
                             </Badge>
-                            <span className="text-sm font-black text-emerald-400 font-mono">
+                            <span className="text-lg font-black text-emerald-600 font-mono">
                               +{c.reward_amount.toLocaleString()} Kz
                             </span>
                           </div>
-                          <h3 className="text-sm font-bold text-slate-100 line-clamp-1">{c.title}</h3>
-                          <p className="text-xs text-slate-400 mt-1 line-clamp-2 leading-relaxed">{c.description}</p>
+                          <h3 className="text-sm font-black text-slate-900 group-hover:text-emerald-600 transition-colors">{c.title}</h3>
+                          <p className="text-xs text-slate-500 mt-2 line-clamp-2 leading-relaxed font-medium">{c.description}</p>
                         </div>
                         
-                        <div className="mt-4 pt-3 border-t border-slate-800/60 flex items-center justify-between">
-                          <Badge className={c.assignment_status === 'COMPLETED' ? 'bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/10 border-none px-2 py-0.5' : 'bg-amber-500/10 text-amber-400 hover:bg-amber-500/10 border-none px-2 py-0.5'}>
-                            {c.assignment_status === 'COMPLETED' ? 'Concluída' : 'Pendente'}
+                        <div className="mt-5 pt-4 border-t border-slate-50 flex items-center justify-between">
+                          <Badge className={c.assignment_status === 'COMPLETED' ? 'bg-slate-50 text-slate-400 border-none px-3 py-1 font-bold' : 'bg-lime-400 text-slate-900 border-none px-3 py-1 font-black'}>
+                            {c.assignment_status === 'COMPLETED' ? 'Finalizada' : 'Disponível'}
                           </Badge>
-                          <Button size="sm" className="h-8 text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl shadow-md" asChild>
+                          <Button size="sm" className="h-10 text-xs font-black bg-slate-900 hover:bg-emerald-600 text-white rounded-2xl shadow-lg transition-all px-5" asChild>
                             <a href={c.target_url} target="_blank" rel="noreferrer">
-                              Abrir <ExternalLink className="w-3 h-3 ml-1.5" />
+                              EXECUTAR <ExternalLink className="w-3 h-3 ml-2" />
                             </a>
                           </Button>
                         </div>
@@ -389,12 +373,12 @@ export default function UserAppPage() {
 
         {/* 2. ABA: CAMPANHAS */}
         {activeTab === "campaigns" && user && (
-          <div className="space-y-4 animate-in fade-in slide-in-from-bottom-3 duration-200">
+          <div className="space-y-6 animate-in fade-in slide-in-from-bottom-3 duration-300">
             <div className="px-1">
-              <h2 className="text-base font-extrabold text-white flex items-center gap-2">
-                <Megaphone className="w-5 h-5 text-indigo-400" /> Hub de Campanhas
+              <h2 className="text-lg font-black text-slate-900 flex items-center gap-2">
+                <Megaphone className="w-6 h-6 text-emerald-600" /> Central de Campanhas
               </h2>
-              <p className="text-xs text-slate-400 mt-1">Explore e participe de campanhas de marketing estruturadas.</p>
+              <p className="text-sm text-slate-500 mt-1 font-medium">Participe de ações de marketing estruturadas e bônus extras.</p>
             </div>
             <UserCampaignsHub userId={user.id} />
           </div>
@@ -402,66 +386,65 @@ export default function UserAppPage() {
 
         {/* 3. ABA: AFILIADO */}
         {activeTab === "affiliate" && (
-          <div className="space-y-5 animate-in fade-in slide-in-from-bottom-3 duration-200">
+          <div className="space-y-6 animate-in fade-in slide-in-from-bottom-3 duration-300">
             <div className="px-1">
-              <h2 className="text-base font-extrabold text-white flex items-center gap-2">
-                <Gift className="w-5 h-5 text-indigo-400" /> Rede de Afiliados
+              <h2 className="text-lg font-black text-slate-900 flex items-center gap-2">
+                <Gift className="w-6 h-6 text-emerald-600" /> Programa de Afiliados
               </h2>
-              <p className="text-xs text-slate-400 mt-1">Indique novos operadores e fature comissão diretamente em saldo.</p>
+              <p className="text-sm text-slate-500 mt-1 font-medium">Convide novos membros e ganhe uma porcentagem sobre as operações deles.</p>
             </div>
 
-            {/* Card de Informações/Estatísticas Finas */}
-            <div className="bg-slate-900 border border-slate-800/80 rounded-2xl p-5 relative overflow-hidden shadow-md">
-              <div className="absolute right-[-10px] top-[-10px] opacity-[0.03]">
-                <Gift className="w-32 h-32" />
-              </div>
+            <div className="bg-emerald-600 rounded-3xl p-6 text-white shadow-xl shadow-emerald-100 relative overflow-hidden">
+               <div className="absolute top-0 right-0 p-8 opacity-10">
+                  <Gift size={120} />
+               </div>
+               <div className="relative z-10">
+                  <div className="grid grid-cols-2 gap-6">
+                    <div>
+                      <p className="text-[10px] font-black uppercase tracking-widest text-emerald-200">Indicações Totais</p>
+                      <p className="text-3xl font-black mt-1 font-mono">{affiliate?.total_referrals || 0}</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] font-black uppercase tracking-widest text-emerald-200">Ganhos em Comissões</p>
+                      <p className="text-3xl font-black mt-1 font-mono">
+                        {Number(affiliate?.total_earned || 0).toLocaleString()} <span className="text-sm">Kz</span>
+                      </p>
+                    </div>
+                  </div>
+               </div>
+            </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="p-4 bg-slate-950/60 rounded-xl border border-slate-800/40">
-                  <p className="text-[10px] uppercase font-bold text-slate-400">Total Convidados</p>
-                  <p className="text-2xl font-black text-white font-mono mt-1">{affiliate?.total_referrals || 0}</p>
-                </div>
-                <div className="p-4 bg-slate-950/60 rounded-xl border border-slate-800/40">
-                  <p className="text-[10px] uppercase font-bold text-slate-400">Total Faturado</p>
-                  <p className="text-2xl font-black text-emerald-400 font-mono mt-1">
-                    {Number(affiliate?.total_earned || 0).toLocaleString()} Kz
-                  </p>
-                </div>
-              </div>
-
-              {/* Bloco do Código */}
-              <div className="mt-5 space-y-2">
-                <Label className="text-[10px] uppercase font-bold text-slate-400">Código de Indicação</Label>
-                <div className="flex gap-2">
-                  <div className="flex-1 h-11 bg-slate-950/80 border border-slate-800 rounded-xl flex items-center justify-center font-mono text-base font-bold text-indigo-400 tracking-wider">
+            {/* Bloco do Código */}
+            <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm space-y-5">
+              <div className="space-y-2">
+                <Label className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Seu Código Exclusivo</Label>
+                <div className="flex gap-3">
+                  <div className="flex-1 h-14 bg-slate-50 border border-slate-100 rounded-2xl flex items-center justify-center font-mono text-xl font-black text-emerald-600 tracking-widest">
                     {profile?.referral_code || "---"}
                   </div>
                   <Button
                     variant="outline"
                     size="icon"
                     onClick={() => copyToClipboard(profile?.referral_code || "", "Código")}
-                    className="h-11 w-11 border-slate-800 bg-slate-900 text-slate-300 rounded-xl hover:bg-slate-800"
+                    className="h-14 w-14 border-slate-200 bg-white text-slate-600 rounded-2xl hover:bg-slate-50 transition-all shadow-sm"
                   >
-                    <Copy className="w-4 h-4" />
+                    <Copy className="w-5 h-5" />
                   </Button>
                 </div>
               </div>
 
-              <div className="mt-4 pt-1">
-                <Button 
-                  onClick={() => copyToClipboard(getReferralLink(), "Link de Indicação")}
-                  className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold h-11 rounded-xl shadow-md transition-all flex items-center justify-center gap-2"
-                >
-                  <Share2 className="w-4 h-4" /> Copiar Link Completo
-                </Button>
-              </div>
+              <Button 
+                onClick={() => copyToClipboard(getReferralLink(), "Link de Indicação")}
+                className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black h-14 rounded-2xl shadow-lg shadow-emerald-100 transition-all flex items-center justify-center gap-2"
+              >
+                COPIAR LINK DE CONVITE <ArrowUpRight className="w-5 h-5" />
+              </Button>
             </div>
 
-            {/* Regras Operacionais de Afiliados */}
-            <div className="bg-slate-900/40 border border-slate-800/60 rounded-2xl p-4 space-y-2">
-              <h4 className="text-xs font-bold text-slate-200">Como funciona o bónus?</h4>
-              <p className="text-xs text-slate-400 leading-relaxed">
-                Compartilhe o seu link exclusivo. Quando um convidado se cadastrar e começar a operar na plataforma realizando tarefas, você recebe as recompensas em sua carteira automaticamente.
+            <div className="bg-lime-100/50 border border-lime-200 rounded-3xl p-6 space-y-3">
+              <h4 className="text-sm font-black text-slate-900 uppercase">Como funcionam os ganhos?</h4>
+              <p className="text-xs text-slate-600 leading-relaxed font-medium">
+                Ao compartilhar seu link, cada novo usuário que se cadastrar se torna seu afiliado. Você recebe uma comissão automática por cada tarefa paga que eles concluírem na plataforma.
               </p>
             </div>
           </div>
@@ -469,126 +452,125 @@ export default function UserAppPage() {
 
         {/* 4. ABA: CARTEIRA */}
         {activeTab === "wallet" && (
-          <div className="space-y-5 animate-in fade-in slide-in-from-bottom-3 duration-200">
+          <div className="space-y-6 animate-in fade-in slide-in-from-bottom-3 duration-300">
             <div className="px-1">
-              <h2 className="text-base font-extrabold text-white flex items-center gap-2">
-                <Wallet className="w-5 h-5 text-indigo-400" /> Minha Carteira
+              <h2 className="text-lg font-black text-slate-900 flex items-center gap-2">
+                <Wallet className="w-6 h-6 text-emerald-600" /> Gestão Financeira
               </h2>
-              <p className="text-xs text-slate-400 mt-1">Gerencie suas finanças, solicite levantamentos e veja sua atividade recente.</p>
+              <p className="text-sm text-slate-500 mt-1 font-medium">Acompanhe seu saldo e solicite levantamentos de forma segura.</p>
             </div>
 
-            {/* Card de Saldo Moderno */}
-            <div className="bg-slate-900 border border-slate-800/80 rounded-2xl p-5 shadow-lg relative overflow-hidden">
-              <div className="absolute right-4 top-4">
-                <span className="text-[10px] bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded-full font-bold">
-                  SLA 24H Úteis
+            {/* Card de Saldo */}
+            <div className="bg-white border border-slate-200 rounded-3xl p-8 shadow-xl shadow-slate-200/50 relative overflow-hidden">
+              <div className="absolute right-6 top-6">
+                <span className="text-[10px] bg-emerald-600 text-white px-3 py-1 rounded-full font-black uppercase tracking-widest shadow-md shadow-emerald-100">
+                  Operacional
                 </span>
               </div>
               
-              <div className="space-y-1">
-                <p className="text-[10px] uppercase font-bold text-slate-400">Saldo Disponível</p>
-                <p className="text-3xl font-black text-white font-mono">
-                  {(wallet?.balance || 0).toLocaleString("pt-AO", { minimumFractionDigits: 2 })} <span className="text-base font-normal text-slate-400">Kz</span>
+              <div className="space-y-2">
+                <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Saldo Disponível para Saque</p>
+                <p className="text-4xl font-black text-slate-900 font-mono">
+                  {(wallet?.balance || 0).toLocaleString("pt-AO", { minimumFractionDigits: 2 })} <span className="text-lg font-medium text-slate-400">Kz</span>
                 </p>
               </div>
 
-              <div className="mt-4 pt-3 border-t border-slate-800/60 flex items-center justify-between text-xs text-slate-400">
-                <span className="flex items-center gap-1.5 font-medium">
-                  <Lock className="w-3.5 h-3.5 text-slate-500" />
-                  Ganhos retidos: <span className="font-mono text-slate-200">{(wallet?.reserved_balance || 0).toLocaleString()} Kz</span>
+              <div className="mt-8 pt-6 border-t border-slate-50 flex items-center justify-between text-xs text-slate-500 font-medium">
+                <span className="flex items-center gap-2">
+                  <Lock className="w-4 h-4 text-slate-300" />
+                  Saldo em processamento: <span className="font-bold text-slate-700">{(wallet?.reserved_balance || 0).toLocaleString()} Kz</span>
                 </span>
               </div>
             </div>
 
-            {/* Formulário de Levantamento Avançado */}
-            <div className="bg-slate-900 border border-slate-800/80 rounded-2xl p-5 shadow-md space-y-4">
-              <h3 className="text-xs font-extrabold text-slate-200 uppercase tracking-wider">Solicitar Levantamento</h3>
+            {/* Formulário de Levantamento */}
+            <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm space-y-6">
+              <h3 className="text-xs font-black text-slate-900 uppercase tracking-widest px-1">Solicitar Pagamento</h3>
               
-              <form onSubmit={handleRequestWithdraw} className="space-y-4">
-                <div className="space-y-2">
-                  <Label className="text-xs font-bold text-slate-300">Método de Pagamento</Label>
-                  <div className="grid grid-cols-2 gap-2">
+              <form onSubmit={handleRequestWithdraw} className="space-y-6">
+                <div className="space-y-3">
+                  <Label className="text-xs font-black text-slate-400 uppercase">Escolha o Método</Label>
+                  <div className="grid grid-cols-2 gap-3">
                     {[
-                      { id: 'express', label: 'Express', img: '/icon-express.jpg' },
-                      { id: 'unitel', label: 'Unitel Money', img: '/icon-unitel.jpg' },
-                      { id: 'iban', label: 'IBAN', img: '/icon-iban.jpg' },
-                      { id: 'pix', label: 'PIX', img: '/icon-pix.jpg' }
+                      { id: 'express', label: 'Multicaixa', icon: <Plus className="w-5 h-5" /> },
+                      { id: 'unitel', label: 'Unitel Money', icon: <Plus className="w-5 h-5" /> },
+                      { id: 'iban', label: 'Transferência', icon: <Plus className="w-5 h-5" /> },
+                      { id: 'pix', label: 'PIX Instantâneo', icon: <Plus className="w-5 h-5" /> }
                     ].map((method) => (
                       <button
                         key={method.id}
                         type="button"
                         onClick={() => setWithdrawMethod(method.id)}
-                        className={`flex items-center gap-2 p-2.5 rounded-xl border text-left transition-all ${
+                        className={`flex items-center justify-center gap-3 p-4 rounded-2xl border text-sm font-black transition-all ${
                           withdrawMethod === method.id
-                            ? 'bg-indigo-500/10 border-indigo-500 text-indigo-400'
-                            : 'bg-slate-950 border-slate-800/80 text-slate-400 hover:border-slate-700'
+                            ? 'bg-emerald-600 border-emerald-600 text-white shadow-lg shadow-emerald-100'
+                            : 'bg-white border-slate-100 text-slate-400 hover:border-slate-200'
                         }`}
                       >
-                        <img src={method.img} alt={method.label} className="w-5 h-5 rounded-md object-cover" />
-                        <span className="text-xs font-bold">{method.label}</span>
+                        {method.label}
                       </button>
                     ))}
                   </div>
                 </div>
 
-                <div className="space-y-1.5">
-                  <Label className="text-xs font-bold text-slate-300">Valor</Label>
+                <div className="space-y-2">
+                  <Label className="text-xs font-black text-slate-400 uppercase">Valor do Saque</Label>
                   <div className="relative">
                     <Input
                       type="number"
-                      placeholder="Ex: 5000"
+                      placeholder="Mínimo 1.000 Kz"
                       value={withdrawAmount}
                       onChange={(e) => setWithdrawAmount(e.target.value)}
-                      className="bg-slate-950 border-slate-800/80 h-10 font-mono text-base text-emerald-400 focus:border-indigo-500"
+                      className="bg-slate-50 border-transparent focus:bg-white focus:border-emerald-500 h-14 font-mono text-xl font-black text-slate-900 rounded-2xl px-6"
                       required
                     />
-                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-xs">Kz</span>
+                    <span className="absolute right-6 top-1/2 -translate-y-1/2 text-slate-400 font-black text-sm">Kz</span>
                   </div>
                 </div>
 
-                {/* Formulários Dinâmicos Android-Style */}
+                {/* Formulários Dinâmicos */}
                 {withdrawMethod === 'iban' && (
-                  <div className="space-y-3 p-4 bg-slate-950/80 rounded-xl border border-slate-800/60 animate-in fade-in duration-200">
-                    <div className="space-y-1.5">
-                      <Label className="text-[10px] uppercase font-bold text-slate-400">Titular da Conta Bancária</Label>
+                  <div className="space-y-4 p-5 bg-slate-50 rounded-2xl border border-slate-100 animate-in fade-in duration-300">
+                    <div className="space-y-2">
+                      <Label className="text-[10px] font-black uppercase text-slate-500">Titular da Conta</Label>
                       <Input 
                         value={withdrawHolder} 
                         onChange={(e) => setWithdrawHolder(e.target.value)}
-                        className="bg-slate-900 border-slate-800 text-xs h-9" 
+                        className="bg-white border-slate-100 text-sm h-11 rounded-xl" 
                       />
                     </div>
-                    <div className="space-y-1.5">
-                      <Label className="text-[10px] uppercase font-bold text-slate-400">Número do IBAN</Label>
+                    <div className="space-y-2">
+                      <Label className="text-[10px] font-black uppercase text-slate-500">IBAN para Crédito</Label>
                       <Input 
                         placeholder="AO06..." 
                         value={withdrawIban}
                         onChange={(e) => setWithdrawIban(e.target.value)}
-                        className="bg-slate-900 border-slate-800 font-mono text-xs h-9" 
+                        className="bg-white border-slate-100 font-mono text-sm h-11 rounded-xl" 
                       />
                     </div>
                   </div>
                 )}
 
                 {(withdrawMethod === 'express' || withdrawMethod === 'unitel') && (
-                  <div className="space-y-1.5 p-4 bg-slate-950/80 rounded-xl border border-slate-800/60 animate-in fade-in duration-200">
-                    <Label className="text-[10px] uppercase font-bold text-slate-400">Número de Telefone Associado</Label>
+                  <div className="p-5 bg-slate-50 rounded-2xl border border-slate-100 animate-in fade-in duration-300">
+                    <Label className="text-[10px] font-black uppercase text-slate-500">Número de Telefone</Label>
                     <Input 
-                      placeholder="9..." 
+                      placeholder="9xx xxx xxx" 
                       value={withdrawPhone}
                       onChange={(e) => setWithdrawPhone(e.target.value)}
-                      className="bg-slate-900 border-slate-800 font-mono text-xs h-9" 
+                      className="bg-white border-slate-100 font-mono text-sm h-11 rounded-xl mt-2" 
                     />
                   </div>
                 )}
 
                 {withdrawMethod === 'pix' && (
-                  <div className="space-y-1.5 p-4 bg-slate-950/80 rounded-xl border border-slate-800/60 animate-in fade-in duration-200">
-                    <Label className="text-[10px] uppercase font-bold text-slate-400">Chave PIX (E-mail, CPF ou Telefone)</Label>
+                  <div className="p-5 bg-slate-50 rounded-2xl border border-slate-100 animate-in fade-in duration-300">
+                    <Label className="text-[10px] font-black uppercase text-slate-500">Chave PIX</Label>
                     <Input 
-                      placeholder="Digite a chave pix" 
+                      placeholder="E-mail, CPF ou Telefone" 
                       value={withdrawPix}
                       onChange={(e) => setWithdrawPix(e.target.value)}
-                      className="bg-slate-900 border-slate-800 text-xs h-9" 
+                      className="bg-white border-slate-100 text-sm h-11 rounded-xl mt-2" 
                     />
                   </div>
                 )}
@@ -596,41 +578,41 @@ export default function UserAppPage() {
                 <Button
                   type="submit"
                   disabled={isRequestingWithdraw || !withdrawAmount || parseFloat(withdrawAmount) <= 0 || parseFloat(withdrawAmount) > (wallet?.balance || 0)}
-                  className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold h-11 rounded-xl shadow-lg transition-all"
+                  className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black h-14 rounded-2xl shadow-xl shadow-emerald-100 transition-all text-sm uppercase tracking-widest"
                 >
-                  {isRequestingWithdraw ? <Loader2 className="w-5 h-5 animate-spin" /> : "Solicitar Saque"}
+                  {isRequestingWithdraw ? <Loader2 className="w-5 h-5 animate-spin" /> : "Solicitar Levantamento"}
                 </Button>
               </form>
             </div>
 
-            {/* Extrato Nativo / Transações */}
-            <div className="space-y-3">
-              <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider px-1">Histórico de Transações</h3>
+            {/* Histórico */}
+            <div className="space-y-4">
+              <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest px-1">Extrato de Movimentações</h3>
               
               {transactions.length === 0 ? (
-                <div className="bg-slate-900/20 border border-slate-800 rounded-2xl p-8 text-center text-xs text-slate-500 italic">
-                  Nenhuma transação encontrada.
+                <div className="bg-white border border-slate-200 rounded-3xl p-10 text-center text-xs text-slate-400 font-medium">
+                  Nenhuma movimentação registrada.
                 </div>
               ) : (
-                <div className="bg-slate-900 border border-slate-800/80 rounded-2xl overflow-hidden divide-y divide-slate-800/60 shadow-md">
+                <div className="bg-white border border-slate-200 rounded-3xl overflow-hidden divide-y divide-slate-50 shadow-sm">
                   {transactions.map((tx) => (
-                    <div key={tx.id} className="p-4 flex items-center justify-between hover:bg-slate-900/40 transition-colors">
-                      <div className="flex gap-3">
-                        <div className={`p-2 rounded-xl h-fit ${tx.amount > 0 ? 'bg-emerald-500/10 text-emerald-400' : 'bg-red-500/10 text-red-400'}`}>
-                          {tx.amount > 0 ? <Plus className="w-4 h-4" /> : <ArrowUpRight className="w-4 h-4" />}
+                    <div key={tx.id} className="p-5 flex items-center justify-between hover:bg-slate-50 transition-colors">
+                      <div className="flex gap-4">
+                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${tx.amount > 0 ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-500'}`}>
+                          {tx.amount > 0 ? <Plus className="w-5 h-5" /> : <ArrowUpRight className="w-5 h-5" />}
                         </div>
                         <div>
-                          <p className="text-xs font-bold text-slate-100">{tx.description || tx.type}</p>
-                          <p className="text-[10px] text-slate-500 font-medium">{new Date(tx.created_at).toLocaleString()}</p>
+                          <p className="text-sm font-black text-slate-900">{tx.description || tx.type}</p>
+                          <p className="text-[11px] text-slate-400 font-bold uppercase tracking-tighter">{new Date(tx.created_at).toLocaleString()}</p>
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className={`text-xs font-mono font-bold ${tx.amount > 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                        <p className={`text-sm font-black font-mono ${tx.amount > 0 ? 'text-emerald-600' : 'text-red-500'}`}>
                           {tx.amount > 0 ? '+' : ''}{tx.amount.toLocaleString()} Kz
                         </p>
-                        <span className="text-[8px] font-bold uppercase tracking-wider bg-slate-800 px-1.5 py-0.5 rounded-full text-slate-400">
+                        <Badge variant="outline" className="text-[8px] font-black uppercase tracking-widest border-slate-200 text-slate-400 px-2 mt-1">
                           {tx.status}
-                        </span>
+                        </Badge>
                       </div>
                     </div>
                   ))}
@@ -642,162 +624,149 @@ export default function UserAppPage() {
 
       </main>
 
-      {/* MODAL CONFIGURAÇÕES / MEU PERFIL (Estilo Slide-Up / Bottom-Sheet Android) */}
+      {/* MODAL CONFIGURAÇÕES */}
       <Dialog open={isSettingsOpen} onOpenChange={setIsSettingsOpen}>
-        <DialogContent className="bg-slate-900 border-slate-800 text-slate-100 sm:rounded-2xl max-h-[85vh] overflow-y-auto w-full max-w-md p-5 shadow-2xl">
-          <DialogHeader className="relative border-b border-slate-800 pb-3">
-            <DialogTitle className="text-base font-extrabold text-white flex items-center gap-2">
-              <UserIcon className="w-5 h-5 text-indigo-400" /> Configurações de Perfil
+        <DialogContent className="bg-white border-none sm:rounded-3xl max-h-[90vh] overflow-y-auto w-full max-w-md p-6 shadow-2xl">
+          <DialogHeader className="relative border-b border-slate-50 pb-5">
+            <DialogTitle className="text-lg font-black text-slate-900 flex items-center gap-2">
+              <UserIcon className="w-6 h-6 text-emerald-600" /> Meu Perfil
             </DialogTitle>
-            <DialogDescription className="text-xs text-slate-400 mt-1">
-              Mantenha seus dados e redes sociais atualizados para validações de tarefas.
+            <DialogDescription className="text-sm text-slate-500 mt-1 font-medium">
+              Atualize suas informações de rede social para validar as tarefas.
             </DialogDescription>
           </DialogHeader>
 
-          <form onSubmit={handleUpdateProfile} className="space-y-4 py-4">
-            <div className="space-y-1.5">
-              <Label className="text-[10px] uppercase font-bold text-slate-400">Nome Completo</Label>
+          <form onSubmit={handleUpdateProfile} className="space-y-5 py-6">
+            <div className="space-y-2">
+              <Label className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Nome Operacional</Label>
               <Input 
                 value={profileName} 
                 onChange={(e) => setProfileName(e.target.value)}
-                className="bg-slate-950 border-slate-800 text-xs h-10 focus:border-indigo-500" 
+                className="bg-slate-50 border-transparent focus:bg-white focus:border-emerald-500 h-12 rounded-xl text-sm font-bold" 
                 required
               />
             </div>
-            <div className="space-y-1.5">
-              <Label className="text-[10px] uppercase font-bold text-slate-400">Telefone / WhatsApp</Label>
+            <div className="space-y-2">
+              <Label className="text-[10px] font-black uppercase text-slate-400 tracking-widest">WhatsApp / Telefone</Label>
               <Input 
                 value={profilePhone} 
                 onChange={(e) => setProfilePhone(e.target.value)}
-                className="bg-slate-950 border-slate-800 text-xs h-10 focus:border-indigo-500" 
+                className="bg-slate-50 border-transparent focus:bg-white focus:border-emerald-500 h-12 rounded-xl text-sm font-bold" 
                 required
               />
             </div>
             
-            <div className="space-y-3 pt-1">
-              <span className="text-[10px] font-black text-indigo-400 uppercase tracking-widest block">Perfis Sociais</span>
+            <div className="space-y-4 pt-2">
+              <span className="text-[11px] font-black text-emerald-600 uppercase tracking-widest block">Canais de Trabalho</span>
               
-              <div className="space-y-1.5">
-                <Label className="text-[10px] uppercase font-bold text-slate-400">TikTok Handle</Label>
-                <div className="relative">
-                  <TiktokIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500" />
-                  <Input
-                    value={profileTiktok}
-                    onChange={(e) => setProfileTiktok(e.target.value)}
-                    placeholder="@usuario"
-                    className="bg-slate-950 border-slate-800 text-xs h-10 pl-9 focus:border-indigo-500"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-1.5">
-                <Label className="text-[10px] uppercase font-bold text-slate-400">Instagram Handle</Label>
-                <div className="relative">
-                  <InstagramIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500" />
-                  <Input
-                    value={profileInstagram}
-                    onChange={(e) => setProfileInstagram(e.target.value)}
-                    placeholder="@usuario"
-                    className="bg-slate-950 border-slate-800 text-xs h-10 pl-9 focus:border-indigo-500"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-1.5">
-                <Label className="text-[10px] uppercase font-bold text-slate-400">Canal YouTube</Label>
-                <div className="relative">
-                  <YoutubeIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500" />
-                  <Input
-                    value={profileYoutube}
-                    onChange={(e) => setProfileYoutube(e.target.value)}
-                    placeholder="URL ou @canal"
-                    className="bg-slate-950 border-slate-800 text-xs h-10 pl-9 focus:border-indigo-500"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-1.5">
-                <Label className="text-[10px] uppercase font-bold text-slate-400">Rede Social Principal (Geral)</Label>
+              <div className="space-y-2">
+                <Label className="text-[10px] font-black uppercase text-slate-400 tracking-widest flex items-center gap-2">
+                   <TiktokIcon className="w-3 h-3" /> TikTok Handle
+                </Label>
                 <Input
-                  value={profileLink}
-                  onChange={(e) => setProfileLink(e.target.value)}
-                  placeholder="Link de perfil principal"
-                  className="bg-slate-950 border-slate-800 text-xs h-10 focus:border-indigo-500"
+                  value={profileTiktok}
+                  onChange={(e) => setProfileTiktok(e.target.value)}
+                  placeholder="@usuario"
+                  className="bg-slate-50 border-transparent focus:bg-white focus:border-emerald-500 h-11 rounded-xl text-sm font-bold"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-[10px] font-black uppercase text-slate-400 tracking-widest flex items-center gap-2">
+                   <InstagramIcon className="w-3 h-3" /> Instagram Handle
+                </Label>
+                <Input
+                  value={profileInstagram}
+                  onChange={(e) => setProfileInstagram(e.target.value)}
+                  placeholder="@usuario"
+                  className="bg-slate-50 border-transparent focus:bg-white focus:border-emerald-500 h-11 rounded-xl text-sm font-bold"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-[10px] font-black uppercase text-slate-400 tracking-widest flex items-center gap-2">
+                   <YoutubeIcon className="w-3 h-3" /> YouTube Channel
+                </Label>
+                <Input
+                  value={profileYoutube}
+                  onChange={(e) => setProfileYoutube(e.target.value)}
+                  placeholder="URL ou @canal"
+                  className="bg-slate-50 border-transparent focus:bg-white focus:border-emerald-500 h-11 rounded-xl text-sm font-bold"
                 />
               </div>
             </div>
 
-            <div className="pt-4 border-t border-slate-800 flex flex-col gap-2">
+            <div className="pt-6 border-t border-slate-50 flex flex-col gap-3">
               <Button 
                 type="submit" 
                 disabled={updatingProfile}
-                className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold h-10 rounded-xl"
+                className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black h-12 rounded-2xl shadow-lg shadow-emerald-100 uppercase text-xs tracking-widest"
               >
-                {updatingProfile ? <Loader2 className="w-4 h-4 animate-spin" /> : "Salvar Alterações"}
+                {updatingProfile ? <Loader2 className="w-4 h-4 animate-spin" /> : "SALVAR ALTERAÇÕES"}
               </Button>
               <Button
                 type="button"
                 variant="ghost"
                 onClick={() => signOut()}
-                className="w-full text-rose-500 hover:text-rose-400 hover:bg-rose-500/5 h-10 rounded-xl font-bold gap-2"
+                className="w-full text-red-500 hover:text-red-600 hover:bg-red-50 h-12 rounded-2xl font-black text-xs tracking-widest uppercase gap-2"
               >
-                <LogOut className="w-4 h-4" /> Encerrar Sessão
+                <LogOut className="w-4 h-4" /> ENCERRAR SESSÃO
               </Button>
             </div>
           </form>
         </DialogContent>
       </Dialog>
 
-      {/* Bottom Navigation Nativo Android */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur-xl border-t border-slate-800/80 z-40 px-4 py-2.5 shadow-2xl">
+      {/* Bottom Navigation */}
+      <nav className="fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-xl border-t border-slate-200 z-40 px-4 py-3 shadow-2xl">
         <div className="max-w-xl mx-auto flex items-center justify-around">
           
           <button
             onClick={() => setActiveTab("tasks")}
-            className={`flex flex-col items-center justify-center transition-all w-16 ${
-              activeTab === "tasks" ? "text-indigo-400 scale-105" : "text-slate-500 hover:text-slate-300"
+            className={`flex flex-col items-center justify-center transition-all w-20 ${
+              activeTab === "tasks" ? "text-emerald-600 scale-110" : "text-slate-400"
             }`}
           >
-            <div className={`p-1 rounded-xl transition-all ${activeTab === "tasks" ? "bg-indigo-500/10 text-indigo-400" : "text-slate-500"}`}>
+            <div className={`p-1.5 rounded-xl transition-all ${activeTab === "tasks" ? "bg-emerald-600 text-white shadow-lg shadow-emerald-200" : "text-slate-400"}`}>
               <Layers className="w-5 h-5" />
             </div>
-            <span className="text-[9px] mt-1 font-extrabold tracking-tight">Tarefas</span>
+            <span className="text-[9px] mt-1 font-black uppercase tracking-tighter">Tarefas</span>
           </button>
 
           <button
             onClick={() => setActiveTab("campaigns")}
-            className={`flex flex-col items-center justify-center transition-all w-16 ${
-              activeTab === "campaigns" ? "text-indigo-400 scale-105" : "text-slate-500 hover:text-slate-300"
+            className={`flex flex-col items-center justify-center transition-all w-20 ${
+              activeTab === "campaigns" ? "text-emerald-600 scale-110" : "text-slate-400"
             }`}
           >
-            <div className={`p-1 rounded-xl transition-all ${activeTab === "campaigns" ? "bg-indigo-500/10 text-indigo-400" : "text-slate-500"}`}>
+            <div className={`p-1.5 rounded-xl transition-all ${activeTab === "campaigns" ? "bg-emerald-600 text-white shadow-lg shadow-emerald-200" : "text-slate-400"}`}>
               <Megaphone className="w-5 h-5" />
             </div>
-            <span className="text-[9px] mt-1 font-extrabold tracking-tight">Campanhas</span>
+            <span className="text-[9px] mt-1 font-black uppercase tracking-tighter">Ações</span>
           </button>
 
           <button
             onClick={() => setActiveTab("affiliate")}
-            className={`flex flex-col items-center justify-center transition-all w-16 ${
-              activeTab === "affiliate" ? "text-indigo-400 scale-105" : "text-slate-500 hover:text-slate-300"
+            className={`flex flex-col items-center justify-center transition-all w-20 ${
+              activeTab === "affiliate" ? "text-emerald-600 scale-110" : "text-slate-400"
             }`}
           >
-            <div className={`p-1 rounded-xl transition-all ${activeTab === "affiliate" ? "bg-indigo-500/10 text-indigo-400" : "text-slate-500"}`}>
+            <div className={`p-1.5 rounded-xl transition-all ${activeTab === "affiliate" ? "bg-emerald-600 text-white shadow-lg shadow-emerald-200" : "text-slate-400"}`}>
               <Gift className="w-5 h-5" />
             </div>
-            <span className="text-[9px] mt-1 font-extrabold tracking-tight">Afiliado</span>
+            <span className="text-[9px] mt-1 font-black uppercase tracking-tighter">Afiliado</span>
           </button>
 
           <button
             onClick={() => setActiveTab("wallet")}
-            className={`flex flex-col items-center justify-center transition-all w-16 ${
-              activeTab === "wallet" ? "text-indigo-400 scale-105" : "text-slate-500 hover:text-slate-300"
+            className={`flex flex-col items-center justify-center transition-all w-20 ${
+              activeTab === "wallet" ? "text-emerald-600 scale-110" : "text-slate-400"
             }`}
           >
-            <div className={`p-1 rounded-xl transition-all ${activeTab === "wallet" ? "bg-indigo-500/10 text-indigo-400" : "text-slate-500"}`}>
+            <div className={`p-1.5 rounded-xl transition-all ${activeTab === "wallet" ? "bg-emerald-600 text-white shadow-lg shadow-emerald-200" : "text-slate-400"}`}>
               <Wallet className="w-5 h-5" />
             </div>
-            <span className="text-[9px] mt-1 font-extrabold tracking-tight">Carteira</span>
+            <span className="text-[9px] mt-1 font-black uppercase tracking-tighter">Minha Conta</span>
           </button>
 
         </div>

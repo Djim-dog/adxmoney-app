@@ -31,10 +31,10 @@ const Login: React.FC = () => {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-950">
+      <div className="min-h-screen flex items-center justify-center bg-white">
         <div className="flex flex-col items-center gap-3">
-          <Loader2 className="w-8 h-8 animate-spin text-emerald-500" />
-          <p className="text-xs font-mono text-slate-400">Verificando credenciais...</p>
+          <Loader2 className="w-8 h-8 animate-spin text-emerald-600" />
+          <p className="text-xs font-medium text-slate-500 uppercase tracking-widest">Verificando credenciais...</p>
         </div>
       </div>
     );
@@ -95,50 +95,51 @@ const Login: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col justify-center items-center bg-slate-950 px-4 py-8 text-slate-100">
+    <div className="min-h-screen flex flex-col justify-center items-center bg-slate-50 px-4 py-8 text-slate-900">
       <div className="w-full max-w-sm">
-        <div className="text-center mb-6">
-          <img src="/logo.png" alt="ADXmoney Logo" className="h-14 mx-auto mb-2" />
-          <p className="text-xs text-slate-400 mt-1">Acesso Operacional ao Sistema</p>
+        <div className="text-center mb-10">
+          <img src="/logo.png" alt="ADXmoney Logo" className="h-20 mx-auto mb-4" />
+          <h1 className="text-2xl font-black text-slate-900 tracking-tight">ADXmoney</h1>
+          <p className="text-[10px] text-slate-500 uppercase font-bold tracking-widest mt-2">Acesso Operacional ao Sistema</p>
         </div>
 
-        <Card className="bg-slate-900 border-slate-800 text-slate-100 shadow-xl rounded-2xl">
-          <CardHeader className="space-y-1 pb-4">
-            <CardTitle className="text-base font-semibold text-white">Login</CardTitle>
-            <CardDescription className="text-slate-400 text-xs">
-              Insira seus dados para acessar o painel.
+        <Card className="bg-white border-slate-200 text-slate-900 shadow-xl shadow-slate-200/50 rounded-3xl overflow-hidden border-none">
+          <CardHeader className="space-y-1 pb-6 pt-8 text-center bg-white">
+            <CardTitle className="text-xl font-bold text-slate-900">Bem-vindo</CardTitle>
+            <CardDescription className="text-slate-500 text-xs">
+              Insira seus dados para acessar o seu painel de operador.
             </CardDescription>
           </CardHeader>
           <form onSubmit={handleLogin}>
-            <CardContent className="space-y-4">
-              <div className="space-y-1.5">
-                <Label htmlFor="login-email" className="text-xs font-medium text-slate-300">E-mail</Label>
+            <CardContent className="space-y-5 px-8">
+              <div className="space-y-2">
+                <Label htmlFor="login-email" className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">E-mail de Operador</Label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                   <Input
                     id="login-email"
                     type="email"
                     placeholder="email@exemplo.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="pl-9 bg-slate-950 border-slate-800 text-slate-100 text-xs"
+                    className="pl-10 h-12 bg-slate-50 border-transparent focus:border-emerald-500 focus:bg-white text-slate-900 text-sm rounded-2xl transition-all"
                     disabled={isLoggingIn}
                     required
                   />
                 </div>
               </div>
 
-              <div className="space-y-1.5">
-                <Label htmlFor="login-password" className="text-xs font-medium text-slate-300">Senha</Label>
+              <div className="space-y-2">
+                <Label htmlFor="login-password" className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Senha de Segurança</Label>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                   <Input
                     id="login-password"
                     type="password"
                     placeholder="••••••••"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="pl-9 bg-slate-950 border-slate-800 text-slate-100 text-xs"
+                    className="pl-10 h-12 bg-slate-50 border-transparent focus:border-emerald-500 focus:bg-white text-slate-900 text-sm rounded-2xl transition-all"
                     disabled={isLoggingIn}
                     required
                   />
@@ -146,17 +147,21 @@ const Login: React.FC = () => {
               </div>
             </CardContent>
 
-            <CardFooter className="pt-2">
+            <CardFooter className="pt-4 pb-10 px-8">
               <Button
                 type="submit"
-                className="w-full bg-emerald-600 hover:bg-emerald-500 text-white text-xs py-2.5 rounded-xl"
+                className="w-full h-12 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm rounded-2xl shadow-lg shadow-emerald-200 transition-all active:scale-[0.98]"
                 disabled={isLoggingIn}
               >
-                {isLoggingIn ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Entrando...</> : "Entrar"}
+                {isLoggingIn ? <><Loader2 className="w-5 h-5 mr-2 animate-spin" /> Entrando...</> : "Entrar no Sistema"}
               </Button>
             </CardFooter>
           </form>
         </Card>
+
+        <p className="text-center mt-10 text-[10px] text-slate-400 font-medium uppercase tracking-tighter">
+          ADXmoney &copy; {new Date().getFullYear()} &bull; Plataforma Financeira Operacional
+        </p>
       </div>
     </div>
   );

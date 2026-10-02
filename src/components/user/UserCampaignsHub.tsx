@@ -8,7 +8,6 @@ import {
   Clock,
   CheckCircle2,
   XCircle,
-  ExternalLink,
   ChevronRight,
   Info,
   Layers,
@@ -64,20 +63,20 @@ export const UserCampaignsHub: React.FC<UserCampaignsHubProps> = ({ userId }) =>
     switch (status) {
       case "aprovada":
         return (
-          <Badge className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[10px] gap-1 py-0.5">
+          <Badge className="bg-emerald-50 text-emerald-600 border-none text-[10px] gap-1 py-1 font-black uppercase tracking-widest">
             <CheckCircle2 className="w-3 h-3" /> Aprovada
           </Badge>
         );
       case "rejeitada":
         return (
-          <Badge className="bg-rose-500/10 text-rose-400 border border-rose-500/20 text-[10px] gap-1 py-0.5">
+          <Badge className="bg-red-50 text-red-500 border-none text-[10px] gap-1 py-1 font-black uppercase tracking-widest">
             <XCircle className="w-3 h-3" /> Rejeitada
           </Badge>
         );
       case "pendente":
       default:
         return (
-          <Badge className="bg-amber-500/10 text-amber-400 border border-amber-500/20 text-[10px] gap-1 py-0.5">
+          <Badge className="bg-amber-50 text-amber-600 border-none text-[10px] gap-1 py-1 font-black uppercase tracking-widest">
             <Clock className="w-3 h-3" /> Pendente
           </Badge>
         );
@@ -85,172 +84,151 @@ export const UserCampaignsHub: React.FC<UserCampaignsHubProps> = ({ userId }) =>
   };
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-300">
-      {/* Cabeçalho da Seção */}
-      <div>
-        <h2 className="text-xl font-extrabold text-white tracking-tight">Área de Campanhas</h2>
-        <p className="text-xs text-slate-400 mt-0.5">
-          Explore as oportunidades disponíveis e envie novas propostas operacionais.
-        </p>
+    <div className="space-y-8 animate-in fade-in duration-300">
+      
+      <div className="grid gap-6 sm:grid-cols-2">
+        {/* ÁREA 1: CAMPANHAS PARA AFILIADOS */}
+        <Card className="bg-white border-slate-100 relative overflow-hidden transition-all hover:shadow-xl hover:shadow-slate-200/50 rounded-3xl border-none shadow-md">
+          <CardHeader className="pb-4">
+            <div className="flex items-center justify-between gap-2">
+              <div className="w-10 h-10 rounded-2xl bg-emerald-50 flex items-center justify-center text-emerald-600 border border-emerald-100">
+                <Share2 className="w-5 h-5" />
+              </div>
+              <Badge className="text-[10px] font-black uppercase tracking-widest border-none text-emerald-700 bg-emerald-100 px-3 py-1 rounded-full">
+                AFILIADOS
+              </Badge>
+            </div>
+
+            <CardTitle className="text-base font-black text-slate-900 mt-4">
+              Campanhas Externas
+            </CardTitle>
+            <CardDescription className="text-xs text-slate-500 leading-relaxed font-medium">
+              Ações dedicadas para partilha e expansão de marca. Ganhe bônus por cada conversão validada.
+            </CardDescription>
+          </CardHeader>
+
+          <CardContent className="pt-0 pb-4">
+            <div className="bg-slate-50 p-3 rounded-2xl border border-slate-100 text-[10px] text-slate-500 flex items-start gap-2 font-bold uppercase tracking-tight">
+              <Info className="w-4 h-4 text-emerald-600 shrink-0" />
+              <span>
+                Recompensas creditadas após verificação manual.
+              </span>
+            </div>
+          </CardContent>
+
+          <CardFooter className="pt-0 pb-6">
+            <Button
+              onClick={() => setViewCampaignsType("afiliados")}
+              className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs h-12 rounded-2xl shadow-lg shadow-emerald-100 transition-all gap-2"
+            >
+              EXPLORAR CAMPANHAS
+              <ChevronRight className="w-4 h-4" />
+            </Button>
+          </CardFooter>
+        </Card>
+
+        {/* ÁREA 2: MONETIZAÇÃO COLETIVA */}
+        <Card className="bg-white border-slate-100 relative overflow-hidden transition-all hover:shadow-xl hover:shadow-slate-200/50 rounded-3xl border-none shadow-md">
+          <CardHeader className="pb-4">
+            <div className="flex items-center justify-between gap-2">
+              <div className="w-10 h-10 rounded-2xl bg-lime-50 flex items-center justify-center text-lime-700 border border-lime-100">
+                <Users2 className="w-5 h-5" />
+              </div>
+              <Badge className="text-[10px] font-black uppercase tracking-widest border-none text-lime-800 bg-lime-200 px-3 py-1 rounded-full">
+                COLETIVA
+              </Badge>
+            </div>
+
+            <CardTitle className="text-base font-black text-slate-900 mt-4">
+              Monetização em Grupo
+            </CardTitle>
+            <CardDescription className="text-xs text-slate-500 leading-relaxed font-medium">
+              Iniciativas com metas coletivas e engajamento sincronizado entre os membros da rede.
+            </CardDescription>
+          </CardHeader>
+
+          <CardContent className="pt-0 pb-4">
+            <div className="bg-slate-50 p-3 rounded-2xl border border-slate-100 text-[10px] text-slate-500 flex items-start gap-2 font-bold uppercase tracking-tight">
+              <Sparkles className="w-4 h-4 text-lime-600 shrink-0" />
+              <span>
+                Trabalho em rede para maximizar resultados.
+              </span>
+            </div>
+          </CardContent>
+
+          <CardFooter className="pt-0 pb-6">
+            <Button
+              onClick={() => setViewCampaignsType("monetizacao_coletiva")}
+              className="w-full bg-slate-900 hover:bg-slate-800 text-white font-black text-xs h-12 rounded-2xl shadow-lg shadow-slate-200 transition-all gap-2"
+            >
+              VER OPORTUNIDADES
+              <ChevronRight className="w-4 h-4" />
+            </Button>
+          </CardFooter>
+        </Card>
       </div>
 
-      {/* ÁREA 1: CAMPANHAS PARA AFILIADOS */}
-      <Card className="bg-slate-900 border-slate-800 relative overflow-hidden transition-all hover:border-slate-700">
-        <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/5 rounded-full blur-2xl pointer-events-none" />
-        <CardHeader className="pb-3">
-          <div className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-indigo-500/10 flex items-center justify-center text-indigo-400 border border-indigo-500/20">
-                <Share2 className="w-4 h-4" />
-              </div>
-              <Badge variant="outline" className="text-[10px] uppercase font-mono border-indigo-500/30 text-indigo-300 bg-indigo-950/30">
-                Afiliados
-              </Badge>
-            </div>
-            <div className="flex items-center gap-1 text-[10px] text-emerald-400 font-medium bg-emerald-950/30 px-2 py-0.5 rounded-full border border-emerald-500/20">
-              <ShieldCheck className="w-3 h-3" />
-              <span>Validação Necessária</span>
-            </div>
-          </div>
-
-          <CardTitle className="text-base font-bold text-white mt-2">
-            Campanhas para Afiliados
-          </CardTitle>
-          <CardDescription className="text-xs text-slate-400 leading-relaxed">
-            Campanhas dedicadas para partilha e expansão de marca. Recompensas atribuídas após conclusão e validação operacional.
-          </CardDescription>
-        </CardHeader>
-
-        <CardContent className="pt-0 pb-3">
-          <div className="bg-slate-950/60 p-2.5 rounded-xl border border-slate-800/80 text-[11px] text-slate-300 flex items-start gap-2">
-            <Info className="w-3.5 h-3.5 text-indigo-400 shrink-0 mt-0.5" />
-            <span>
-              As recompensas desta categoria são creditadas após a verificação de conformidade do link e tarefas executadas.
-            </span>
-          </div>
-        </CardContent>
-
-        <CardFooter className="pt-0">
-          <Button
-            onClick={() => setViewCampaignsType("afiliados")}
-            className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs h-9 rounded-xl shadow-md transition-all gap-1.5"
-          >
-            <span>Ver campanhas</span>
-            <ChevronRight className="w-3.5 h-3.5" />
-          </Button>
-        </CardFooter>
-      </Card>
-
-      {/* ÁREA 2: MONETIZAÇÃO COLETIVA */}
-      <Card className="bg-slate-900 border-slate-800 relative overflow-hidden transition-all hover:border-slate-700">
-        <div className="absolute top-0 right-0 w-32 h-32 bg-sky-500/5 rounded-full blur-2xl pointer-events-none" />
-        <CardHeader className="pb-3">
-          <div className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-sky-500/10 flex items-center justify-center text-sky-400 border border-sky-500/20">
-                <Users2 className="w-4 h-4" />
-              </div>
-              <Badge variant="outline" className="text-[10px] uppercase font-mono border-sky-500/30 text-sky-300 bg-sky-950/30">
-                Coletiva
-              </Badge>
-            </div>
-            <div className="flex items-center gap-1 text-[10px] text-sky-400 font-medium bg-sky-950/30 px-2 py-0.5 rounded-full border border-sky-500/20">
-              <Sparkles className="w-3 h-3" />
-              <span>Participação Coletiva</span>
-            </div>
-          </div>
-
-          <CardTitle className="text-base font-bold text-white mt-2">
-            Monetização Coletiva
-          </CardTitle>
-          <CardDescription className="text-xs text-slate-400 leading-relaxed">
-            Iniciativas com metas coletivas e engajamento sincronizado entre os membros da rede operacional.
-          </CardDescription>
-        </CardHeader>
-
-        <CardContent className="pt-0 pb-3">
-          <div className="bg-slate-950/60 p-2.5 rounded-xl border border-slate-800/80 text-[11px] text-slate-300 flex items-start gap-2">
-            <Info className="w-3.5 h-3.5 text-sky-400 shrink-0 mt-0.5" />
-            <span>
-              Campanhas de participação coletiva onde o progresso do grupo desbloqueia novas etapas do projeto.
-            </span>
-          </div>
-        </CardContent>
-
-        <CardFooter className="pt-0">
-          <Button
-            onClick={() => setViewCampaignsType("monetizacao_coletiva")}
-            variant="outline"
-            className="w-full border-slate-700 bg-slate-800 text-slate-100 hover:bg-slate-700 font-semibold text-xs h-9 rounded-xl shadow-md transition-all gap-1.5"
-          >
-            <span>Ver campanhas</span>
-            <ChevronRight className="w-3.5 h-3.5" />
-          </Button>
-        </CardFooter>
-      </Card>
-
-      {/* ÁREA 3: SOLICITAR CAMPANHA (Bloco Separado) */}
-      <Card className="bg-gradient-to-br from-slate-900 via-slate-900 to-indigo-950/50 border border-indigo-900/40 relative overflow-hidden">
-        <div className="absolute right-0 bottom-0 p-4 opacity-10 pointer-events-none">
-          <Megaphone className="w-24 h-24 text-indigo-400 rotate-12" />
+      {/* ÁREA 3: SOLICITAR CAMPANHA */}
+      <Card className="bg-emerald-700 rounded-3xl border-none shadow-xl shadow-emerald-100 relative overflow-hidden">
+        <div className="absolute right-0 bottom-0 p-6 opacity-10 pointer-events-none">
+          <Megaphone className="w-48 h-48 text-white rotate-12" />
         </div>
-        <CardHeader className="pb-2">
-          <div className="w-fit mb-1">
-            <Badge className="bg-indigo-500/10 text-indigo-300 border border-indigo-500/30 text-[10px] uppercase tracking-wider font-mono">
-              Proposta de Campanha
+        <CardHeader className="pb-4">
+          <div className="w-fit mb-2">
+            <Badge className="bg-emerald-600/50 text-white border-none text-[10px] font-black uppercase tracking-widest py-1 px-3">
+              NOVA PROPOSTA
             </Badge>
           </div>
-          <CardTitle className="text-base font-bold text-white">
-            Solicitar Campanha
+          <CardTitle className="text-xl font-black text-white">
+            Seja um Parceiro ADX
           </CardTitle>
-          <CardDescription className="text-xs text-slate-400 leading-relaxed">
-            Tem uma campanha ou projeto que deseja lançar? Envie os detalhes e o nosso time avaliará a sua solicitação.
+          <CardDescription className="text-sm text-emerald-100 leading-relaxed font-medium">
+            Tem um projeto ou campanha? Envie os detalhes e nossa gestão avaliará a viabilidade operacional.
           </CardDescription>
         </CardHeader>
 
-        <CardContent className="pt-2">
+        <CardContent className="pt-2 pb-8">
           <Button
             onClick={() => setIsRequestModalOpen(true)}
-            className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs h-10 rounded-xl shadow-lg shadow-emerald-950/40 gap-2"
+            className="w-full bg-white hover:bg-slate-50 text-emerald-700 font-black text-xs h-14 rounded-2xl shadow-xl shadow-emerald-800/20 gap-3"
           >
-            <PlusCircle className="w-4 h-4" />
-            <span>Solicitar campanha</span>
+            <PlusCircle className="w-5 h-5" />
+            SOLICITAR MINHA CAMPANHA
           </Button>
         </CardContent>
       </Card>
 
-      {/* Minhas Solicitações de Campanha */}
+      {/* Minhas Solicitações */}
       {userRequests.length > 0 && (
-        <div className="space-y-3 pt-2">
+        <div className="space-y-4 pt-4">
           <div className="flex items-center justify-between px-1">
-            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-              Minhas Solicitações ({userRequests.length})
+            <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest">
+              Acompanhamento de Propostas ({userRequests.length})
             </h3>
-            <span className="text-[10px] text-slate-500 font-mono">Atualizado</span>
           </div>
 
-          <div className="bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden divide-y divide-slate-800">
+          <div className="bg-white rounded-3xl border border-slate-100 overflow-hidden divide-y divide-slate-50 shadow-sm">
             {userRequests.map((req) => (
-              <div key={req.id} className="p-4 space-y-2 hover:bg-slate-800/20 transition-colors">
-                <div className="flex items-start justify-between gap-2">
+              <div key={req.id} className="p-6 space-y-3 hover:bg-slate-50 transition-colors">
+                <div className="flex items-start justify-between gap-4">
                   <div>
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-xs font-bold text-white">{req.title}</span>
-                      <Badge variant="outline" className="text-[9px] uppercase font-mono border-slate-700 text-slate-400">
-                        {req.type === "afiliados" ? "Afiliados" : "Monetização Coletiva"}
+                    <div className="flex items-center gap-3 flex-wrap">
+                      <span className="text-sm font-black text-slate-900">{req.title}</span>
+                      <Badge className="text-[9px] font-black uppercase tracking-widest border-none bg-slate-100 text-slate-400">
+                        {req.type === "afiliados" ? "Afiliados" : "Coletiva"}
                       </Badge>
                     </div>
-                    <p className="text-[10px] text-slate-500 mt-0.5">
-                      Enviado em {new Date(req.created_at).toLocaleDateString("pt-AO", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })}
+                    <p className="text-[10px] text-slate-400 font-bold uppercase mt-1">
+                      Enviado em {new Date(req.created_at).toLocaleDateString()}
                     </p>
                   </div>
                   <div>{getStatusBadge(req.status)}</div>
                 </div>
 
-                <p className="text-xs text-slate-400 line-clamp-2">{req.description}</p>
+                <p className="text-xs text-slate-500 font-medium leading-relaxed">{req.description}</p>
 
-                <div className="text-[11px] bg-slate-950 p-2 rounded-lg border border-slate-800/70 text-slate-300">
-                  <span className="font-semibold text-slate-400">Objetivo:</span> {req.objective}
+                <div className="text-[11px] bg-slate-50 p-4 rounded-2xl border border-slate-100 text-slate-600 font-medium">
+                  <span className="font-black text-slate-400 uppercase tracking-tighter mr-2">Objetivo:</span> {req.objective}
                 </div>
               </div>
             ))}
@@ -258,7 +236,7 @@ export const UserCampaignsHub: React.FC<UserCampaignsHubProps> = ({ userId }) =>
         </div>
       )}
 
-      {/* Modal de Solicitação de Campanha */}
+      {/* Modal de Solicitação */}
       <CampaignRequestModal
         isOpen={isRequestModalOpen}
         onClose={() => setIsRequestModalOpen(false)}
@@ -266,64 +244,70 @@ export const UserCampaignsHub: React.FC<UserCampaignsHubProps> = ({ userId }) =>
         userId={userId}
       />
 
-      {/* Modal Informativo: Ver Campanhas */}
+      {/* Modal Informativo */}
       <Dialog
         open={viewCampaignsType !== null}
         onOpenChange={(open) => !open && setViewCampaignsType(null)}
       >
-        <DialogContent className="max-w-md bg-slate-900 border-slate-800 text-slate-100 sm:rounded-2xl p-6 max-h-[85vh] overflow-y-auto">
+        <DialogContent className="max-w-md bg-white border-none sm:rounded-3xl p-8 shadow-2xl">
           <DialogHeader>
-            <DialogTitle className="text-base font-bold text-white flex items-center gap-2">
+            <DialogTitle className="text-lg font-black text-slate-900 flex items-center gap-3">
               {viewCampaignsType === "afiliados" ? (
                 <>
-                  <Share2 className="w-5 h-5 text-indigo-400" />
-                  <span>Campanhas para Afiliados</span>
+                  <div className="w-10 h-10 rounded-2xl bg-emerald-50 flex items-center justify-center text-emerald-600">
+                    <Share2 className="w-5 h-5" />
+                  </div>
+                  <span>Campanhas de Afiliados</span>
                 </>
               ) : (
                 <>
-                  <Users2 className="w-5 h-5 text-sky-400" />
+                  <div className="w-10 h-10 rounded-2xl bg-lime-50 flex items-center justify-center text-lime-600">
+                    <Users2 className="w-5 h-5" />
+                  </div>
                   <span>Monetização Coletiva</span>
                 </>
               )}
             </DialogTitle>
-            <DialogDescription className="text-xs text-slate-400">
+            <DialogDescription className="text-sm text-slate-500 font-medium pt-2">
               {viewCampaignsType === "afiliados"
-                ? "Campanhas com recompensas atribuídas após a conclusão e validação dos critérios definidos."
-                : "Campanhas de participação coletiva coordenadas para a comunidade de operadores."}
+                ? "Ganhe bônus por cada nova conversão validada pelo sistema operacional ADXmoney."
+                : "Participe de ações coordenadas com a comunidade para desbloquear novos patamares de ganhos."}
             </DialogDescription>
           </DialogHeader>
 
-          <div className="py-6 text-center space-y-3">
-            <div className="w-12 h-12 rounded-2xl bg-slate-800/80 border border-slate-700/60 flex items-center justify-center text-slate-400 mx-auto">
-              <Layers className="w-6 h-6" />
+          <div className="py-8 text-center space-y-4">
+            <div className="w-16 h-16 rounded-full bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-300 mx-auto">
+              <Layers className="w-8 h-8" />
             </div>
-            <p className="text-xs text-slate-300 font-medium">
-              Novas campanhas nesta categoria estão a ser preparadas pela equipa de gestão.
-            </p>
-            <p className="text-[11px] text-slate-500 max-w-xs mx-auto">
-              Você pode também submeter a sua própria proposta através do botão &quot;Solicitar Campanha&quot;.
-            </p>
+            <div>
+              <p className="text-sm text-slate-900 font-black uppercase tracking-tight">
+                Em Preparação
+              </p>
+              <p className="text-xs text-slate-400 mt-2 font-medium max-w-xs mx-auto">
+                Novas oportunidades estão sendo estruturadas pela nossa equipe e estarão disponíveis em breve.
+              </p>
+            </div>
           </div>
 
-          <div className="pt-2 flex gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setViewCampaignsType(null)}
-              className="w-full border-slate-800 text-slate-300 hover:bg-slate-800 text-xs h-9 rounded-xl"
-            >
-              Fechar
-            </Button>
+          <div className="pt-4 flex flex-col gap-3">
             <Button
               type="button"
               onClick={() => {
                 setViewCampaignsType(null);
                 setIsRequestModalOpen(true);
               }}
-              className="w-full bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold h-9 rounded-xl gap-1.5"
+              className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black h-12 rounded-2xl shadow-lg shadow-emerald-100 gap-2 uppercase text-xs tracking-widest"
             >
-              <PlusCircle className="w-3.5 h-3.5" />
-              Solicitar Campanha
+              <PlusCircle className="w-4 h-4" />
+              SOLICITAR CAMPANHA
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => setViewCampaignsType(null)}
+              className="w-full text-slate-400 hover:text-slate-600 hover:bg-slate-50 font-black h-12 rounded-2xl uppercase text-xs tracking-widest"
+            >
+              FECHAR
             </Button>
           </div>
         </DialogContent>
