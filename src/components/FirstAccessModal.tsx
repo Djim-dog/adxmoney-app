@@ -36,7 +36,6 @@ export const FirstAccessModal: React.FC<FirstAccessModalProps> = ({
   const [loadingData, setLoadingData] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Carregar dados existentes do perfil ao abrir
   useEffect(() => {
     const fetchCurrentProfile = async () => {
       try {
@@ -73,7 +72,6 @@ export const FirstAccessModal: React.FC<FirstAccessModalProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Validações obrigatórias da nova senha
     if (!newPassword || newPassword.length < 6) {
       toast.error("A nova senha deve ter pelo menos 6 caracteres.");
       return;
@@ -86,7 +84,6 @@ export const FirstAccessModal: React.FC<FirstAccessModalProps> = ({
 
     setIsSubmitting(true);
     try {
-      // 1. Atualizar a senha no serviço de autenticação do Supabase (esquecendo a senha provisória)
       const { error: authError } = await supabase.auth.updateUser({
         password: newPassword,
       });
@@ -95,7 +92,6 @@ export const FirstAccessModal: React.FC<FirstAccessModalProps> = ({
         throw new Error(authError.message || "Erro ao atualizar a senha.");
       }
 
-      // 2. Atualizar perfil e marcar first_login como false
       const { data: { user: currentUser } } = await supabase.auth.getUser();
       if (!currentUser?.id) throw new Error("Sessão expirada. Por favor, tente novamente.");
 
@@ -118,7 +114,6 @@ export const FirstAccessModal: React.FC<FirstAccessModalProps> = ({
         throw profileError;
       }
 
-      // 3. Registrar log de atividade
       await supabase.from("activity_logs").insert({
         user_id: currentUser.id,
         action_type: "FIRST_LOGIN_COMPLETED",
@@ -139,42 +134,41 @@ export const FirstAccessModal: React.FC<FirstAccessModalProps> = ({
   return (
     <Dialog open={isOpen} onOpenChange={() => {}}>
       <DialogContent 
-        className="max-w-lg bg-slate-900 border-slate-800 text-slate-100 sm:rounded-2xl p-6 shadow-2xl max-h-[90vh] overflow-y-auto"
+        className="max-w-lg bg-white border-slate-200 text-slate-900 sm:rounded-3xl p-8 shadow-2xl max-h-[90vh] overflow-y-auto"
         onPointerDownOutside={(e) => e.preventDefault()}
         onEscapeKeyDown={(e) => e.preventDefault()}
       >
-        <DialogHeader className="text-left space-y-2">
-          <div className="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 mb-1">
-            <KeyRound className="w-6 h-6" />
+        <DialogHeader className="text-left space-y-2 border-b border-slate-100 pb-6">
+          <div className="w-14 h-14 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600 mb-2">
+            <KeyRound className="w-7 h-7" />
           </div>
-          <DialogTitle className="text-xl font-bold text-white tracking-tight flex items-center gap-2">
+          <DialogTitle className="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-3">
             Troca Obrigatória de Senha
-            <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+            <span className="text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full bg-emerald-100 text-emerald-700 border border-emerald-200">
               1º Acesso
             </span>
           </DialogTitle>
-          <DialogDescription className="text-slate-400 text-xs leading-relaxed">
+          <DialogDescription className="text-slate-500 text-sm font-medium leading-relaxed">
             Por motivos de segurança, você deve substituir a senha pré-definida temporária por uma nova senha pessoal definitiva para liberar o painel.
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4 mt-2">
-          {/* Bloco de Nova Senha Obrigatória */}
-          <div className="p-4 rounded-xl bg-slate-950 border border-emerald-500/30 space-y-3">
-            <div className="flex items-center gap-2 text-emerald-400 font-semibold text-xs">
+        <form onSubmit={handleSubmit} className="space-y-6 mt-2">
+          <div className="p-6 rounded-3xl bg-slate-50 border border-slate-100 space-y-5">
+            <div className="flex items-center gap-2 text-emerald-700 font-black text-xs uppercase tracking-widest">
               <Lock className="w-4 h-4" />
-              <span>Definir Nova Senha Pessoal *</span>
+              <span>Nova Senha Pessoal *</span>
             </div>
 
-            <div className="space-y-1.5">
-              <Label className="text-xs text-slate-300">Nova Senha (Mínimo 6 caracteres) *</Label>
+            <div className="space-y-2">
+              <Label className="text-[10px] text-slate-400 font-black uppercase tracking-widest">Nova Senha (Mínimo 6 caracteres)</Label>
               <div className="relative">
                 <Input
                   type={showNewPassword ? "text" : "password"}
-                  placeholder="Digite sua nova senha"
+                  placeholder="********"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
-                  className="bg-slate-900 border-slate-800 text-slate-100 pr-10 text-xs"
+                  className="bg-white border-slate-200 text-slate-900 pr-12 text-sm rounded-2xl h-12"
                   required
                   minLength={6}
                   disabled={isSubmitting}
@@ -182,22 +176,22 @@ export const FirstAccessModal: React.FC<FirstAccessModalProps> = ({
                 <button
                   type="button"
                   onClick={() => setShowNewPassword(!showNewPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-900"
                 >
                   {showNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
             </div>
 
-            <div className="space-y-1.5">
-              <Label className="text-xs text-slate-300">Confirmar Nova Senha *</Label>
+            <div className="space-y-2">
+              <Label className="text-[10px] text-slate-400 font-black uppercase tracking-widest">Confirmar Nova Senha</Label>
               <div className="relative">
                 <Input
                   type={showConfirmPassword ? "text" : "password"}
-                  placeholder="Repita sua nova senha"
+                  placeholder="********"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="bg-slate-900 border-slate-800 text-slate-100 pr-10 text-xs"
+                  className="bg-white border-slate-200 text-slate-900 pr-12 text-sm rounded-2xl h-12"
                   required
                   minLength={6}
                   disabled={isSubmitting}
@@ -205,7 +199,7 @@ export const FirstAccessModal: React.FC<FirstAccessModalProps> = ({
                 <button
                   type="button"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-900"
                 >
                   {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
@@ -213,104 +207,60 @@ export const FirstAccessModal: React.FC<FirstAccessModalProps> = ({
             </div>
           </div>
 
-          {/* Bloco de Confirmação de Perfil */}
-          <div className="space-y-3 pt-1">
-            <h4 className="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
-              <img src="/logo.png" alt="Logo" className="w-4 h-4 object-contain" />
-              Confirmação dos Dados Cadastrados
+          <div className="space-y-4 pt-1">
+            <h4 className="text-xs font-black text-slate-900 uppercase tracking-widest flex items-center gap-2">
+              <img src="/logo.png" alt="Logo" className="w-5 h-5 object-contain" />
+              Confirmação de Perfil
             </h4>
 
-            <div className="grid grid-cols-2 gap-2">
-              <div className="space-y-1">
-                <Label className="text-[11px] text-slate-400">Nome Completo</Label>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label className="text-[10px] text-slate-400 font-black uppercase tracking-widest">Nome Completo</Label>
                 <Input
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="bg-slate-950 border-slate-800 text-slate-100 text-xs"
+                  className="bg-white border-slate-200 text-slate-900 text-sm rounded-2xl h-12"
                   disabled={isSubmitting}
                 />
               </div>
-              <div className="space-y-1">
-                <Label className="text-[11px] text-slate-400">Telefone / WhatsApp</Label>
+              <div className="space-y-2">
+                <Label className="text-[10px] text-slate-400 font-black uppercase tracking-widest">Telefone / WhatsApp</Label>
                 <Input
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  className="bg-slate-950 border-slate-800 text-slate-100 text-xs"
+                  className="bg-white border-slate-200 text-slate-900 text-sm rounded-2xl h-12"
                   disabled={isSubmitting}
                 />
               </div>
             </div>
 
-            <div className="space-y-1">
-              <Label className="text-[11px] text-slate-400">Link Principal Cadastrado</Label>
+            <div className="space-y-2">
+              <Label className="text-[10px] text-slate-400 font-black uppercase tracking-widest">Link Principal de Trabalho</Label>
               <Input
                 value={primaryLink}
                 onChange={(e) => setPrimaryLink(e.target.value)}
                 placeholder="https://..."
-                className="bg-slate-950 border-slate-800 text-slate-100 text-xs"
-                disabled={isSubmitting}
-              />
-            </div>
-
-            <div className="grid grid-cols-3 gap-2">
-              <div className="space-y-1">
-                <Label className="text-[11px] text-slate-400">TikTok</Label>
-                <Input
-                  value={tiktok}
-                  onChange={(e) => setTiktok(e.target.value)}
-                  placeholder="@perfil"
-                  className="bg-slate-950 border-slate-800 text-slate-100 text-xs"
-                  disabled={isSubmitting}
-                />
-              </div>
-              <div className="space-y-1">
-                <Label className="text-[11px] text-slate-400">Instagram</Label>
-                <Input
-                  value={instagram}
-                  onChange={(e) => setInstagram(e.target.value)}
-                  placeholder="@perfil"
-                  className="bg-slate-950 border-slate-800 text-slate-100 text-xs"
-                  disabled={isSubmitting}
-                />
-              </div>
-              <div className="space-y-1">
-                <Label className="text-[11px] text-slate-400">YouTube</Label>
-                <Input
-                  value={youtube}
-                  onChange={(e) => setYoutube(e.target.value)}
-                  placeholder="Canal/@"
-                  className="bg-slate-950 border-slate-800 text-slate-100 text-xs"
-                  disabled={isSubmitting}
-                />
-              </div>
-            </div>
-
-            <div className="space-y-1">
-              <Label className="text-[11px] text-slate-400">País</Label>
-              <Input
-                value={country}
-                onChange={(e) => setCountry(e.target.value)}
-                className="bg-slate-950 border-slate-800 text-slate-100 text-xs"
+                className="bg-white border-slate-200 text-slate-900 text-sm rounded-2xl h-12"
                 disabled={isSubmitting}
               />
             </div>
           </div>
 
-          <div className="pt-3">
+          <div className="pt-2">
             <Button
               type="submit"
               disabled={isSubmitting}
-              className="w-full bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold h-10 flex items-center justify-center gap-2 shadow-lg shadow-emerald-950/40"
+              className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black h-14 rounded-2xl flex items-center justify-center gap-2 shadow-lg shadow-emerald-100 uppercase tracking-widest text-xs"
             >
               {isSubmitting ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  Gravando nova senha...
+                  Salvando...
                 </>
               ) : (
                 <>
                   <CheckCircle2 className="w-4 h-4" />
-                  Salvar Nova Senha & Liberar Painel
+                  Concluir e Acessar Painel
                 </>
               )}
             </Button>

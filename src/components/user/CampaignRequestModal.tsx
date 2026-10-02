@@ -1,6 +1,15 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
+import {
+  Megaphone,
+  X,
+  Target,
+  FileText,
+  HelpCircle,
+  Loader2,
+  ChevronRight,
+  Sparkles,
+} from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -19,12 +28,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Loader2, SendHorizontal, Megaphone } from "lucide-react";
+import { toast } from "sonner";
 
 interface CampaignRequestModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSuccess?: () => void;
+  onSuccess: () => void;
   userId: string;
 }
 
@@ -35,174 +44,157 @@ export const CampaignRequestModal: React.FC<CampaignRequestModalProps> = ({
   userId,
 }) => {
   const [title, setTitle] = useState("");
-  const [type, setType] = useState<"afiliados" | "monetizacao_coletiva">("afiliados");
   const [description, setDescription] = useState("");
+  const [type, setType] = useState<"afiliados" | "monetizacao_coletiva">("afiliados");
   const [objective, setObjective] = useState("");
-  const [additionalInformation, setAdditionalInformation] = useState("");
-  const [loading, setLoading] = useState(false);
-
-  const resetForm = () => {
-    setTitle("");
-    setType("afiliados");
-    setDescription("");
-    setObjective("");
-    setAdditionalInformation("");
-  };
+  const [additionalInfo, setAdditionalInfo] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!title.trim() || !description.trim() || !objective.trim()) {
-      toast.error("Por favor, preencha todos os campos obrigatórios.");
+    if (!title || !description || !objective) {
+      toast.error("Por favor, preencha os campos obrigatórios.");
       return;
     }
 
-    if (!userId) {
-      toast.error("Usuário não identificado.");
-      return;
-    }
-
-    setLoading(true);
+    setIsSubmitting(true);
     try {
       const { error } = await supabase.from("campaign_requests").insert({
         user_id: userId,
         title: title.trim(),
-        type: type,
         description: description.trim(),
+        type,
         objective: objective.trim(),
-        additional_information: additionalInformation.trim() || null,
+        additional_information: additionalInfo.trim() || null,
         status: "pendente",
       });
 
       if (error) throw error;
 
-      toast.success("Solicitação de campanha enviada com sucesso! Aguarde a revisão da equipa.");
-      resetForm();
-      if (onSuccess) onSuccess();
-      onClose();
+      toast.success("Solicitação enviada com sucesso! Nossa equipe analisará a proposta.");
+      onSuccess();
+      handleClose();
     } catch (err: any) {
-      console.error("Erro ao submeter solicitação de campanha:", err);
-      toast.error(err.message || "Erro ao registrar solicitação.");
+      toast.error("Erro ao enviar solicitação: " + err.message);
     } finally {
-      setLoading(false);
+      setIsSubmitting(false);
     }
   };
 
+  const handleClose = () => {
+    setTitle("");
+    setDescription("");
+    setType("afiliados");
+    setObjective("");
+    setAdditionalInfo("");
+    onClose();
+  };
+
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-md bg-slate-900 border-slate-800 text-slate-100 sm:rounded-2xl p-6 shadow-2xl max-h-[85vh] overflow-y-auto">
-        <DialogHeader className="space-y-1.5">
-          <div className="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 mb-1">
-            <Megaphone className="w-5 h-5" />
+    <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
+      <DialogContent className="max-w-md bg-white border-none sm:rounded-3xl p-8 shadow-2xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader className="border-b border-slate-50 pb-6 mb-6">
+          <div className="w-14 h-14 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600 mb-3 shadow-sm">
+            <Megaphone className="w-7 h-7" />
           </div>
-          <DialogTitle className="text-base font-bold text-white tracking-tight">
+          <DialogTitle className="text-2xl font-black text-slate-900 tracking-tight">
             Solicitar Campanha
           </DialogTitle>
-          <DialogDescription className="text-xs text-slate-400 leading-relaxed">
-            Preencha os detalhes da campanha desejada. A administração avaliará a proposta e entrará em contacto.
+          <DialogDescription className="text-slate-500 text-sm font-medium leading-relaxed pt-1">
+            Proponha uma nova campanha para ser operada na plataforma. Nossa gestão avaliará o projeto em até 48 horas.
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-3.5 mt-3">
-          <div className="space-y-1.5">
-            <Label className="text-xs font-semibold text-slate-300">
-              Nome / Título da Campanha <span className="text-rose-400">*</span>
-            </Label>
-            <Input
-              placeholder="Ex: Divulgação do Lançamento de Produto X"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className="bg-slate-950 border-slate-800 text-slate-100 text-xs h-10 rounded-xl focus-visible:ring-indigo-500"
-              required
-            />
-          </div>
-
-          <div className="space-y-1.5">
-            <Label className="text-xs font-semibold text-slate-300">
-              Tipo de Campanha <span className="text-rose-400">*</span>
-            </Label>
-            <Select
-              value={type}
-              onValueChange={(val: "afiliados" | "monetizacao_coletiva") => setType(val)}
-            >
-              <SelectTrigger className="bg-slate-950 border-slate-800 text-slate-100 text-xs h-10 rounded-xl">
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="space-y-2">
+            <Label className="text-[10px] text-slate-400 font-black uppercase tracking-widest">Tipo de Campanha *</Label>
+            <Select value={type} onValueChange={(val: any) => setType(val)}>
+              <SelectTrigger className="bg-slate-50 border-transparent focus:bg-white focus:border-emerald-500 h-12 rounded-2xl text-sm font-bold transition-all">
                 <SelectValue placeholder="Selecione o tipo" />
               </SelectTrigger>
-              <SelectContent className="bg-slate-900 border-slate-800 text-slate-100 text-xs">
-                <SelectItem value="afiliados" className="text-xs">
-                  Afiliados
-                </SelectItem>
-                <SelectItem value="monetizacao_coletiva" className="text-xs">
-                  Monetização Coletiva
-                </SelectItem>
+              <SelectContent className="bg-white border-slate-200 rounded-2xl">
+                <SelectItem value="afiliados" className="rounded-xl focus:bg-emerald-50 font-medium">Campanha de Afiliados</SelectItem>
+                <SelectItem value="monetizacao_coletiva" className="rounded-xl focus:bg-emerald-50 font-medium">Monetização Coletiva</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
-          <div className="space-y-1.5">
-            <Label className="text-xs font-semibold text-slate-300">
-              Descrição da Campanha <span className="text-rose-400">*</span>
-            </Label>
-            <Textarea
-              placeholder="Descreva o conteúdo, as orientações principais e o que envolve a campanha..."
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              className="bg-slate-950 border-slate-800 text-slate-100 text-xs min-h-[75px] rounded-xl focus-visible:ring-indigo-500 resize-none"
-              required
-            />
-          </div>
-
-          <div className="space-y-1.5">
-            <Label className="text-xs font-semibold text-slate-300">
-              Objetivo <span className="text-rose-400">*</span>
+          <div className="space-y-2">
+            <Label className="text-[10px] text-slate-400 font-black uppercase tracking-widest flex items-center gap-2">
+              <Sparkles className="w-3 h-3 text-emerald-600" /> Nome Sugerido *
             </Label>
             <Input
-              placeholder="Ex: Obter 500 novos leads qualificados / visualizações"
-              value={objective}
-              onChange={(e) => setObjective(e.target.value)}
-              className="bg-slate-950 border-slate-800 text-slate-100 text-xs h-10 rounded-xl focus-visible:ring-indigo-500"
+              placeholder="Ex: Alavancagem de Perfil TikTok"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className="bg-slate-50 border-transparent focus:bg-white focus:border-emerald-500 h-12 rounded-2xl text-sm font-bold transition-all"
               required
             />
           </div>
 
-          <div className="space-y-1.5">
-            <Label className="text-xs font-semibold text-slate-300">
-              Informações Adicionais <span className="text-slate-500 text-[11px]">(opcional)</span>
+          <div className="space-y-2">
+            <Label className="text-[10px] text-slate-400 font-black uppercase tracking-widest flex items-center gap-2">
+              <Target className="w-3 h-3 text-emerald-600" /> Objetivo da Campanha *
             </Label>
-            <Textarea
-              placeholder="Links de referência, prazos desejados, público-alvo ou observações especiais..."
-              value={additionalInformation}
-              onChange={(e) => setAdditionalInformation(e.target.value)}
-              className="bg-slate-950 border-slate-800 text-slate-100 text-xs min-h-[60px] rounded-xl focus-visible:ring-indigo-500 resize-none"
+            <Input
+              placeholder="Ex: Atingir 1k seguidores para LIVE"
+              value={objective}
+              onChange={(e) => setObjective(e.target.value)}
+              className="bg-slate-50 border-transparent focus:bg-white focus:border-emerald-500 h-12 rounded-2xl text-sm font-bold transition-all"
+              required
             />
           </div>
 
-          <div className="pt-2 flex gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onClose}
-              disabled={loading}
-              className="flex-1 border-slate-800 text-slate-400 hover:text-white hover:bg-slate-800 text-xs h-10 rounded-xl"
-            >
-              Cancelar
-            </Button>
+          <div className="space-y-2">
+            <Label className="text-[10px] text-slate-400 font-black uppercase tracking-widest flex items-center gap-2">
+              <FileText className="w-3 h-3 text-emerald-600" /> Descrição do Projeto *
+            </Label>
+            <Textarea
+              placeholder="Explique como a campanha funcionará..."
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              className="bg-slate-50 border-transparent focus:bg-white focus:border-emerald-500 rounded-2xl text-sm font-medium transition-all min-h-[100px] py-4"
+              required
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label className="text-[10px] text-slate-400 font-black uppercase tracking-widest flex items-center gap-2">
+              <HelpCircle className="w-3 h-3 text-emerald-600" /> Informações Adicionais
+            </Label>
+            <Textarea
+              placeholder="Links, referências ou detalhes técnicos..."
+              value={additionalInfo}
+              onChange={(e) => setAdditionalInfo(e.target.value)}
+              className="bg-slate-50 border-transparent focus:bg-white focus:border-emerald-500 rounded-2xl text-sm font-medium transition-all min-h-[80px] py-4"
+            />
+          </div>
+
+          <div className="pt-4 flex flex-col gap-3">
             <Button
               type="submit"
-              disabled={loading || !title.trim() || !description.trim() || !objective.trim()}
-              className="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold h-10 rounded-xl shadow-lg shadow-indigo-950/50 gap-1.5"
+              disabled={isSubmitting}
+              className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black h-14 rounded-2xl shadow-xl shadow-emerald-100 uppercase tracking-widest text-xs gap-2"
             >
-              {loading ? (
+              {isSubmitting ? (
                 <>
-                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                  <span>Enviando...</span>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  ENVIANDO...
                 </>
               ) : (
                 <>
-                  <SendHorizontal className="w-3.5 h-3.5" />
-                  <span>Enviar Solicitação</span>
+                  ENVIAR SOLICITAÇÃO
+                  <ChevronRight className="w-5 h-5" />
                 </>
               )}
+            </Button>
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={handleClose}
+              className="w-full text-slate-400 hover:text-slate-900 hover:bg-slate-50 font-black h-12 rounded-2xl uppercase tracking-widest text-[10px]"
+            >
+              CANCELAR
             </Button>
           </div>
         </form>

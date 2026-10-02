@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { ShieldCheck, Lock, User, Phone, Link2, Eye, EyeOff, Loader2, CheckCircle2, ArrowRight, UserPlus } from "lucide-react";
 import { toast } from "sonner";
 
@@ -26,7 +25,6 @@ export default function AccountSetup() {
   const [phone, setPhone] = useState("");
   const [primaryLink, setPrimaryLink] = useState("");
   const [inviteCode, setInviteCode] = useState("");
-  const [country, setCountry] = useState("Angola");
 
   useEffect(() => {
     if (profile) {
@@ -37,9 +35,6 @@ export default function AccountSetup() {
       setName(profile.name || "");
       setPhone(profile.phone || "");
       setPrimaryLink(profile.primary_link || "");
-      if (profile.country) {
-        setCountry(profile.country);
-      }
     }
   }, [profile, navigate]);
 
@@ -133,53 +128,56 @@ export default function AccountSetup() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 flex flex-col justify-center items-center px-4 py-8">
-      <div className="max-w-md w-full mb-6 text-center">
-        <img src="/logo.png" alt="ADX Money Logo" className="h-16 mx-auto mb-3" />
-        <p className="text-sm text-slate-400 mt-1">Configuração Obrigatória de Primeiro Acesso</p>
+    <div className="min-h-screen bg-slate-50 flex flex-col justify-center items-center px-4 py-12 font-sans antialiased">
+      <div className="max-w-md w-full mb-10 text-center">
+        <div className="w-16 h-16 bg-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-xl shadow-emerald-100">
+          <img src="/logo.png" alt="ADX" className="h-10 w-auto brightness-0 invert" />
+        </div>
+        <h1 className="text-2xl font-black text-slate-900 tracking-tight">Ativação de Conta</h1>
+        <p className="text-xs text-slate-500 mt-2 font-medium uppercase tracking-widest">Configuração Obrigatória de Operador</p>
       </div>
 
-      <Card className="max-w-md w-full border-slate-800 bg-slate-900/80 backdrop-blur-md shadow-2xl text-slate-100">
-        <CardHeader className="space-y-2 pb-4">
-          <div className="flex items-center justify-between text-xs text-indigo-400 font-semibold tracking-wider uppercase">
+      <Card className="max-w-md w-full border-none bg-white shadow-2xl shadow-slate-200/60 rounded-3xl overflow-hidden text-slate-900">
+        <CardHeader className="space-y-4 pb-8 pt-8 px-8">
+          <div className="flex items-center justify-between text-[10px] text-emerald-600 font-black tracking-widest uppercase">
             <span>Passo {step} de 2</span>
-            <span>{step === 1 ? "Segurança" : "Dados Pessoais"}</span>
+            <span>{step === 1 ? "Segurança" : "Dados do Operador"}</span>
           </div>
-          <div className="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
+          <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
             <div
-              className="bg-indigo-500 h-full transition-all duration-300"
+              className="bg-emerald-600 h-full transition-all duration-500 ease-in-out"
               style={{ width: step === 1 ? "50%" : "100%" }}
             />
           </div>
-          <CardTitle className="text-xl font-bold text-white pt-2">
-            {step === 1 ? "Nova Palavra-passe" : "Confirmar os Seus Dados"}
+          <CardTitle className="text-xl font-black text-slate-900 pt-2 tracking-tight">
+            {step === 1 ? "Definir Senha Pessoal" : "Validar Informações"}
           </CardTitle>
-          <CardDescription className="text-slate-400 text-xs leading-relaxed">
+          <CardDescription className="text-slate-500 text-xs font-medium leading-relaxed">
             {step === 1
-              ? "Defina uma nova palavra-passe pessoal e segura para proteger a sua conta."
-              : "Complete os seus dados operacionais. Se tiver um código de convite, insira abaixo."}
+              ? "Substitua a senha provisória enviada pela gestão por uma senha definitiva e segura."
+              : "Complete o seu cadastro para começar a receber tarefas e monetizar a sua conta."}
           </CardDescription>
         </CardHeader>
 
         {step === 1 ? (
           <form onSubmit={handleNextStep}>
-            <CardContent className="space-y-4 pt-2">
+            <CardContent className="space-y-6 pt-0 px-8">
               <div className="space-y-2">
-                <Label className="text-xs text-slate-300 font-medium">Nova Palavra-passe</Label>
+                <Label className="text-[10px] text-slate-400 font-black uppercase tracking-widest">Nova Palavra-passe</Label>
                 <div className="relative">
                   <Input
                     type={showPassword ? "text" : "password"}
-                    placeholder="Mínimo de 6 caracteres"
+                    placeholder="Mínimo 6 caracteres"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="bg-slate-950/60 border-slate-700 text-white pr-10 focus:border-indigo-500"
+                    className="bg-slate-50 border-transparent focus:bg-white focus:border-emerald-500 h-12 rounded-2xl text-sm font-bold transition-all"
                     autoFocus
                     required
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-900"
                   >
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
@@ -187,20 +185,20 @@ export default function AccountSetup() {
               </div>
 
               <div className="space-y-2">
-                <Label className="text-xs text-slate-300 font-medium">Confirmar Palavra-passe</Label>
+                <Label className="text-[10px] text-slate-400 font-black uppercase tracking-widest">Confirmar Palavra-passe</Label>
                 <div className="relative">
                   <Input
                     type={showConfirm ? "text" : "password"}
-                    placeholder="Repita a nova palavra-passe"
+                    placeholder="Repita a senha"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="bg-slate-950/60 border-slate-700 text-white pr-10 focus:border-indigo-500"
+                    className="bg-slate-50 border-transparent focus:bg-white focus:border-emerald-500 h-12 rounded-2xl text-sm font-bold transition-all"
                     required
                   />
                   <button
                     type="button"
                     onClick={() => setShowConfirm(!showConfirm)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-900"
                   >
                     {showConfirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
@@ -208,18 +206,18 @@ export default function AccountSetup() {
               </div>
             </CardContent>
 
-            <CardFooter className="pt-4 flex flex-col sm:flex-row gap-2 border-t border-slate-800/80">
+            <CardFooter className="pt-6 pb-10 px-8 flex flex-col sm:flex-row gap-3">
               <Button
                 type="button"
                 variant="ghost"
                 onClick={() => signOut()}
-                className="w-full sm:w-auto text-slate-400 hover:text-slate-200 hover:bg-slate-800 text-xs"
+                className="w-full sm:w-auto text-slate-400 hover:text-red-500 hover:bg-red-50 text-[10px] font-black uppercase tracking-widest h-12 rounded-2xl"
               >
                 Sair
               </Button>
               <Button
                 type="submit"
-                className="w-full sm:flex-1 bg-indigo-600 hover:bg-indigo-500 text-white gap-2 text-xs font-semibold"
+                className="w-full sm:flex-1 bg-emerald-600 hover:bg-emerald-700 text-white gap-2 text-xs font-black uppercase tracking-widest h-12 rounded-2xl shadow-lg shadow-emerald-100"
               >
                 Continuar
                 <ArrowRight className="w-4 h-4" />
@@ -228,86 +226,86 @@ export default function AccountSetup() {
           </form>
         ) : (
           <form onSubmit={handleCompleteSetup}>
-            <CardContent className="space-y-4 pt-2">
+            <CardContent className="space-y-5 pt-0 px-8">
               <div className="space-y-2">
-                <Label className="text-xs text-slate-300 font-medium flex items-center gap-1.5">
-                  <User className="w-3.5 h-3.5 text-indigo-400" />
-                  Nome Completo
+                <Label className="text-[10px] text-slate-400 font-black uppercase tracking-widest flex items-center gap-2">
+                  <User className="w-3 h-3 text-emerald-600" />
+                  Nome do Operador
                 </Label>
                 <Input
-                  placeholder="Seu nome"
+                  placeholder="Nome completo"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="bg-slate-950/60 border-slate-700 text-white focus:border-indigo-500"
+                  className="bg-slate-50 border-transparent focus:bg-white focus:border-emerald-500 h-12 rounded-2xl text-sm font-bold transition-all"
                   required
                 />
               </div>
 
               <div className="space-y-2">
-                <Label className="text-xs text-slate-300 font-medium flex items-center gap-1.5">
-                  <Phone className="w-3.5 h-3.5 text-indigo-400" />
-                  Telefone / WhatsApp
+                <Label className="text-[10px] text-slate-400 font-black uppercase tracking-widest flex items-center gap-2">
+                  <Phone className="w-3 h-3 text-emerald-600" />
+                  WhatsApp Operacional
                 </Label>
                 <Input
                   placeholder="+244..."
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  className="bg-slate-950/60 border-slate-700 text-white focus:border-indigo-500"
+                  className="bg-slate-50 border-transparent focus:bg-white focus:border-emerald-500 h-12 rounded-2xl text-sm font-bold transition-all font-mono"
                   required
                 />
               </div>
 
               <div className="space-y-2">
-                <Label className="text-xs text-slate-300 font-medium flex items-center gap-1.5">
-                  <UserPlus className="w-3.5 h-3.5 text-emerald-400" />
-                  Código de Convite (Opcional)
+                <Label className="text-[10px] text-emerald-600 font-black uppercase tracking-widest flex items-center gap-2">
+                  <UserPlus className="w-3 h-3" />
+                  Código de Convite
                 </Label>
                 <Input
-                  placeholder="Ex: ADX..."
+                  placeholder="ADX-XXXXX"
                   value={inviteCode}
                   onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
-                  className="bg-slate-950/60 border-slate-700 text-emerald-300 font-mono placeholder:text-slate-600 focus:border-emerald-500"
+                  className="bg-emerald-50 border-emerald-100 text-emerald-700 placeholder:text-emerald-200 focus:bg-white focus:border-emerald-500 h-12 rounded-2xl text-sm font-black transition-all font-mono tracking-widest"
                 />
-                <p className="text-[10px] text-slate-400">
+                <p className="text-[9px] text-slate-400 font-medium uppercase mt-1">
                   Insira o código se foi convidado por alguém para receber o bónus inicial de 250 Kz.
                 </p>
               </div>
 
               <div className="space-y-2">
-                <Label className="text-xs text-slate-300 font-medium flex items-center gap-1.5">
-                  <Link2 className="w-3.5 h-3.5 text-indigo-400" />
-                  Link Redes Sociais (Opcional)
+                <Label className="text-[10px] text-slate-400 font-black uppercase tracking-widest flex items-center gap-2">
+                  <Link2 className="w-3 h-3 text-emerald-600" />
+                  Perfil de Trabalho (Link)
                 </Label>
                 <Input
-                  placeholder="TikTok ou Instagram link"
+                  placeholder="TikTok, IG ou Canal"
                   value={primaryLink}
                   onChange={(e) => setPrimaryLink(e.target.value)}
-                  className="bg-slate-950/60 border-slate-700 text-white focus:border-indigo-500"
+                  className="bg-slate-50 border-transparent focus:bg-white focus:border-emerald-500 h-12 rounded-2xl text-sm font-bold transition-all"
                 />
               </div>
             </CardContent>
 
-            <CardFooter className="pt-4 flex flex-col sm:flex-row gap-2 border-t border-slate-800/80">
+            <CardFooter className="pt-6 pb-10 px-8 flex flex-col sm:flex-row gap-3">
               <Button
                 type="button"
                 variant="outline"
                 onClick={() => setStep(1)}
                 disabled={loading}
-                className="w-full sm:w-auto border-slate-700 bg-slate-800/40 text-slate-300 hover:bg-slate-800 text-xs"
+                className="w-full sm:w-auto border-slate-200 text-slate-400 hover:text-slate-900 hover:bg-slate-100 text-[10px] font-black uppercase tracking-widest h-12 rounded-2xl"
               >
                 Voltar
               </Button>
               <Button
                 type="submit"
                 disabled={loading}
-                className="w-full sm:flex-1 bg-emerald-600 hover:bg-emerald-500 text-white gap-2 text-xs font-semibold shadow-lg shadow-emerald-950/50"
+                className="w-full sm:flex-1 bg-emerald-600 hover:bg-emerald-700 text-white gap-2 text-xs font-black uppercase tracking-widest h-12 rounded-2xl shadow-lg shadow-emerald-100"
               >
                 {loading ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <Loader2 className="w-5 h-5 animate-spin" />
                 ) : (
                   <>
-                    <CheckCircle2 className="w-4 h-4" />
-                    Concluir e Acessar Painel
+                    <CheckCircle2 className="w-5 h-5" />
+                    Ativar Conta Agora
                   </>
                 )}
               </Button>
@@ -316,8 +314,8 @@ export default function AccountSetup() {
         )}
       </Card>
 
-      <div className="text-center mt-6 text-xs text-slate-500">
-        ADX Money &copy; {new Date().getFullYear()} — Todos os direitos reservados.
+      <div className="text-center mt-10 text-[10px] text-slate-400 font-black uppercase tracking-tighter">
+        ADXmoney &copy; {new Date().getFullYear()} &bull; Todos os direitos reservados.
       </div>
     </div>
   );
