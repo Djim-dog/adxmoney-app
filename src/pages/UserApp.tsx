@@ -327,27 +327,6 @@ export default function UserAppPage() {
         {/* 1. ABA: TAREFAS */}
         {activeTab === "tasks" && (
           <div className="space-y-6 animate-in fade-in slide-in-from-bottom-3 duration-300">
-            {/* Espelho da Carteira no topo da Home */}
-            <div className="bg-gradient-to-br from-emerald-600 to-emerald-800 rounded-3xl p-6 text-white shadow-xl shadow-emerald-600/20 relative overflow-hidden">
-              <div className="absolute right-0 top-0 translate-x-4 -translate-y-4 w-40 h-40 bg-white/10 rounded-full blur-2xl"></div>
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs uppercase tracking-widest text-emerald-100 font-bold">Saldo Disponível</span>
-                <button
-                  onClick={() => setHideBalanceHome(!hideBalanceHome)}
-                  className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-all"
-                  title={hideBalanceHome ? "Mostrar saldo" : "Ocultar saldo"}
-                >
-                  {hideBalanceHome ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
-                </button>
-              </div>
-              <h2 className="text-3xl font-black tracking-tight mb-2">
-                {hideBalanceHome ? "••••••••" : `${wallet ? wallet.balance.toLocaleString("pt-PT", { minimumFractionDigits: 2 }) : "0.00"} Kz`}
-              </h2>
-              <div className="text-[11px] text-emerald-200 font-medium">
-                Retido: {hideBalanceHome ? "••••" : `${wallet ? wallet.reserved_balance.toLocaleString("pt-PT", { minimumFractionDigits: 2 }) : "0.00"} Kz`}
-              </div>
-            </div>
-
             {/* Seletor Segmentado */}
             <div className="flex bg-white p-1 rounded-3xl border border-slate-200 shadow-sm">
               <button
@@ -443,13 +422,6 @@ export default function UserAppPage() {
         {/* 3. ABA: AFILIADO */}
         {activeTab === "affiliate" && (
           <div className="space-y-6 animate-in fade-in slide-in-from-bottom-3 duration-300">
-            <div className="px-1">
-              <h2 className="text-lg font-black text-slate-900 flex items-center gap-2">
-                <Gift className="w-6 h-6 text-emerald-600" /> Programa de Afiliados
-              </h2>
-              <p className="text-sm text-slate-500 mt-1 font-medium">Convide novos membros e ganhe uma porcentagem sobre as operações deles.</p>
-            </div>
-
             <div className="bg-emerald-600 rounded-3xl p-6 text-white shadow-xl shadow-emerald-100 relative overflow-hidden">
                <div className="absolute top-0 right-0 p-8 opacity-10">
                   <Gift size={120} />
@@ -509,101 +481,6 @@ export default function UserAppPage() {
         {/* 4. ABA: CARTEIRA */}
         {activeTab === "wallet" && (
           <div className="space-y-6 animate-in fade-in slide-in-from-bottom-3 duration-300">
-            <div className="px-1">
-              <h2 className="text-lg font-black text-slate-900 flex items-center gap-2">
-                <Wallet className="w-6 h-6 text-emerald-600" /> Gestão Financeira
-              </h2>
-              <p className="text-sm text-slate-500 mt-1 font-medium">Acompanhe seu saldo e solicite levantamentos de forma segura.</p>
-            </div>
-
-            {/* Ações Rápidas da Minha Página */}
-            <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm space-y-4">
-              <h3 className="text-sm font-black text-slate-900 uppercase tracking-wider">Atalhos e Menu da Conta</h3>
-              <div className="grid grid-cols-2 gap-3">
-                <Button
-                  onClick={() => setIsSettingsOpen(true)}
-                  variant="outline"
-                  className="h-14 justify-start gap-3 rounded-2xl border-slate-200 hover:border-emerald-500 hover:bg-emerald-50/50 text-slate-700 font-bold"
-                >
-                  <Settings className="w-5 h-5 text-emerald-600 shrink-0" />
-                  <div className="text-left truncate">
-                    <div className="text-xs font-black truncate">Configurações</div>
-                    <div className="text-[10px] text-slate-400 font-normal truncate">Dados e perfil</div>
-                  </div>
-                </Button>
-
-                <Button
-                  onClick={() => setIsNotificationsOpen(true)}
-                  variant="outline"
-                  className="h-14 justify-start gap-3 rounded-2xl border-slate-200 hover:border-emerald-500 hover:bg-emerald-50/50 text-slate-700 font-bold"
-                >
-                  <Bell className="w-5 h-5 text-emerald-600 shrink-0" />
-                  <div className="text-left truncate">
-                    <div className="text-xs font-black truncate">Notificações</div>
-                    <div className="text-[10px] text-slate-400 font-normal truncate">Avisos e alertas</div>
-                  </div>
-                </Button>
-
-                <Button
-                  onClick={() => setIsHistoryOpen(true)}
-                  variant="outline"
-                  className="h-14 justify-start gap-3 rounded-2xl border-slate-200 hover:border-emerald-500 hover:bg-emerald-50/50 text-slate-700 font-bold"
-                >
-                  <Clock className="w-5 h-5 text-emerald-600 shrink-0" />
-                  <div className="text-left truncate">
-                    <div className="text-xs font-black truncate">Histórico</div>
-                    <div className="text-[10px] text-slate-400 font-normal truncate">Transações</div>
-                  </div>
-                </Button>
-
-                <Button
-                  onClick={() => setIsSupportOpen(true)}
-                  variant="outline"
-                  className="h-14 justify-start gap-3 rounded-2xl border-slate-200 hover:border-emerald-500 hover:bg-emerald-50/50 text-slate-700 font-bold"
-                >
-                  <MessageSquare className="w-5 h-5 text-emerald-600 shrink-0" />
-                  <div className="text-left truncate">
-                    <div className="text-xs font-black truncate">Suporte</div>
-                    <div className="text-[10px] text-slate-400 font-normal truncate">Fale connosco</div>
-                  </div>
-                </Button>
-
-                <Button
-                  onClick={() => setIsAboutOpen(true)}
-                  variant="outline"
-                  className="h-14 justify-start gap-3 rounded-2xl border-slate-200 hover:border-emerald-500 hover:bg-emerald-50/50 text-slate-700 font-bold"
-                >
-                  <Info className="w-5 h-5 text-emerald-600 shrink-0" />
-                  <div className="text-left truncate">
-                    <div className="text-xs font-black truncate">Sobre ADX</div>
-                    <div className="text-[10px] text-slate-400 font-normal truncate">Informações</div>
-                  </div>
-                </Button>
-
-                <Button
-                  onClick={() => setIsFaqOpen(true)}
-                  variant="outline"
-                  className="h-14 justify-start gap-3 rounded-2xl border-slate-200 hover:border-emerald-500 hover:bg-emerald-50/50 text-slate-700 font-bold"
-                >
-                  <HelpCircle className="w-5 h-5 text-emerald-600 shrink-0" />
-                  <div className="text-left truncate">
-                    <div className="text-xs font-black truncate">FAQ</div>
-                    <div className="text-[10px] text-slate-400 font-normal truncate">Dúvidas comuns</div>
-                  </div>
-                </Button>
-              </div>
-
-              <div className="pt-2">
-                <Button
-                  onClick={() => signOut()}
-                  variant="destructive"
-                  className="w-full h-12 rounded-2xl bg-rose-50 hover:bg-rose-100 text-rose-600 font-black text-xs uppercase tracking-widest gap-2 border border-rose-200"
-                >
-                  <LogOut className="w-4 h-4" /> Terminar Sessão
-                </Button>
-              </div>
-            </div>
-
             {/* Card de Saldo */}
             <div className="bg-white border border-slate-200 rounded-3xl p-8 shadow-xl shadow-slate-200/50 relative overflow-hidden">
               <div className="absolute right-6 top-6">
