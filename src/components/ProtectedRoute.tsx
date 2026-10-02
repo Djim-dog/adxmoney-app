@@ -1,38 +1,22 @@
 import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { Loader2 } from 'lucide-react';
+import { SplashScreen } from '@/components/SplashScreen';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
   requiredRole?: "admin" | "user";
 }
 
-export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ 
-  children, 
-  requiredRole 
+export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
+  children,
+  requiredRole
 }) => {
   const { user, profile, loading } = useAuth();
   const location = useLocation();
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-white flex flex-col items-center justify-center antialiased">
-        <div className="relative flex flex-col items-center gap-6">
-          <div className="w-24 h-24 rounded-3xl bg-emerald-600 flex items-center justify-center shadow-2xl shadow-emerald-100 overflow-hidden animate-pulse">
-            <img src="/logo.png" alt="ADXmoney" className="w-full h-full object-cover" />
-          </div>
-          <div className="flex flex-col items-center gap-2">
-            <span className="font-black text-slate-900 tracking-tight text-2xl">ADXmoney</span>
-            <div className="flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-bounce" style={{ animationDelay: '100ms' }}></span>
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-bounce" style={{ animationDelay: '200ms' }}></span>
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-bounce" style={{ animationDelay: '300ms' }}></span>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
+    return <SplashScreen message="Verificando autenticação..." />;
   }
 
   if (!user) {

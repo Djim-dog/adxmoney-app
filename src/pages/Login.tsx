@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
-import { Loader2, Lock, Mail } from "lucide-react";
+import { SplashScreen } from "@/components/SplashScreen";
 
 const Login: React.FC = () => {
   const { session, profile, loading: authLoading } = useAuth();
@@ -30,15 +30,9 @@ const Login: React.FC = () => {
   }
 
   if (authLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-white">
-        <div className="flex flex-col items-center gap-3">
-          <Loader2 className="w-8 h-8 animate-spin text-emerald-600" />
-          <p className="text-xs font-medium text-slate-500 uppercase tracking-widest">Verificando credenciais...</p>
-        </div>
-      </div>
-    );
+    return <SplashScreen message="Verificando acesso..." />;
   }
+
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();

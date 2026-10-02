@@ -6,8 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { ShieldCheck, Lock, User, Phone, Link2, Eye, EyeOff, Loader2, CheckCircle2, ArrowRight, UserPlus } from "lucide-react";
-import { toast } from "sonner";
+import { SplashScreen } from "@/components/SplashScreen";
 
 export default function AccountSetup() {
   const { user, profile, refreshProfile, signOut } = useAuth();
@@ -25,6 +24,11 @@ export default function AccountSetup() {
   const [phone, setPhone] = useState("");
   const [primaryLink, setPrimaryLink] = useState("");
   const [inviteCode, setInviteCode] = useState("");
+
+  if (!profile && !user) {
+    return <SplashScreen message="Carregando dados..." />;
+  }
+
 
   useEffect(() => {
     if (profile) {

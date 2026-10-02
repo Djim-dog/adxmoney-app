@@ -52,6 +52,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 
+import { SplashScreen } from "@/components/SplashScreen";
+
+export const AdminDashboardPage: React.FC = () => {
+  const { user, profile, signOut } = useAuth();
+=======
 export const AdminDashboardPage: React.FC = () => {
   const { user, profile, signOut } = useAuth();
   const [activeSection, setActiveSection] = useState<
@@ -69,6 +74,15 @@ export const AdminDashboardPage: React.FC = () => {
 
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+
+  // Search & Filter
+=======
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+
+  if (loading || !profile) {
+    return <SplashScreen message="Carregando painel administrativo..." />;
+  }
 
   // Search & Filter
   const [searchUser, setSearchUser] = useState("");

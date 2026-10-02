@@ -32,6 +32,19 @@ import {
   User as UserIcon
 } from "lucide-react";
 
+import { SplashScreen } from "@/components/SplashScreen";
+
+export default function UserAppPage() {
+  const { user, profile, signOut, refreshProfile } = useAuth();
+  const navigate = useNavigate();
+
+  // Navigation Tabs: "tasks" | "campaigns" | "affiliate" | "wallet"
+  const [activeTab, setActiveTab] = useState<"tasks" | "campaigns" | "affiliate" | "wallet">("tasks");
+  const [tasksSubTab, setTasksSubTab] = useState<"community" | "financial">("community");
+
+  const [loading, setLoading] = useState(true);
+  const [wallet, setWallet] = useState<{ id: string; balance: number; reserved_balance: number } | null>(null);
+=======
 export default function UserAppPage() {
   const { user, profile, signOut, refreshProfile } = useAuth();
   const navigate = useNavigate();
@@ -249,9 +262,13 @@ export default function UserAppPage() {
     return <Navigate to="/account/setup" replace />;
   }
 
+  if (loading || !profile) {
+    return <SplashScreen message="Carregando painel do operador..." />;
+  }
+
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans antialiased overflow-x-hidden select-none pb-24">
-      
+
       {/* Header */}
       <header className="sticky top-0 z-40 bg-white border-b border-slate-200 px-4 py-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
