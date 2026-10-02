@@ -16,7 +16,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   const location = useLocation();
 
   if (loading) {
-    return <SplashScreen message="Verificando autenticação..." />;
+    return <div className="min-h-screen bg-slate-50" />;
   }
 
   if (!user) {

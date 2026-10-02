@@ -332,8 +332,8 @@ export default function UserAppPage() {
     return <Navigate to="/account/setup" replace />;
   }
 
-  if (loading || !profile) {
-    return <SplashScreen message="Carregando painel do operador..." />;
+  if (loading && !profile) {
+    return <div className="min-h-screen bg-slate-50" />;
   }
 
   return (
@@ -387,7 +387,7 @@ export default function UserAppPage() {
 
         {/* 1. ABA: TAREFAS */}
         {activeTab === "tasks" && (
-          <div className="space-y-6 animate-in fade-in slide-in-from-bottom-3 duration-300">
+          <div className="space-y-6">
             {/* Seletor Segmentado */}
             <div className="flex bg-white p-1 rounded-3xl border border-slate-200 shadow-sm">
               <button
@@ -469,14 +469,14 @@ export default function UserAppPage() {
 
         {/* 2. ABA: CAMPANHAS */}
         {activeTab === "campaigns" && user && (
-          <div className="space-y-6 animate-in fade-in slide-in-from-bottom-3 duration-300">
+          <div className="space-y-6">
             <UserCampaignsHub userId={user.id} />
           </div>
         )}
 
         {/* 3. ABA: AFILIADO */}
         {activeTab === "affiliate" && (
-          <div className="space-y-6 animate-in fade-in slide-in-from-bottom-3 duration-300">
+          <div className="space-y-6">
             <div className="bg-emerald-600 rounded-3xl p-6 text-white shadow-xl shadow-emerald-100 relative overflow-hidden">
                <div className="absolute top-0 right-0 p-8 opacity-10">
                   <Gift size={120} />
@@ -571,7 +571,7 @@ export default function UserAppPage() {
 
         {/* 4. ABA: CARTEIRA */}
         {activeTab === "wallet" && (
-          <div className="space-y-6 animate-in fade-in slide-in-from-bottom-3 duration-300">
+          <div className="space-y-6">
             {/* Card de Saldo */}
             <div className="bg-white border border-slate-200 rounded-3xl p-8 shadow-xl shadow-slate-200/50 relative overflow-hidden">
               <div className="absolute right-6 top-6">
@@ -647,7 +647,7 @@ export default function UserAppPage() {
 
                 {/* Formulários Dinâmicos */}
                 {withdrawMethod === 'iban' && (
-                  <div className="space-y-4 p-5 bg-slate-50 rounded-2xl border border-slate-100 animate-in fade-in duration-300">
+                  <div className="space-y-4 p-5 bg-slate-50 rounded-2xl border border-slate-100">
                     <div className="space-y-2">
                       <Label className="text-[10px] font-black uppercase text-slate-500">Titular da Conta</Label>
                       <Input
@@ -669,7 +669,7 @@ export default function UserAppPage() {
                 )}
 
                 {(withdrawMethod === 'express' || withdrawMethod === 'unitel') && (
-                  <div className="p-5 bg-slate-50 rounded-2xl border border-slate-100 animate-in fade-in duration-300">
+                  <div className="p-5 bg-slate-50 rounded-2xl border border-slate-100">
                     <Label className="text-[10px] font-black uppercase text-slate-500">Número de Telefone</Label>
                     <Input
                       placeholder="9xx xxx xxx"
@@ -681,7 +681,7 @@ export default function UserAppPage() {
                 )}
 
                 {withdrawMethod === 'remitly' && (
-                  <div className="space-y-4 p-5 bg-slate-50 rounded-2xl border border-slate-100 animate-in fade-in duration-300">
+                  <div className="space-y-4 p-5 bg-slate-50 rounded-2xl border border-slate-100">
                     <div className="space-y-2">
                       <Label className="text-[10px] font-black uppercase text-slate-500">Nome completo do beneficiário</Label>
                       <Input

@@ -30,7 +30,7 @@ export const UserHomeSection: React.FC<UserHomeSectionProps> = ({
   const pendingCampaigns = campaigns.filter((c) => c.assignment_status !== "COMPLETED");
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
+    <div className="space-y-8">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-1">
         <div>
           <h2 className="text-2xl font-black text-slate-900 tracking-tight">Painel Operacional</h2>

@@ -11,7 +11,7 @@ export const UserHistorySection: React.FC<UserHistorySectionProps> = ({ campaign
   const completedCampaigns = campaigns.filter((c) => c.assignment_status === "COMPLETED");
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
+    <div className="space-y-8">
       <div className="px-1">
         <h2 className="text-2xl font-black text-slate-900 tracking-tight">Registro de Ganhos</h2>
         <p className="text-xs text-slate-500 font-medium uppercase tracking-widest mt-1">Sua trajetória de monetização na plataforma</p>

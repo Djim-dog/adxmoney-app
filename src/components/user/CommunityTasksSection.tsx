@@ -181,7 +181,7 @@ export const CommunityTasksSection: React.FC = () => {
   if (loading) return <div className="py-20 flex justify-center"><Loader2 className="w-8 h-8 text-emerald-600 animate-spin" /></div>;
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-300">
+    <div className="space-y-6">
       {/* Abas de Plataforma */}
       <div className="flex bg-white rounded-2xl p-1 border border-slate-200 shadow-sm">
         {platforms.map(p => (

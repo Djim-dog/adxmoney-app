@@ -20,7 +20,7 @@ export const UserCampaignsSection: React.FC<UserCampaignsSectionProps> = ({
   onConfirmCompletion,
 }) => {
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
+    <div className="space-y-8">
       <div className="px-1">
         <h2 className="text-2xl font-black text-slate-900 tracking-tight">Hub de Operações</h2>
         <p className="text-xs text-slate-500 font-medium uppercase tracking-widest mt-1">Gerencie e execute suas tarefas em tempo real</p>

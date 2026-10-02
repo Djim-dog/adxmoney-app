@@ -84,7 +84,7 @@ export const UserCampaignsHub: React.FC<UserCampaignsHubProps> = ({ userId }) =>
   };
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-300">
+    <div className="space-y-8">
       
       <div className="grid gap-6 sm:grid-cols-2">
         {/* ÁREA 1: CAMPANHAS PARA AFILIADOS */}
