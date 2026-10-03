@@ -7,6 +7,18 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { SplashScreen } from "@/components/SplashScreen";
+import { toast } from "sonner";
+import {
+  Eye,
+  EyeOff,
+  ArrowRight,
+  User,
+  Phone,
+  UserPlus,
+  Link2,
+  Loader2,
+  CheckCircle2
+} from "lucide-react";
 
 export default function AccountSetup() {
   const { user, profile, refreshProfile, signOut } = useAuth();

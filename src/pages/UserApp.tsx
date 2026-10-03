@@ -165,14 +165,15 @@ export default function UserAppPage() {
 
   useEffect(() => {
     if (profile) {
-      setProfileName(profile.name || "");
-      setProfilePhone(profile.phone || "");
-      setProfileLink(profile.primary_link || "");
-      setProfileTiktok(profile.tiktok || "");
-      setProfileInstagram(profile.instagram || "");
-      setProfileYoutube(profile.youtube || "");
-      setWithdrawHolder(profile.name || "");
-      setWithdrawPhone(profile.phone || "");
+      const p = profile as any;
+      setProfileName(p.name || "");
+      setProfilePhone(p.phone || "");
+      setProfileLink(p.primary_link || "");
+      setProfileTiktok(p.tiktok || "");
+      setProfileInstagram(p.instagram || "");
+      setProfileYoutube(p.youtube || "");
+      setWithdrawHolder(p.name || "");
+      setWithdrawPhone(p.phone || "");
     }
   }, [profile]);
 
