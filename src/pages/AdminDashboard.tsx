@@ -627,7 +627,7 @@ export const AdminDashboardPage: React.FC = () => {
         <main className="flex-1 p-6 md:p-10 space-y-8 max-w-6xl w-full mx-auto">
           {/* 1. DASHBOARD */}
           {activeSection === "dashboard" && (
-            <div className="space-y-8 animate-in fade-in duration-300">
+            <div className="space-y-8">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                   <h2 className="text-2xl font-black text-slate-900 tracking-tight">Performance Global</h2>
@@ -689,7 +689,7 @@ export const AdminDashboardPage: React.FC = () => {
 
           {/* 2. OPERADORES */}
           {activeSection === "users" && (
-            <div className="space-y-6 animate-in fade-in duration-300">
+            <div className="space-y-6">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-1">
                 <div>
                   <h2 className="text-xl font-black text-slate-900 tracking-tight">Gestão de Operadores</h2>
@@ -797,7 +797,7 @@ export const AdminDashboardPage: React.FC = () => {
 
           {/* 3. CAMPANHAS */}
           {activeSection === "campaigns" && (
-            <div className="space-y-6 animate-in fade-in duration-300">
+            <div className="space-y-6">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-1">
                 <div>
                   <h2 className="text-xl font-black text-slate-900 tracking-tight">Catálogo de Campanhas</h2>
