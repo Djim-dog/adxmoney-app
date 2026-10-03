@@ -20,6 +20,8 @@ export interface Profile {
   referred_completed?: boolean;
   created_at: string | null;
   updated_at: string | null;
+  subscription_status?: "visitor" | "active" | string | null;
+  subscription_onboarding_completed?: boolean;
 }
 
 interface AuthContextType {
@@ -180,6 +182,37 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       authListener?.subscription.unsubscribe();
     };
   }, []);
+
+  // Subscrever a alterações em tempo real no perfil do utilizador (por exemplo, status de assinatura)
+  useEffect(() => {
+    if (!user) return;
+
+    const profileSubscription = supabase
+      .channel(`profile-updates-${user.id}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "profiles",
+          filter: `id=eq.${user.id}`,
+        },
+        (payload) => {
+          console.log("[AuthContext] Realtime profile update received:", payload.new);
+          setProfile((prev) => {
+            if (prev && prev.id === user.id) {
+              return { ...prev, ...payload.new } as Profile;
+            }
+            return payload.new as Profile;
+          });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(profileSubscription);
+    };
+  }, [user]);
 
   const signOut = async () => {
     try {
