@@ -36,6 +36,15 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     return <Navigate to="/app" replace />;
   }
 
+  // 3. Verificação de Assinatura (para usuários)
+  // Removido o redirect forçado para permitir modo "Visitante"
+  // As limitações serão tratadas nos componentes
+  /*
+  if (requiredRole === 'user' && profile && profile.subscription_status !== 'active' && location.pathname !== '/subscribe') {
+      return <Navigate to="/subscribe" replace />;
+  }
+  */
+
   if (location.pathname === '/') {
     return effectiveRole === 'admin' ? <Navigate to="/admin" replace /> : <Navigate to="/app" replace />;
   }

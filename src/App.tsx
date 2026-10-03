@@ -9,6 +9,7 @@ import Login from "./pages/Login";
 import AccountSetup from "./pages/AccountSetup";
 import AdminDashboardPage from "./pages/AdminDashboard";
 import UserAppPage from "./pages/UserApp";
+import SubscriptionPage from "./pages/SubscriptionPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -63,6 +64,7 @@ const App = () => (
                 </ProtectedRoute>
               }
             />
+            <Route path="/subscribe" element={<SubscriptionPage />} />
             <Route path="/dashboard" element={<Navigate to="/app" replace />} />
 
             {/* Página 404 */}

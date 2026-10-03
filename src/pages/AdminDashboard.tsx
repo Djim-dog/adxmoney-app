@@ -52,6 +52,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 
+import SubscriptionRequests from "@/components/admin/SubscriptionRequests";
 import { SplashScreen } from "@/components/SplashScreen";
 
 export const AdminDashboardPage: React.FC = () => {
@@ -59,6 +60,7 @@ export const AdminDashboardPage: React.FC = () => {
   const [activeSection, setActiveSection] = useState<
     | "dashboard"
     | "users"
+    | "subscriptions"
     | "campaigns"
     | "campaignRequests"
     | "participations"
@@ -94,6 +96,7 @@ export const AdminDashboardPage: React.FC = () => {
     totalCommunityTasks: 0,
     totalTaskReports: 0,
     activeAffiliatesCount: 0,
+    pendingSubscriptions: 0,
   });
 
   // Data Lists
@@ -239,6 +242,12 @@ export const AdminDashboardPage: React.FC = () => {
         .order("created_at", { ascending: false });
       setTaskReportsList(reportsData || []);
 
+      // 10. Subscription Payments
+      const { count: pendingSubs } = await supabase
+        .from("subscription_payments")
+        .select("*", { count: 'exact', head: true })
+        .eq('status', 'PENDING');
+
       // Calculate Stats
       const totalU = users.length;
       const activeU = users.filter((u) => u.is_active !== false).length;
@@ -268,6 +277,7 @@ export const AdminDashboardPage: React.FC = () => {
         totalCommunityTasks: (commTasksData || []).length,
         totalTaskReports: (reportsData || []).length,
         activeAffiliatesCount: activeAffCount,
+        pendingSubscriptions: pendingSubs || 0,
       });
     } catch (err) {
       console.error("Erro ao carregar dados do administrador:", err);
@@ -587,11 +597,12 @@ export const AdminDashboardPage: React.FC = () => {
       </header>
 
       <div className="flex-1 flex flex-col md:flex-row">
-        {/* SIDEBAR (Todas as 10 Áreas) */}
+        {/* SIDEBAR (Todas as 11 Áreas) */}
         <aside className="w-full md:w-64 bg-white border-r border-slate-100 p-4 space-y-1 shrink-0">
           {[
             { id: "dashboard", label: "Visão Geral", icon: <LayoutDashboard className="w-4 h-4" /> },
             { id: "users", label: "Operadores", icon: <Users className="w-4 h-4" />, badge: stats.totalUsers },
+            { id: "subscriptions", label: "Assinaturas", icon: <CreditCard className="w-4 h-4" />, badge: stats.pendingSubscriptions },
             { id: "campaigns", label: "Campanhas", icon: <Layers className="w-4 h-4" />, badge: stats.activeCampaigns },
             { id: "campaignRequests", label: "Solicitações", icon: <Megaphone className="w-4 h-4" />, badge: stats.pendingCampaignRequests },
             { id: "participations", label: "Participações", icon: <CheckCircle2 className="w-4 h-4" />, badge: stats.pendingParticipations },
@@ -648,7 +659,7 @@ export const AdminDashboardPage: React.FC = () => {
                   { label: "Operadores Ativos", val: stats.activeUsers, total: stats.totalUsers, icon: <Users className="w-5 h-5" />, color: "emerald" },
                   { label: "Campanhas Ativas", val: stats.activeCampaigns, info: `${stats.completedCampaigns} Concluídas`, icon: <Layers className="w-5 h-5" />, color: "sky" },
                   { label: "Saques Pendentes", val: stats.pendingWithdrawals, amount: stats.pendingWithdrawalAmount, icon: <ArrowUpRight className="w-5 h-5" />, color: "amber" },
-                  { label: "Propostas Novas", val: stats.pendingCampaignRequests, info: "Aguardando Revisão", icon: <Megaphone className="w-5 h-5" />, color: "indigo" },
+                  { label: "Assinaturas Pendentes", val: stats.pendingSubscriptions, info: "Aguardando Ativação", icon: <CreditCard className="w-5 h-5" />, color: "indigo" },
                 ].map((s, idx) => (
                   <Card key={idx} className="bg-white border-none shadow-xl shadow-slate-100 rounded-3xl p-6">
                     <div className="flex items-center justify-between mb-4">
@@ -792,6 +803,13 @@ export const AdminDashboardPage: React.FC = () => {
                   ))
                 )}
               </div>
+            </div>
+          )}
+
+          {/* NOVO: ASSINATURAS */}
+          {activeSection === "subscriptions" && (
+            <div className="space-y-6">
+              <SubscriptionRequests />
             </div>
           )}
 
