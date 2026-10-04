@@ -28,23 +28,23 @@ export const Navbar: React.FC = () => {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-slate-100 bg-white/80 backdrop-blur-xl">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-        <div className="flex items-center gap-8">
-          <Link to="/" className="flex items-center gap-3">
-            <img src="/logo.png" alt="ADXmoney" className="w-10 h-10 rounded-2xl object-cover shadow-lg shadow-emerald-100/50 border border-slate-100" />
+      <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+        <div className="flex items-center gap-10">
+          <Link to="/" className="flex items-center gap-3 group">
+            <img src="/logo.png" alt="ADXmoney" className="w-10 h-10 rounded-xl object-cover shadow-lg shadow-emerald-100/50 border border-slate-100 transition-transform group-hover:scale-105" />
             <div className="hidden sm:block">
-              <span className="font-black text-slate-900 tracking-tight text-lg block leading-none">ADXmoney</span>
-              <span className="text-[9px] text-slate-400 font-black uppercase tracking-[0.2em] mt-0.5">Operações Digitais</span>
+              <span className="font-bold text-slate-900 tracking-tight text-xl block leading-none">ADX<span className="text-emerald-600">money</span></span>
+              <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-[0.1em] mt-1 block">Operações Digitais</span>
             </div>
           </Link>
 
-          <nav className="hidden md:flex items-center gap-1.5">
+          <nav className="hidden md:flex items-center gap-2">
             <Link to="/app">
-              <Button 
-                variant="ghost" 
+              <Button
+                variant="ghost"
                 size="sm"
-                className={`rounded-2xl flex items-center gap-2 text-xs font-black uppercase tracking-widest h-10 px-4 transition-all ${
-                  location.pathname === "/app" ? "bg-slate-100 text-slate-900" : "text-slate-400 hover:text-slate-900 hover:bg-slate-50"
+                className={`rounded-xl flex items-center gap-2 text-[13px] font-semibold h-10 px-4 transition-all ${
+                  location.pathname === "/app" ? "bg-slate-100 text-slate-900" : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
                 }`}
               >
                 <LayoutDashboard className={`w-4 h-4 ${location.pathname === "/app" ? "text-emerald-600" : ""}`} />
@@ -54,11 +54,11 @@ export const Navbar: React.FC = () => {
 
             {isAdmin && (
               <Link to="/admin">
-                <Button 
-                  variant="ghost" 
+                <Button
+                  variant="ghost"
                   size="sm"
-                  className={`rounded-2xl flex items-center gap-2 text-xs font-black uppercase tracking-widest h-10 px-4 transition-all ${
-                    location.pathname === "/admin" ? "bg-amber-50 text-amber-700" : "text-slate-400 hover:text-amber-700 hover:bg-amber-50/50"
+                  className={`rounded-xl flex items-center gap-2 text-[13px] font-semibold h-10 px-4 transition-all ${
+                    location.pathname === "/admin" ? "bg-emerald-50 text-emerald-700" : "text-slate-500 hover:text-emerald-700 hover:bg-emerald-50/50"
                   }`}
                 >
                   <ShieldAlert className="w-4 h-4" />
@@ -69,26 +69,26 @@ export const Navbar: React.FC = () => {
           </nav>
         </div>
 
-        <div className="flex items-center gap-4">
-          <div className="flex flex-col text-right mr-2 hidden sm:flex">
-             <span className="text-xs font-black text-slate-900 tracking-tight">{displayName}</span>
-             <span className="text-[9px] text-slate-400 font-bold uppercase tracking-widest">{profile?.role === 'admin' ? 'Administrador' : 'Operador Nível 1'}</span>
+        <div className="flex items-center gap-6">
+          <div className="flex flex-col text-right hidden sm:flex">
+             <span className="text-sm font-semibold text-slate-900">{displayName}</span>
+             <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">{profile?.role === 'admin' ? 'Administrador' : 'Operador'}</span>
           </div>
 
-          <div className="w-10 h-10 rounded-2xl bg-slate-50 flex items-center justify-center border border-slate-100 shrink-0">
+          <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center border border-slate-100 shrink-0 shadow-sm">
              <UserIcon className="w-5 h-5 text-slate-400" />
           </div>
 
-          <div className="h-6 w-px bg-slate-100 mx-1 hidden sm:block" />
+          <div className="h-6 w-px bg-slate-100 hidden sm:block" />
 
-          <Button 
-            variant="ghost" 
-            size="sm" 
+          <Button
+            variant="ghost"
+            size="sm"
             onClick={handleSignOut}
-            className="rounded-2xl text-slate-400 hover:text-red-500 hover:bg-red-50 h-10 w-10 sm:w-auto sm:px-3 flex items-center justify-center gap-2 transition-all"
+            className="rounded-xl text-slate-400 hover:text-red-500 hover:bg-red-50 h-10 w-10 sm:w-auto sm:px-4 flex items-center justify-center gap-2 transition-all font-semibold text-[13px]"
           >
             <LogOut className="w-4 h-4" />
-            <span className="hidden sm:inline text-xs font-black uppercase tracking-widest">Sair</span>
+            <span className="hidden sm:inline">Sair</span>
           </Button>
         </div>
       </div>

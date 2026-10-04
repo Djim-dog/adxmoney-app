@@ -129,35 +129,35 @@ export const FirstAccessModal: React.FC<FirstAccessModalProps> = ({
         onPointerDownOutside={(e) => e.preventDefault()}
         onEscapeKeyDown={(e) => e.preventDefault()}
       >
-        <DialogHeader className="text-left space-y-2 border-b border-slate-50 pb-6">
+        <DialogHeader className="text-left space-y-2 border-b border-slate-100 pb-6">
           <div className="w-16 h-16 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600 mb-2">
             <KeyRound className="w-8 h-8" />
           </div>
-          <DialogTitle className="text-2xl font-black text-slate-900 tracking-tight">
+          <DialogTitle className="text-2xl font-semibold text-slate-900 tracking-tight">
             Configuração Inicial
           </DialogTitle>
-          <DialogDescription className="text-slate-500 text-xs font-black uppercase tracking-widest mt-1">
-            Liberação Obrigatória de Operador
+          <DialogDescription className="text-sm text-slate-500 font-normal leading-relaxed">
+            Por favor, defina uma palavra-passe pessoal e confirme os seus dados para desbloquear o acesso ao painel.
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-8 mt-6">
           <div className="space-y-5">
-            <div className="flex items-center gap-2 text-emerald-600 font-black text-[10px] uppercase tracking-widest">
+            <div className="flex items-center gap-2 text-emerald-600 font-semibold text-[11px] uppercase tracking-wider">
               <Lock className="w-4 h-4" />
               <span>Segurança da Conta</span>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label className="text-[10px] text-slate-400 font-black uppercase tracking-widest">Nova Palavra-passe</Label>
+              <div className="space-y-1.5">
+                <Label className="text-[13px] text-slate-600 font-semibold ml-1">Nova Palavra-passe</Label>
                 <div className="relative">
                   <Input
                     type={showNewPassword ? "text" : "password"}
-                    placeholder="Mínimo 6 chars"
+                    placeholder="Mínimo 6 caracteres"
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
-                    className="bg-slate-50 border-transparent focus:bg-white focus:border-emerald-500 h-12 rounded-2xl text-sm font-bold transition-all pr-10"
+                    className="bg-slate-50 border-slate-200 focus:bg-white focus:border-emerald-500 h-11 rounded-xl text-base font-normal transition-all pr-10"
                     required
                     minLength={6}
                     disabled={isSubmitting}
@@ -165,22 +165,22 @@ export const FirstAccessModal: React.FC<FirstAccessModalProps> = ({
                   <button
                     type="button"
                     onClick={() => setShowNewPassword(!showNewPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-900"
+                    className="absolute right-3.5 top-3 text-slate-400 hover:text-slate-900 transition-colors"
                   >
-                    {showNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    {showNewPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                   </button>
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <Label className="text-[10px] text-slate-400 font-black uppercase tracking-widest">Confirmar Senha</Label>
+              <div className="space-y-1.5">
+                <Label className="text-[13px] text-slate-600 font-semibold ml-1">Confirmar Senha</Label>
                 <div className="relative">
                   <Input
                     type={showConfirmPassword ? "text" : "password"}
-                    placeholder="Repita a senha"
+                    placeholder="Repita a nova senha"
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="bg-slate-50 border-transparent focus:bg-white focus:border-emerald-500 h-12 rounded-2xl text-sm font-bold transition-all pr-10"
+                    className="bg-slate-50 border-slate-200 focus:bg-white focus:border-emerald-500 h-11 rounded-xl text-base font-normal transition-all pr-10"
                     required
                     minLength={6}
                     disabled={isSubmitting}
@@ -188,66 +188,66 @@ export const FirstAccessModal: React.FC<FirstAccessModalProps> = ({
                   <button
                     type="button"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-900"
+                    className="absolute right-3.5 top-3 text-slate-400 hover:text-slate-900 transition-colors"
                   >
-                    {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                   </button>
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="space-y-5 pt-2 border-t border-slate-50">
-            <div className="flex items-center gap-2 text-emerald-600 font-black text-[10px] uppercase tracking-widest">
+          <div className="space-y-5 pt-2 border-t border-slate-100">
+            <div className="flex items-center gap-2 text-emerald-600 font-semibold text-[11px] uppercase tracking-wider">
               <User className="w-4 h-4" />
               <span>Dados Identificativos</span>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label className="text-[10px] text-slate-400 font-black uppercase tracking-widest">Nome Completo</Label>
+              <div className="space-y-1.5">
+                <Label className="text-[13px] text-slate-600 font-semibold ml-1">Nome Completo</Label>
                 <Input
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="Nome do Operador"
-                  className="bg-slate-50 border-transparent focus:bg-white focus:border-emerald-500 h-12 rounded-2xl text-sm font-bold transition-all"
+                  placeholder="Seu nome"
+                  className="bg-slate-50 border-slate-200 focus:bg-white focus:border-emerald-500 h-11 rounded-xl text-base font-normal transition-all"
                   disabled={isSubmitting}
                 />
               </div>
-              <div className="space-y-2">
-                <Label className="text-[10px] text-slate-400 font-black uppercase tracking-widest">WhatsApp Operacional</Label>
+              <div className="space-y-1.5">
+                <Label className="text-[13px] text-slate-600 font-semibold ml-1">WhatsApp Operacional</Label>
                 <Input
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   placeholder="+244..."
-                  className="bg-slate-50 border-transparent focus:bg-white focus:border-emerald-500 h-12 rounded-2xl text-sm font-bold transition-all font-mono"
+                  className="bg-slate-50 border-slate-200 focus:bg-white focus:border-emerald-500 h-11 rounded-xl text-base font-normal transition-all"
                   disabled={isSubmitting}
                 />
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label className="text-[10px] text-slate-400 font-black uppercase tracking-widest">Link Principal de Trabalho</Label>
+            <div className="space-y-1.5">
+              <Label className="text-[13px] text-slate-600 font-semibold ml-1">Link Principal de Trabalho</Label>
               <Input
                 value={primaryLink}
                 onChange={(e) => setPrimaryLink(e.target.value)}
                 placeholder="Ex: tiktok.com/@seuusuario"
-                className="bg-slate-50 border-transparent focus:bg-white focus:border-emerald-500 h-12 rounded-2xl text-sm font-bold transition-all"
+                className="bg-slate-50 border-slate-200 focus:bg-white focus:border-emerald-500 h-11 rounded-xl text-base font-normal transition-all"
                 disabled={isSubmitting}
               />
             </div>
           </div>
 
-          <div className="pt-4">
+          <div className="pt-2">
             <Button
               type="submit"
               disabled={isSubmitting}
-              className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black h-14 rounded-2xl flex items-center justify-center gap-2 shadow-xl shadow-emerald-100 uppercase tracking-widest text-xs transition-all active:scale-[0.98]"
+              className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold h-12 rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/20 text-base transition-all active:scale-[0.98]"
             >
               {isSubmitting ? (
                 <>
                   <Loader2 className="w-5 h-5 animate-spin" />
-                  Salvando Configurações...
+                  Salvando...
                 </>
               ) : (
                 <>

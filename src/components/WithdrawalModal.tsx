@@ -109,30 +109,30 @@ export const WithdrawalModal: React.FC<WithdrawalModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-md bg-white border-slate-200 text-slate-900 sm:rounded-3xl p-6 shadow-2xl max-h-[85vh] overflow-y-auto">
+      <DialogContent className="max-w-md bg-white border-slate-200 text-slate-900 sm:rounded-[24px] p-8 shadow-2xl max-h-[85vh] overflow-y-auto">
         <DialogHeader className="text-left space-y-2 border-b border-slate-100 pb-5">
-          <div className="w-12 h-12 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600 mb-1">
+          <div className="w-12 h-12 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600 mb-1">
             <ArrowUpRight className="w-6 h-6" />
           </div>
-          <DialogTitle className="text-xl font-black text-slate-900 tracking-tight">
+          <DialogTitle className="text-xl font-semibold text-slate-900 tracking-tight">
             Solicitar Saque
           </DialogTitle>
-          <DialogDescription className="text-slate-500 text-xs font-medium leading-relaxed">
+          <DialogDescription className="text-slate-500 text-sm font-normal leading-relaxed">
             O valor solicitado será bloqueado do saldo disponível e permanecerá reservado até aprovação e quitação pela administração.
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4 mt-2">
           {/* Card de saldo disponível */}
-          <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 flex items-center justify-between">
-            <span className="text-xs text-slate-400 font-black uppercase tracking-widest">Saldo Disponível:</span>
-            <span className="text-sm font-black text-emerald-600">
+          <div className="p-4 bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-between">
+            <span className="text-xs text-slate-500 font-semibold uppercase tracking-wider">Saldo Disponível:</span>
+            <span className="text-base font-semibold text-emerald-600">
               {availableBalance.toLocaleString("pt-AO", { minimumFractionDigits: 2 })} Kz
             </span>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="w-amount" className="text-xs text-slate-400 font-black uppercase tracking-widest">
+          <div className="space-y-1.5">
+            <Label htmlFor="w-amount" className="text-[13px] text-slate-600 font-semibold ml-1">
               Valor do Saque (Kz) <span className="text-rose-400">*</span>
             </Label>
             <Input
@@ -144,7 +144,7 @@ export const WithdrawalModal: React.FC<WithdrawalModalProps> = ({
               placeholder="Ex: 5000"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
-              className="bg-white border-slate-200 text-slate-900 placeholder:text-slate-300 focus-visible:ring-emerald-500 rounded-2xl h-12"
+              className="bg-white border-slate-200 text-slate-900 placeholder:text-slate-300 focus-visible:ring-emerald-500 rounded-xl h-11 text-base font-normal"
               disabled={isSubmitting}
               required
             />
@@ -156,45 +156,45 @@ export const WithdrawalModal: React.FC<WithdrawalModalProps> = ({
             )}
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="w-method" className="text-xs text-slate-400 font-black uppercase tracking-widest">
+          <div className="space-y-1.5">
+            <Label htmlFor="w-method" className="text-[13px] text-slate-600 font-semibold ml-1">
               Método de Pagamento
             </Label>
             <Select value={method} onValueChange={setMethod} disabled={isSubmitting}>
-              <SelectTrigger className="bg-white border-slate-200 text-slate-900 focus:ring-emerald-500 rounded-2xl h-12">
+              <SelectTrigger className="bg-white border-slate-200 text-slate-900 focus:ring-emerald-500 rounded-xl h-11">
                 <SelectValue placeholder="Selecione o método" />
               </SelectTrigger>
               <SelectContent className="bg-white border-slate-200 text-slate-900">
                 <SelectItem value="Multicaixa Express">
                   <div className="flex items-center gap-2.5">
-                    <img src="/icons/express.jpg" alt="Express" className="w-6 h-6 object-cover rounded-lg shadow-sm" />
-                    <span className="text-[10px] font-black uppercase tracking-wider">Multicaixa Express</span>
+                    <img src="/icons/express.jpg" alt="Express" className="w-6 h-6 object-cover rounded shadow-sm" />
+                    <span className="text-sm font-medium">Multicaixa Express</span>
                   </div>
                 </SelectItem>
                 <SelectItem value="Transferência Bancária (IBAN)">
                   <div className="flex items-center gap-2.5">
-                    <img src="/icons/iban.jpg" alt="IBAN" className="w-6 h-6 object-cover rounded-lg shadow-sm" />
-                    <span className="text-[10px] font-black uppercase tracking-wider">Transferência Bancária (IBAN)</span>
+                    <img src="/icons/iban.jpg" alt="IBAN" className="w-6 h-6 object-cover rounded shadow-sm" />
+                    <span className="text-sm font-medium">Transferência Bancária (IBAN)</span>
                   </div>
                 </SelectItem>
                 <SelectItem value="Unitel Money">
                   <div className="flex items-center gap-2.5">
-                    <img src="/icons/unitel.jpg" alt="Unitel" className="w-6 h-6 object-cover rounded-lg shadow-sm" />
-                    <span className="text-[10px] font-black uppercase tracking-wider">Unitel Money</span>
+                    <img src="/icons/unitel.jpg" alt="Unitel" className="w-6 h-6 object-cover rounded shadow-sm" />
+                    <span className="text-sm font-medium">Unitel Money</span>
                   </div>
                 </SelectItem>
                 <SelectItem value="Pix">
                   <div className="flex items-center gap-2.5">
-                    <img src="/icons/pix.jpg" alt="Pix" className="w-6 h-6 object-cover rounded-lg shadow-sm" />
-                    <span className="text-[10px] font-black uppercase tracking-wider">Pix</span>
+                    <img src="/icons/pix.jpg" alt="Pix" className="w-6 h-6 object-cover rounded shadow-sm" />
+                    <span className="text-sm font-medium">Pix</span>
                   </div>
                 </SelectItem>
               </SelectContent>
             </Select>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="w-holder" className="text-xs text-slate-400 font-black uppercase tracking-widest">
+          <div className="space-y-1.5">
+            <Label htmlFor="w-holder" className="text-[13px] text-slate-600 font-semibold ml-1">
               Nome do Titular da Conta <span className="text-rose-400">*</span>
             </Label>
             <Input
@@ -202,15 +202,15 @@ export const WithdrawalModal: React.FC<WithdrawalModalProps> = ({
               placeholder="Nome conforme registo bancário"
               value={recipientName}
               onChange={(e) => setRecipientName(e.target.value)}
-              className="bg-white border-slate-200 text-slate-900 placeholder:text-slate-300 focus-visible:ring-emerald-500 rounded-2xl h-12"
+              className="bg-white border-slate-200 text-slate-900 placeholder:text-slate-300 focus-visible:ring-emerald-500 rounded-xl h-11 text-base font-normal"
               disabled={isSubmitting}
               required
             />
           </div>
 
           {method === "Multicaixa Express" || method === "Unitel Money" ? (
-            <div className="space-y-2">
-              <Label htmlFor="w-phone" className="text-xs text-slate-400 font-black uppercase tracking-widest">
+            <div className="space-y-1.5">
+              <Label htmlFor="w-phone" className="text-[13px] text-slate-600 font-semibold ml-1">
                 {method === "Unitel Money" ? "Número Unitel Money" : "Número de Telefone Express"} <span className="text-rose-400">*</span>
               </Label>
               <Input
@@ -218,14 +218,14 @@ export const WithdrawalModal: React.FC<WithdrawalModalProps> = ({
                 placeholder="+244 9..."
                 value={phoneNumber}
                 onChange={(e) => setPhoneNumber(e.target.value)}
-                className="bg-white border-slate-200 text-slate-900 placeholder:text-slate-300 focus-visible:ring-emerald-500 rounded-2xl h-12"
+                className="bg-white border-slate-200 text-slate-900 placeholder:text-slate-300 focus-visible:ring-emerald-500 rounded-xl h-11 text-base font-normal"
                 disabled={isSubmitting}
                 required
               />
             </div>
           ) : (
-            <div className="space-y-2">
-              <Label htmlFor="w-account" className="text-xs text-slate-400 font-black uppercase tracking-widest">
+            <div className="space-y-1.5">
+              <Label htmlFor="w-account" className="text-[13px] text-slate-600 font-semibold ml-1">
                 {method === "Pix" ? "Chave Pix" : "IBAN Bancário"} <span className="text-rose-400">*</span>
               </Label>
               <Input
@@ -233,14 +233,14 @@ export const WithdrawalModal: React.FC<WithdrawalModalProps> = ({
                 placeholder={method === "Pix" ? "Chave Pix..." : "AO06 0000 0000 0000 0000 0000 0"}
                 value={accountNumber}
                 onChange={(e) => setAccountNumber(e.target.value)}
-                className="bg-white border-slate-200 text-slate-900 placeholder:text-slate-300 font-mono text-xs focus-visible:ring-emerald-500 rounded-2xl h-12"
+                className="bg-white border-slate-200 text-slate-900 placeholder:text-slate-300 font-mono text-sm focus-visible:ring-emerald-500 rounded-xl h-11 font-normal"
                 disabled={isSubmitting}
                 required
               />
             </div>
           )}
 
-          <div className="p-4 bg-emerald-50 rounded-2xl border border-emerald-100 flex items-start gap-3 text-xs text-emerald-800 font-medium">
+          <div className="p-4 bg-emerald-50 rounded-xl border border-emerald-100 flex items-start gap-3 text-xs text-emerald-800 font-medium">
             <ShieldCheck className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
             <span>
               Caso o saque seja recusado pelo administrador, o valor reservado retornará imediatamente e de forma integral para o saldo disponível da sua carteira.
@@ -253,14 +253,14 @@ export const WithdrawalModal: React.FC<WithdrawalModalProps> = ({
               variant="outline"
               onClick={onClose}
               disabled={isSubmitting}
-              className="flex-1 border-slate-200 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-2xl h-12 font-black uppercase tracking-widest text-xs"
+              className="flex-1 border-slate-200 text-slate-500 hover:text-slate-900 hover:bg-slate-100 rounded-xl h-11 font-semibold text-[13px]"
             >
               Cancelar
             </Button>
             <Button
               type="submit"
               disabled={isSubmitting || numAmount <= 0 || numAmount > availableBalance}
-              className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-black rounded-2xl h-12 shadow-lg shadow-emerald-100 uppercase tracking-widest text-xs"
+              className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl h-11 shadow-lg shadow-emerald-100 text-[13px]"
             >
               {isSubmitting ? (
                 <>

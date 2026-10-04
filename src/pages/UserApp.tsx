@@ -343,42 +343,42 @@ export default function UserAppPage() {
     <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans antialiased overflow-x-hidden select-none pb-24">
 
       {/* Header */}
-      <header className="sticky top-0 z-40 bg-white border-b border-slate-200 px-4 py-4 flex items-center justify-between">
+      <header className="sticky top-0 z-40 bg-white border-b border-slate-100 px-6 py-4 flex items-center justify-between backdrop-blur-md bg-white/90">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl flex items-center justify-center shadow-lg shadow-emerald-100 overflow-hidden bg-emerald-600">
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-100 overflow-hidden bg-emerald-600">
             <img src="/logo.png" alt="ADX" className="w-full h-full object-cover" />
           </div>
           <div>
-            <h1 className="text-base font-black text-slate-900 tracking-tight flex items-center gap-1.5 leading-none">
-              ADXmoney <span className="text-[9px] bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded-full font-bold uppercase tracking-wider">v2</span>
+            <h1 className="text-base font-bold text-slate-900 tracking-tight flex items-center gap-2 leading-none">
+              ADXmoney <span className="text-[10px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">v2</span>
             </h1>
-            <p className="text-[11px] text-slate-400 font-medium mt-0.5">
-              Operador: <span className="text-emerald-600 font-bold">{profile?.name?.split(' ')[0] || "Usuário"}</span>
+            <p className="text-[12px] text-slate-500 font-medium mt-1">
+              Operador: <span className="text-emerald-600 font-semibold">{profile?.name?.split(' ')[0] || "Usuário"}</span>
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           {/* Espelho do Saldo Resumido no Topo Direto da Home */}
-          <div className="flex flex-col items-end bg-slate-50 border border-slate-100 px-3 py-1 rounded-xl">
-            <div className="flex items-center gap-1.5">
+          <div className="flex flex-col items-end bg-slate-50 border border-slate-100 px-3 py-1.5 rounded-xl">
+            <div className="flex items-center gap-2">
               <button
                 onClick={() => setHideBalanceHome(!hideBalanceHome)}
                 className="text-slate-400 hover:text-emerald-600 transition-colors"
                 title={hideBalanceHome ? "Mostrar saldo" : "Ocultar saldo"}
               >
-                {hideBalanceHome ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
+                {hideBalanceHome ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
               </button>
-              <span className="text-[8px] uppercase tracking-wider text-slate-400 font-black">Saldo</span>
+              <span className="text-[9px] uppercase tracking-wider text-slate-400 font-bold">Saldo</span>
             </div>
-            <span className="text-xs font-black text-emerald-600">
+            <span className="text-sm font-bold text-emerald-600">
               {hideBalanceHome ? "••••" : `${wallet ? wallet.balance.toLocaleString("pt-PT", { maximumFractionDigits: 0 }) : "0"} Kz`}
             </span>
           </div>
 
           <button
             onClick={() => setIsMenuOpen(true)}
-            className="w-10 h-10 rounded-2xl bg-emerald-50 hover:bg-emerald-100 flex items-center justify-center text-emerald-600 transition-all active:scale-95 border border-emerald-100"
+            className="w-10 h-10 rounded-xl bg-slate-50 hover:bg-slate-100 flex items-center justify-center text-slate-600 transition-all active:scale-95 border border-slate-100 shadow-sm"
           >
             <MoreVertical className="w-5 h-5" />
           </button>
@@ -390,72 +390,72 @@ export default function UserAppPage() {
 
         {/* 1. ABA: TAREFAS */}
         {activeTab === "tasks" && (
-          <div className="space-y-6">
+          <div className="space-y-8">
             {/* Seletor Segmentado */}
-            <div className="flex bg-white p-1 rounded-3xl border border-slate-200 shadow-sm">
+            <div className="flex bg-white p-1 rounded-2xl border border-slate-200 shadow-sm">
               <button
                 onClick={() => setTasksSubTab("community")}
-                className={`flex-1 py-2.5 text-xs font-black rounded-2xl transition-all ${
+                className={`flex-1 py-2.5 text-[13px] font-semibold rounded-xl transition-all ${
                   tasksSubTab === "community"
-                    ? "bg-emerald-600 text-white shadow-md shadow-emerald-100"
-                    : "text-slate-400 hover:text-slate-600"
+                    ? "bg-emerald-600 text-white shadow-lg shadow-emerald-600/20"
+                    : "text-slate-500 hover:text-slate-700"
                 }`}
               >
-                COMUNITÁRIAS
+                Comunitárias
               </button>
               <button
                 onClick={() => setTasksSubTab("financial")}
-                className={`flex-1 py-2.5 text-xs font-black rounded-2xl transition-all ${
+                className={`flex-1 py-2.5 text-[13px] font-semibold rounded-xl transition-all ${
                   tasksSubTab === "financial"
-                    ? "bg-emerald-600 text-white shadow-md shadow-emerald-100"
-                    : "text-slate-400 hover:text-slate-600"
+                    ? "bg-emerald-600 text-white shadow-lg shadow-emerald-600/20"
+                    : "text-slate-500 hover:text-slate-700"
                 }`}
               >
-                TAREFAS FINANCEIRAS
+                Tarefas Financeiras
               </button>
             </div>
 
             {tasksSubTab === "financial" ? (
-              <div className="space-y-5">
+              <div className="space-y-6">
                 <div className="px-1">
-                  <h2 className="text-lg font-black text-slate-900 flex items-center gap-2">
+                  <h2 className="text-xl font-bold text-slate-900 flex items-center gap-3">
                     <Layers className="w-6 h-6 text-emerald-600" /> Atividades Disponíveis
                   </h2>
-                  <p className="text-sm text-slate-500 mt-1 font-medium">Conclua as tarefas para creditar o seu saldo em tempo real.</p>
+                  <p className="text-[15px] text-slate-500 mt-2 font-normal">Conclua as tarefas para creditar o seu saldo em tempo real.</p>
                 </div>
 
                 {campaigns.length === 0 ? (
-                  <div className="bg-white border border-slate-200 rounded-3xl py-16 text-center shadow-sm">
-                    <div className="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <Layers className="w-8 h-8 text-slate-300" />
+                  <div className="bg-white border border-slate-200 rounded-[24px] py-20 text-center shadow-sm">
+                    <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6">
+                      <Layers className="w-10 h-10 text-slate-300" />
                     </div>
-                    <p className="text-sm text-slate-600 font-bold uppercase tracking-tight">Sem tarefas financeiras no momento</p>
-                    <p className="text-xs text-slate-400 mt-1">Aguarde novas oportunidades de ganhos.</p>
+                    <p className="text-base text-slate-700 font-semibold uppercase tracking-tight">Sem tarefas financeiras no momento</p>
+                    <p className="text-sm text-slate-400 mt-2">Aguarde novas oportunidades de ganhos.</p>
                   </div>
                 ) : (
-                  <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="grid gap-6 sm:grid-cols-2">
                     {campaigns.map((c) => (
-                      <div key={c.id} className="bg-white border border-slate-100 rounded-3xl p-5 flex flex-col justify-between hover:shadow-xl hover:shadow-slate-200/50 transition-all shadow-md group">
+                      <div key={c.id} className="bg-white border border-slate-100 rounded-[24px] p-6 flex flex-col justify-between hover:shadow-2xl hover:shadow-slate-200/50 transition-all shadow-xl shadow-slate-200/20 group">
                         <div>
-                          <div className="flex justify-between items-start mb-3">
-                            <Badge className="text-[10px] uppercase font-black border-none text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full">
+                          <div className="flex justify-between items-start mb-4">
+                            <Badge className="text-[10px] uppercase font-bold border-none text-emerald-700 bg-emerald-50 px-3 py-1 rounded-lg">
                               {c.platform}
                             </Badge>
-                            <span className="text-lg font-black text-emerald-600 font-mono">
+                            <span className="text-xl font-bold text-emerald-600 font-mono">
                               +{c.reward_amount.toLocaleString()} Kz
                             </span>
                           </div>
-                          <h3 className="text-sm font-black text-slate-900 group-hover:text-emerald-600 transition-colors">{c.title}</h3>
-                          <p className="text-xs text-slate-500 mt-2 line-clamp-2 leading-relaxed font-medium">{c.description}</p>
+                          <h3 className="text-[15px] font-bold text-slate-900 group-hover:text-emerald-600 transition-colors">{c.title}</h3>
+                          <p className="text-sm text-slate-500 mt-3 line-clamp-2 leading-relaxed font-normal">{c.description}</p>
                         </div>
                         
-                        <div className="mt-5 pt-4 border-t border-slate-50 flex items-center justify-between">
-                          <Badge className={c.assignment_status === 'COMPLETED' ? 'bg-slate-50 text-slate-400 border-none px-3 py-1 font-bold' : 'bg-lime-400 text-slate-900 border-none px-3 py-1 font-black'}>
+                        <div className="mt-6 pt-5 border-t border-slate-100 flex items-center justify-between">
+                          <Badge className={c.assignment_status === 'COMPLETED' ? 'bg-slate-100 text-slate-500 border-none px-3 py-1 font-semibold' : 'bg-lime-400 text-slate-900 border-none px-3 py-1 font-bold'}>
                             {c.assignment_status === 'COMPLETED' ? 'Finalizada' : 'Disponível'}
                           </Badge>
-                          <Button size="sm" className="h-10 text-xs font-black bg-slate-900 hover:bg-emerald-600 text-white rounded-2xl shadow-lg transition-all px-5" asChild>
+                          <Button size="sm" className="h-10 text-[13px] font-semibold bg-slate-900 hover:bg-emerald-600 text-white rounded-xl shadow-lg transition-all px-6" asChild>
                             <a href={c.target_url} target="_blank" rel="noreferrer">
-                              EXECUTAR <ExternalLink className="w-3 h-3 ml-2" />
+                              EXECUTAR <ExternalLink className="w-4 h-4 ml-2" />
                             </a>
                           </Button>
                         </div>
@@ -576,35 +576,35 @@ export default function UserAppPage() {
         {activeTab === "wallet" && (
           <div className="space-y-6">
             {/* Card de Saldo */}
-            <div className="bg-white border border-slate-200 rounded-3xl p-8 shadow-xl shadow-slate-200/50 relative overflow-hidden">
+            <div className="bg-white border border-slate-200/80 rounded-[24px] p-8 shadow-xl shadow-slate-200/40 relative overflow-hidden">
               <div className="absolute right-6 top-6">
-                <span className="text-[10px] bg-emerald-600 text-white px-3 py-1 rounded-full font-black uppercase tracking-widest shadow-md shadow-emerald-100">
+                <span className="text-[11px] bg-emerald-600 text-white px-3 py-1 rounded-full font-semibold uppercase tracking-wider shadow-sm">
                   Operacional
                 </span>
               </div>
               
               <div className="space-y-2">
-                <p className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Saldo Disponível para Saque</p>
-                <p className="text-4xl font-black text-slate-900 font-mono">
-                  {(wallet?.balance || 0).toLocaleString("pt-AO", { minimumFractionDigits: 2 })} <span className="text-lg font-medium text-slate-400">Kz</span>
+                <p className="text-[13px] font-semibold uppercase text-slate-400 tracking-wider">Saldo Disponível para Saque</p>
+                <p className="text-4xl font-bold text-slate-900 font-mono tracking-tight">
+                  {(wallet?.balance || 0).toLocaleString("pt-AO", { minimumFractionDigits: 2 })} <span className="text-xl font-normal text-slate-400">Kz</span>
                 </p>
               </div>
 
-              <div className="mt-8 pt-6 border-t border-slate-50 flex items-center justify-between text-xs text-slate-500 font-medium">
+              <div className="mt-8 pt-6 border-t border-slate-100 flex items-center justify-between text-sm text-slate-500 font-normal">
                 <span className="flex items-center gap-2">
-                  <Lock className="w-4 h-4 text-slate-300" />
-                  Saldo em processamento: <span className="font-bold text-slate-700">{(wallet?.reserved_balance || 0).toLocaleString()} Kz</span>
+                  <Lock className="w-4 h-4 text-slate-400" />
+                  Saldo em processamento: <span className="font-semibold text-slate-700">{(wallet?.reserved_balance || 0).toLocaleString()} Kz</span>
                 </span>
               </div>
             </div>
 
             {/* Formulário de Levantamento */}
-            <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm space-y-6">
-              <h3 className="text-xs font-black text-slate-900 uppercase tracking-widest px-1">Solicitar Pagamento</h3>
+            <div className="bg-white border border-slate-200/80 rounded-[24px] p-8 shadow-xl shadow-slate-200/40 space-y-6">
+              <h3 className="text-base font-semibold text-slate-900">Solicitar Pagamento</h3>
               
               <form onSubmit={handleRequestWithdraw} className="space-y-6">
                 <div className="space-y-3">
-                  <Label className="text-xs font-black text-slate-400 uppercase">Escolha o Método</Label>
+                  <Label className="text-[13px] font-semibold text-slate-600 ml-1">Escolha o Método</Label>
                   <div className="grid grid-cols-2 gap-3">
                     {[
                       { id: 'express', label: 'Multicaixa Express', icon: '/icons/express.jpg' },
@@ -616,93 +616,93 @@ export default function UserAppPage() {
                         key={method.id}
                         type="button"
                         onClick={() => setWithdrawMethod(method.id)}
-                        className={`flex items-center justify-center gap-2.5 p-3.5 rounded-2xl border transition-all ${
+                        className={`flex items-center justify-center gap-3 p-3.5 rounded-xl border transition-all ${
                           withdrawMethod === method.id
-                            ? 'bg-emerald-600 border-emerald-600 text-white shadow-lg shadow-emerald-100'
-                            : 'bg-white border-slate-100 text-slate-700 hover:border-slate-200'
+                            ? 'bg-emerald-600 border-emerald-600 text-white shadow-lg shadow-emerald-600/20'
+                            : 'bg-white border-slate-200 text-slate-700 hover:border-slate-300'
                         }`}
                       >
                         <img
                           src={method.icon}
                           alt={method.label}
-                          className="w-7 h-7 object-cover rounded-lg shadow-sm border border-slate-100/20 shrink-0"
+                          className="w-7 h-7 object-cover rounded-md shadow-sm border border-slate-100/20 shrink-0"
                         />
-                        <span className="text-[10px] font-black uppercase tracking-tight">{method.label}</span>
+                        <span className="text-xs font-semibold">{method.label}</span>
                       </button>
                     ))}
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <Label className="text-xs font-black text-slate-400 uppercase">Valor do Saque</Label>
+                <div className="space-y-1.5">
+                  <Label className="text-[13px] font-semibold text-slate-600 ml-1">Valor do Saque</Label>
                   <div className="relative">
                     <Input
                       type="number"
                       placeholder="Mínimo 1.000 Kz"
                       value={withdrawAmount}
                       onChange={(e) => setWithdrawAmount(e.target.value)}
-                      className="bg-slate-50 border-transparent focus:bg-white focus:border-emerald-500 h-14 font-mono text-xl font-black text-slate-900 rounded-2xl px-6"
+                      className="bg-slate-50 border-slate-200 focus:bg-white focus:border-emerald-500 h-12 font-mono text-xl font-bold text-slate-900 rounded-xl px-4"
                       required
                     />
-                    <span className="absolute right-6 top-1/2 -translate-y-1/2 text-slate-400 font-black text-sm">Kz</span>
+                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 font-semibold text-sm">Kz</span>
                   </div>
                 </div>
 
                 {/* Formulários Dinâmicos */}
                 {withdrawMethod === 'iban' && (
-                  <div className="space-y-4 p-5 bg-slate-50 rounded-2xl border border-slate-100">
-                    <div className="space-y-2">
-                      <Label className="text-[10px] font-black uppercase text-slate-500">Titular da Conta</Label>
+                  <div className="space-y-4 p-5 bg-slate-50 rounded-xl border border-slate-200/60">
+                    <div className="space-y-1.5">
+                      <Label className="text-[13px] font-semibold text-slate-600 ml-1">Titular da Conta</Label>
                       <Input
                         value={withdrawHolder}
                         onChange={(e) => setWithdrawHolder(e.target.value)}
-                        className="bg-white border-slate-100 text-sm h-11 rounded-xl"
+                        className="bg-white border-slate-200 text-base font-normal h-11 rounded-xl"
                       />
                     </div>
-                    <div className="space-y-2">
-                      <Label className="text-[10px] font-black uppercase text-slate-500">IBAN para Crédito</Label>
+                    <div className="space-y-1.5">
+                      <Label className="text-[13px] font-semibold text-slate-600 ml-1">IBAN para Crédito</Label>
                       <Input
                         placeholder="AO06..."
                         value={withdrawIban}
                         onChange={(e) => setWithdrawIban(e.target.value)}
-                        className="bg-white border-slate-100 font-mono text-sm h-11 rounded-xl"
+                        className="bg-white border-slate-200 font-mono text-base font-normal h-11 rounded-xl"
                       />
                     </div>
                   </div>
                 )}
 
                 {(withdrawMethod === 'express' || withdrawMethod === 'unitel') && (
-                  <div className="p-5 bg-slate-50 rounded-2xl border border-slate-100">
-                    <Label className="text-[10px] font-black uppercase text-slate-500">Número de Telefone</Label>
+                  <div className="p-5 bg-slate-50 rounded-xl border border-slate-200/60">
+                    <Label className="text-[13px] font-semibold text-slate-600 ml-1">Número de Telefone</Label>
                     <Input
                       placeholder="9xx xxx xxx"
                       value={withdrawPhone}
                       onChange={(e) => setWithdrawPhone(e.target.value)}
-                      className="bg-white border-slate-100 font-mono text-sm h-11 rounded-xl mt-2"
+                      className="bg-white border-slate-200 font-mono text-base font-normal h-11 rounded-xl mt-1.5"
                     />
                   </div>
                 )}
 
                 {withdrawMethod === 'remitly' && (
-                  <div className="space-y-4 p-5 bg-slate-50 rounded-2xl border border-slate-100">
-                    <div className="space-y-2">
-                      <Label className="text-[10px] font-black uppercase text-slate-500">Nome completo do beneficiário</Label>
+                  <div className="space-y-4 p-5 bg-slate-50 rounded-xl border border-slate-200/60">
+                    <div className="space-y-1.5">
+                      <Label className="text-[13px] font-semibold text-slate-600 ml-1">Nome completo do beneficiário</Label>
                       <Input
                         placeholder="Nome completo"
                         value={remitlyFullName}
                         onChange={(e) => setRemitlyFullName(e.target.value)}
-                        className="bg-white border-slate-100 text-sm h-11 rounded-xl"
+                        className="bg-white border-slate-200 text-base font-normal h-11 rounded-xl"
                         required
                       />
                     </div>
 
                     <div className="grid grid-cols-2 gap-3">
-                      <div className="space-y-2">
-                        <Label className="text-[10px] font-black uppercase text-slate-500">País do beneficiário</Label>
+                      <div className="space-y-1.5">
+                        <Label className="text-[13px] font-semibold text-slate-600 ml-1">País do beneficiário</Label>
                         <select
                           value={remitlyCountry}
                           onChange={(e) => handleRemitlyCountryChange(e.target.value as any)}
-                          className="w-full bg-white border border-slate-100 text-xs h-11 rounded-xl px-3 outline-none focus:border-emerald-500 text-slate-700 font-black uppercase"
+                          className="w-full bg-white border border-slate-200 text-sm h-11 rounded-xl px-3 outline-none focus:border-emerald-500 text-slate-700 font-medium"
                           required
                         >
                           {Object.keys(REMITLY_COUNTRIES).map((c) => (
@@ -711,12 +711,12 @@ export default function UserAppPage() {
                         </select>
                       </div>
 
-                      <div className="space-y-2">
-                        <Label className="text-[10px] font-black uppercase text-slate-500">Cidade</Label>
+                      <div className="space-y-1.5">
+                        <Label className="text-[13px] font-semibold text-slate-600 ml-1">Cidade</Label>
                         <select
                           value={remitlyCity}
                           onChange={(e) => setRemitlyCity(e.target.value)}
-                          className="w-full bg-white border border-slate-100 text-xs h-11 rounded-xl px-3 outline-none focus:border-emerald-500 text-slate-700 font-black uppercase"
+                          className="w-full bg-white border border-slate-200 text-sm h-11 rounded-xl px-3 outline-none focus:border-emerald-500 text-slate-700 font-medium"
                           required
                         >
                           {REMITLY_COUNTRIES[remitlyCountry]?.cities.map((city) => (
@@ -726,25 +726,25 @@ export default function UserAppPage() {
                       </div>
                     </div>
 
-                    <div className="space-y-2">
-                      <Label className="text-[10px] font-black uppercase text-slate-500">Número de Telefone</Label>
+                    <div className="space-y-1.5">
+                      <Label className="text-[13px] font-semibold text-slate-600 ml-1">Número de Telefone</Label>
                       <Input
                         placeholder="Telefone do beneficiário"
                         value={remitlyPhone}
                         onChange={(e) => setRemitlyPhone(e.target.value)}
-                        className="bg-white border-slate-100 font-mono text-sm h-11 rounded-xl"
+                        className="bg-white border-slate-200 font-mono text-base font-normal h-11 rounded-xl"
                         required
                       />
                     </div>
 
-                    <div className="space-y-2">
-                      <Label className="text-[10px] font-black uppercase text-slate-500">E-mail</Label>
+                    <div className="space-y-1.5">
+                      <Label className="text-[13px] font-semibold text-slate-600 ml-1">E-mail</Label>
                       <Input
                         type="email"
                         placeholder="exemplo@email.com"
                         value={remitlyEmail}
                         onChange={(e) => setRemitlyEmail(e.target.value)}
-                        className="bg-white border-slate-100 text-sm h-11 rounded-xl"
+                        className="bg-white border-slate-200 text-base font-normal h-11 rounded-xl"
                         required
                       />
                     </div>

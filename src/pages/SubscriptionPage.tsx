@@ -1,4 +1,4 @@
-import { PageContainer } from '@/components/PageContainer';
+import React, { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -218,15 +218,15 @@ const SubscriptionPage = () => {
   );
 
   return (
-    <PageContainer>
-      <div className="max-w-md mx-auto py-12 px-4">
+    <div className="min-h-screen bg-slate-50 py-12 px-4">
+      <div className="max-w-md mx-auto">
         <div className="text-center mb-10 space-y-2">
-          <h1 className="text-4xl font-black text-slate-900 tracking-tight italic">ADX<span className="text-emerald-600 not-italic">MONEY</span></h1>
+          <h1 className="text-4xl font-bold text-slate-900 tracking-tight italic">ADX<span className="text-emerald-600 not-italic">MONEY</span></h1>
           <p className="text-slate-500 font-medium">A maior plataforma de faturamento digital de Angola</p>
         </div>
         {renderStatus()}
       </div>
-    </PageContainer>
+    </div>
   );
 };
 

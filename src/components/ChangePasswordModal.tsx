@@ -61,22 +61,22 @@ export const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={() => {}}>
-      <DialogContent className="max-w-md bg-white border-none shadow-2xl rounded-3xl p-8 max-h-[85vh] overflow-y-auto">
+      <DialogContent className="max-w-md bg-white border border-slate-200 shadow-2xl rounded-[24px] p-8 max-h-[85vh] overflow-y-auto">
         <DialogHeader className="text-center">
           <div className="w-14 h-14 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center mb-3 mx-auto shadow-sm">
             <Lock className="w-7 h-7" />
           </div>
-          <DialogTitle className="text-xl font-black text-slate-900 tracking-tight">
+          <DialogTitle className="text-xl font-semibold text-slate-900 tracking-tight">
             Definir Palavra-passe Pessoal
           </DialogTitle>
-          <DialogDescription className="text-xs text-slate-500 font-medium mt-1">
+          <DialogDescription className="text-sm text-slate-500 font-normal mt-1 leading-relaxed">
             Por motivos de conformidade e segurança da sua conta bancária e saldo, altere a senha temporária para uma senha forte e individual.
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-5 mt-4">
-          <div className="space-y-2">
-            <Label className="text-[10px] text-slate-400 font-black uppercase tracking-widest">
+        <form onSubmit={handleSubmit} className="space-y-4 mt-4">
+          <div className="space-y-1.5">
+            <Label className="text-[13px] text-slate-600 font-semibold ml-1">
               Nova Palavra-passe
             </Label>
             <div className="relative">
@@ -85,21 +85,21 @@ export const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
                 placeholder="Mínimo 6 caracteres"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
-                className="bg-slate-50 border-transparent focus:bg-white focus:border-emerald-500 pr-10 text-sm font-bold h-12 rounded-2xl transition-all"
+                className="bg-slate-50 border-slate-200 focus:bg-white focus:border-emerald-500 pr-10 text-base font-normal h-11 rounded-xl transition-all"
                 required
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3.5 top-3.5 text-slate-400 hover:text-slate-600 transition-colors"
+                className="absolute right-3.5 top-3 text-slate-400 hover:text-slate-600 transition-colors"
               >
                 {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
               </button>
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label className="text-[10px] text-slate-400 font-black uppercase tracking-widest">
+          <div className="space-y-1.5">
+            <Label className="text-[13px] text-slate-600 font-semibold ml-1">
               Confirmar Palavra-passe
             </Label>
             <Input
@@ -107,7 +107,7 @@ export const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
               placeholder="Repita a nova senha"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              className="bg-slate-50 border-transparent focus:bg-white focus:border-emerald-500 text-sm font-bold h-12 rounded-2xl transition-all"
+              className="bg-slate-50 border-slate-200 focus:bg-white focus:border-emerald-500 text-base font-normal h-11 rounded-xl transition-all"
               required
             />
           </div>
@@ -115,7 +115,7 @@ export const ChangePasswordModal: React.FC<ChangePasswordModalProps> = ({
           <Button
             type="submit"
             disabled={isSubmitting}
-            className="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black uppercase tracking-widest h-12 rounded-2xl shadow-xl shadow-emerald-100 transition-all active:scale-95 flex items-center justify-center gap-2 mt-2"
+            className="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-[13px] font-semibold h-11 rounded-xl shadow-lg shadow-emerald-600/20 transition-all flex items-center justify-center gap-2 mt-4"
           >
             {isSubmitting ? (
               <Loader2 className="w-4 h-4 animate-spin" />
