@@ -124,27 +124,27 @@ const SubscriptionPage = () => {
 
   const renderForm = () => (
     <div className="space-y-8">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {[
-          { icon: Zap, title: "Acesso Total", desc: "Campanhas exclusivas" },
-          { icon: Users, title: "Afiliados", desc: "Ganhe por indicação" },
-          { icon: ShieldCheck, title: "Saques", desc: "Pagamentos rápidos" }
-        ].map((item, i) => (
-          <div key={i} className="p-4 bg-gray-50 rounded-2xl text-center space-y-2">
-            <item.icon className="h-6 w-6 mx-auto text-primary" />
-            <p className="text-xs font-bold uppercase tracking-wider text-gray-400">{item.title}</p>
-            <p className="text-xs text-gray-600 leading-tight">{item.desc}</p>
-          </div>
-        ))}
-      </div>
+            <div className="grid grid-cols-3 gap-4">
+                {[
+                  { icon: Zap, title: "Acesso Total", desc: "Campanhas" },
+                  { icon: Users, title: "Afiliados", desc: "Indicação" },
+                  { icon: ShieldCheck, title: "Saques", desc: "Rápidos" }
+                ].map((item, i) => (
+                  <div key={i} className="p-4 bg-slate-50 rounded-2xl text-center space-y-2 border border-slate-100">
+                    <item.icon className="h-6 w-6 mx-auto text-emerald-600" />
+                    <p className="text-[10px] font-black uppercase tracking-widest text-slate-400">{item.title}</p>
+                    <p className="text-[10px] text-slate-600 leading-tight font-medium">{item.desc}</p>
+                  </div>
+                ))}
+              </div>
 
-      <Card className="border-none shadow-xl bg-white/50 backdrop-blur-sm">
-        <CardHeader>
-          <CardTitle className="text-2xl">Ativar minha conta</CardTitle>
-          <CardDescription>
-            Escolha seu método e envie o comprovativo para liberação imediata.
-          </CardDescription>
-        </CardHeader>
+      <Card className="border-none shadow-2xl shadow-slate-200 bg-white/50 backdrop-blur-sm rounded-3xl">
+      <CardHeader className="pb-2">
+        <CardTitle className="text-xl font-black uppercase tracking-widest text-slate-900">Ativar conta</CardTitle>
+        <CardDescription className="text-slate-400 font-medium">
+          Escolha seu método de pagamento e anexe o comprovativo.
+        </CardDescription>
+      </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-4">
@@ -153,7 +153,7 @@ const SubscriptionPage = () => {
                   type="button"
                   onClick={() => setMethod('UNITEL')}
                   className={`p-4 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 ${
-                    method === 'UNITEL' ? 'border-primary bg-primary/5' : 'border-gray-100 hover:border-gray-200'
+                    method === 'UNITEL' ? 'border-emerald-500 bg-emerald-50' : 'border-slate-100 hover:border-slate-200'
                   }`}
                 >
                   <span className="font-bold">Unitel Money</span>
@@ -162,38 +162,38 @@ const SubscriptionPage = () => {
                   type="button"
                   onClick={() => setMethod('EXPRESS')}
                   className={`p-4 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 ${
-                    method === 'EXPRESS' ? 'border-primary bg-primary/5' : 'border-gray-100 hover:border-gray-200'
+                    method === 'EXPRESS' ? 'border-emerald-500 bg-emerald-50' : 'border-slate-100 hover:border-slate-200'
                   }`}
                 >
                   <span className="font-bold">Multicaixa</span>
                 </button>
               </div>
 
-              <div className="space-y-2">
-                <label className="text-sm font-semibold text-gray-700 ml-1">Valor do Plano (AOA)</label>
+            <div className="space-y-1">
+                <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">Valor do Plano (AOA)</label>
                 <Input
                   type="number"
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
-                  className="rounded-xl h-12 bg-gray-50 border-none focus-visible:ring-primary"
+                  className="rounded-2xl h-14 bg-slate-50 border-transparent focus-visible:ring-emerald-500 font-bold"
                   required
                 />
               </div>
 
-              <div className="space-y-2">
-                <label className="text-sm font-semibold text-gray-700 ml-1">Link do Comprovativo (Google Drive, ImgBB, etc)</label>
+              <div className="space-y-1">
+                <label className="text-xs font-black text-slate-400 uppercase tracking-widest ml-1">Link do Comprovativo</label>
                 <Input
                   type="url"
                   value={proofUrl}
                   onChange={(e) => setProofUrl(e.target.value)}
-                  placeholder="https://suaimagem.com/comprovativo"
-                  className="rounded-xl h-12 bg-gray-50 border-none focus-visible:ring-primary"
+                  placeholder="https://..."
+                  className="rounded-2xl h-14 bg-slate-50 border-transparent focus-visible:ring-emerald-500 font-medium"
                   required
                 />
               </div>
             </div>
 
-            <Button type="submit" disabled={submitting} className="w-full h-14 rounded-2xl text-lg font-bold shadow-lg shadow-primary/20">
+            <Button type="submit" disabled={submitting} className="w-full h-14 rounded-2xl text-lg font-bold shadow-lg shadow-emerald-500/20 bg-emerald-600 hover:bg-emerald-700">
               {submitting ? (
                 <>
                   <Loader2 className="mr-2 h-5 w-5 animate-spin" />
@@ -209,20 +209,20 @@ const SubscriptionPage = () => {
         </CardContent>
       </Card>
       
-      <div className="text-center">
-        <Button variant="ghost" onClick={() => navigate('/app')} className="text-gray-500 hover:text-gray-700">
-          Entrar no Dashboard como Visitante
+      <div className="text-center mt-6">
+        <Button variant="ghost" onClick={() => navigate('/app')} className="text-slate-400 hover:text-emerald-600 font-bold uppercase tracking-widest text-xs">
+          Entrar como Visitante
         </Button>
       </div>
     </div>
   );
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] py-12 px-4">
-      <div className="max-w-xl mx-auto">
+    <div className="min-h-screen bg-slate-50 py-12 px-4">
+      <div className="max-w-md mx-auto">
         <div className="text-center mb-10 space-y-2">
-          <h1 className="text-4xl font-black text-gray-900 tracking-tight italic">ADX<span className="text-primary not-italic">MONEY</span></h1>
-          <p className="text-gray-500 font-medium">A maior plataforma de faturamento digital de Angola</p>
+          <h1 className="text-4xl font-black text-slate-900 tracking-tight italic">ADX<span className="text-emerald-600 not-italic">MONEY</span></h1>
+          <p className="text-slate-500 font-medium">A maior plataforma de faturamento digital de Angola</p>
         </div>
         {renderStatus()}
       </div>
