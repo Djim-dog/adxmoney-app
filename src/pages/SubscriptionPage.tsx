@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { PageContainer } from '@/components/PageContainer';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -10,8 +10,8 @@ import { Loader2, CheckCircle2, XCircle, Clock, ArrowRight, ShieldCheck, Zap, Us
 
 const SubscriptionPage = () => {
   const { profile, loading: authLoading } = useAuth();
-  const [amount, setAmount] = useState('5000'); // Valor padrão exemplo
-  const [method, setMethod] = useState('UNITEL');
+  const [amount, setAmount] = useState('5000');
+  const [method, setMethod] = useState<'UNITEL' | 'EXPRESS'>('UNITEL');
   const [proofUrl, setProofUrl] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const { toast } = useToast();
@@ -218,15 +218,15 @@ const SubscriptionPage = () => {
   );
 
   return (
-    <div className="min-h-screen bg-slate-50 py-12 px-4">
-      <div className="max-w-md mx-auto">
+    <PageContainer>
+      <div className="max-w-md mx-auto py-12 px-4">
         <div className="text-center mb-10 space-y-2">
           <h1 className="text-4xl font-black text-slate-900 tracking-tight italic">ADX<span className="text-emerald-600 not-italic">MONEY</span></h1>
           <p className="text-slate-500 font-medium">A maior plataforma de faturamento digital de Angola</p>
         </div>
         {renderStatus()}
       </div>
-    </div>
+    </PageContainer>
   );
 };
 
