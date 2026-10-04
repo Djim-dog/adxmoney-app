@@ -333,8 +333,8 @@ export default function UserAppPage() {
     return <Navigate to="/account/setup" replace />;
   }
 
-  if (loading && !profile) {
-    return <div className="min-h-screen bg-slate-50" />;
+  if (loading) {
+    return <SplashScreen message="Carregando aplicativo..." />;
   }
 
   return (
