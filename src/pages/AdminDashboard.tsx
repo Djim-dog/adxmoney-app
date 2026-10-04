@@ -12,6 +12,8 @@ import {
   Settings,
   LogOut,
   RefreshCw,
+  Menu,
+  X,
   Loader2,
   CheckCircle2,
   Megaphone,
@@ -73,6 +75,7 @@ export const AdminDashboardPage: React.FC = () => {
   >("dashboard");
 
   const [loading, setLoading] = useState(true);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
   // Search & Filter
