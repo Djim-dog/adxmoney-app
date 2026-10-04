@@ -53,6 +53,7 @@ export default function UserAppPage() {
   const [tasksSubTab, setTasksSubTab] = useState<"community" | "financial">("community");
 
   const [loading, setLoading] = useState(true);
+  const [isFirstLoad, setIsFirstLoad] = useState(true);
   const [wallet, setWallet] = useState<{ id: string; balance: number; reserved_balance: number } | null>(null);
   const [campaigns, setCampaigns] = useState<any[]>([]);
   const [transactions, setTransactions] = useState<any[]>([]);
@@ -231,6 +232,7 @@ export default function UserAppPage() {
       console.error("Erro ao carregar dados:", err);
     } finally {
       setLoading(false);
+      setIsFirstLoad(false);
     }
   };
 
@@ -333,7 +335,7 @@ export default function UserAppPage() {
     return <Navigate to="/account/setup" replace />;
   }
 
-  if (loading) {
+  if (isFirstLoad) {
     return <SplashScreen message="Carregando aplicativo..." />;
   }
 

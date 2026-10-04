@@ -75,6 +75,7 @@ export const AdminDashboardPage: React.FC = () => {
   >("dashboard");
 
   const [loading, setLoading] = useState(true);
+  const [isFirstLoad, setIsFirstLoad] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
@@ -288,6 +289,7 @@ export const AdminDashboardPage: React.FC = () => {
       toast.error("Erro ao sincronizar dados com o banco.");
     } finally {
       setLoading(false);
+      setIsFirstLoad(false);
     }
   };
 
@@ -568,7 +570,7 @@ export const AdminDashboardPage: React.FC = () => {
     return matchesSearch && matchesType;
   });
 
-  if (loading || !profile) {
+  if (isFirstLoad || !profile) {
     return <SplashScreen message="Carregando painel administrativo..." />;
   }
 
