@@ -335,7 +335,7 @@ export default function UserAppPage() {
     return <Navigate to="/account/setup" replace />;
   }
 
-  if (isFirstLoad) {
+  if (isFirstLoad || loading) {
     return <SplashScreen message="Carregando aplicativo..." />;
   }
 
