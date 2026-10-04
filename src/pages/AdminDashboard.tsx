@@ -575,9 +575,18 @@ export const AdminDashboardPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans antialiased">
       {/* HEADER */}
-      <header className="bg-white border-b border-slate-100 px-6 py-4 flex items-center justify-between sticky top-0 z-30">
+      <header className="bg-white border-b border-slate-100 px-4 md:px-6 py-4 flex items-center justify-between sticky top-0 z-30">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl flex items-center justify-center text-white font-black shadow-md shadow-emerald-100 overflow-hidden bg-emerald-600">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="md:hidden text-slate-700 hover:bg-slate-100 h-9 w-9 p-0 rounded-xl"
+            aria-label="Abrir menu"
+          >
+            {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          </Button>
+          <div className="w-10 h-10 rounded-2xl flex items-center justify-center text-white font-black shadow-md shadow-emerald-100 overflow-hidden bg-emerald-600 shrink-0">
             <img src="/logo.png" alt="ADX" className="w-full h-full object-cover" />
           </div>
           <div>
@@ -588,21 +597,51 @@ export const AdminDashboardPage: React.FC = () => {
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
-          <Button variant="ghost" size="sm" onClick={loadAdminData} className="text-slate-400 hover:text-emerald-600 h-9 px-3 gap-2 rounded-xl transition-all">
+        <div className="flex items-center gap-2 md:gap-3">
+          <Button variant="ghost" size="sm" onClick={loadAdminData} className="text-slate-400 hover:text-emerald-600 h-9 px-2 md:px-3 gap-2 rounded-xl transition-all">
             <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
             <span className="hidden sm:inline font-black text-[10px] uppercase tracking-widest">Sincronizar</span>
           </Button>
-          <Button variant="ghost" size="sm" onClick={signOut} className="text-rose-500 hover:bg-rose-50 h-9 px-3 gap-2 rounded-xl transition-all font-black text-[10px] uppercase tracking-widest">
+          <Button variant="ghost" size="sm" onClick={signOut} className="text-rose-500 hover:bg-rose-50 h-9 px-2 md:px-3 gap-2 rounded-xl transition-all font-black text-[10px] uppercase tracking-widest">
             <LogOut className="w-4 h-4" />
             <span className="hidden sm:inline">Sair</span>
           </Button>
         </div>
       </header>
 
-      <div className="flex-1 flex flex-col md:flex-row">
+      <div className="flex-1 flex flex-col md:flex-row relative">
+        {/* Backdrop for mobile */}
+        {mobileMenuOpen && (
+          <div
+            className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-40 md:hidden animate-in fade-in duration-200"
+            onClick={() => setMobileMenuOpen(false)}
+          />
+        )}
+
         {/* SIDEBAR (Todas as 11 Áreas) */}
-        <aside className="w-full md:w-64 bg-white border-r border-slate-100 p-4 space-y-1 shrink-0">
+        <aside
+          className={`fixed inset-y-0 left-0 z-50 w-72 bg-white p-4 space-y-1 shrink-0 border-r border-slate-100 shadow-2xl md:shadow-none transition-transform duration-300 ease-in-out md:static md:w-64 md:translate-x-0 overflow-y-auto ${
+            mobileMenuOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
+          }`}
+        >
+          {/* Mobile Header in Drawer */}
+          <div className="flex md:hidden items-center justify-between px-2 mb-4 pb-3 border-b border-slate-100">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-xl bg-emerald-600 flex items-center justify-center">
+                <img src="/logo.png" alt="ADX" className="w-full h-full object-cover rounded-xl" />
+              </div>
+              <span className="font-black text-slate-900 text-sm">ADX Admin</span>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setMobileMenuOpen(false)}
+              className="h-8 w-8 p-0 rounded-lg text-slate-400 hover:text-slate-700"
+            >
+              <X className="w-4 h-4" />
+            </Button>
+          </div>
+
           {[
             { id: "dashboard", label: "Visão Geral", icon: <LayoutDashboard className="w-4 h-4" /> },
             { id: "users", label: "Operadores", icon: <Users className="w-4 h-4" />, badge: stats.totalUsers },
@@ -618,7 +657,10 @@ export const AdminDashboardPage: React.FC = () => {
           ].map((item) => (
             <button
               key={item.id}
-              onClick={() => setActiveSection(item.id as any)}
+              onClick={() => {
+                setActiveSection(item.id as any);
+                setMobileMenuOpen(false);
+              }}
               className={`w-full flex items-center justify-between px-4 py-3 rounded-2xl text-[11px] font-black uppercase tracking-widest transition-all ${
                 activeSection === item.id
                   ? "bg-emerald-600 text-white shadow-lg shadow-emerald-100"
