@@ -11,6 +11,7 @@ const SubscriptionRequests = () => {
   const [requests, setRequests] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [processingId, setProcessingId] = useState<string | null>(null);
+  const [signedUrls, setSignedUrls] = useState<Record<string, string>>({});
   const { toast } = useToast();
 
   useEffect(() => {
@@ -24,13 +25,33 @@ const SubscriptionRequests = () => {
         .from('subscription_payments')
         .select(`
           *,
-          profiles!fk_subscription_payments_profiles (username, email)
+          profiles!fk_subscription_payments_profiles (name, email)
         `)
         .eq('status', 'PENDING')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
       setRequests(data || []);
+      
+      // Gerar signed URLs para cada comprovativo privado
+      if (data && data.length > 0) {
+        const urls: Record<string, string> = {};
+        for (const req of data) {
+          if (req.proof_url) {
+            if (req.proof_url.startsWith('http://') || req.proof_url.startsWith('https://')) {
+              urls[req.id] = req.proof_url;
+            } else {
+              const { data: signedData } = await supabase.storage
+                .from('subscription-proofs')
+                .createSignedUrl(req.proof_url, 3600);
+              if (signedData?.signedUrl) {
+                urls[req.id] = signedData.signedUrl;
+              }
+            }
+          }
+        }
+        setSignedUrls(urls);
+      }
     } catch (error: any) {
       toast({
         variant: "destructive",
@@ -99,7 +120,7 @@ const SubscriptionRequests = () => {
                 <div className="grid grid-cols-1 md:grid-cols-4 items-center">
                   <div className="p-4 border-b md:border-b-0 md:border-r bg-gray-50/50">
                     <p className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">Usuário</p>
-                    <p className="font-bold">{request.profiles?.username || 'N/A'}</p>
+                    <p className="font-bold">{request.profiles?.name || request.profiles?.email || 'N/A'}</p>
                     <p className="text-xs text-gray-500">{request.profiles?.email}</p>
                   </div>
                   
@@ -107,44 +128,56 @@ const SubscriptionRequests = () => {
                     <p className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">Pagamento</p>
                     <div className="flex items-center gap-2">
                       <Wallet className="h-3 w-3 text-gray-400" />
-                      <p className="font-bold text-lg">{formatCurrency(request.amount)}</p>
+                      <p className="font-bold text-lg">
+                        {request.amount} {request.currency}
+                      </p>
                     </div>
                     <Badge variant="outline" className="mt-1">{request.method}</Badge>
                   </div>
 
                   <div className="p-4 border-b md:border-b-0 md:border-r">
                     <p className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">Comprovativo</p>
-                    <Button 
-                      variant="link" 
-                      className="p-0 h-auto text-primary text-xs font-bold flex items-center gap-1"
-                      onClick={() => window.open(request.proof_url, '_blank')}
-                    >
-                      Ver Comprovativo <ExternalLink className="h-3 w-3" />
-                    </Button>
-                    <div className="flex items-center gap-1 mt-1 text-[10px] text-gray-400">
-                      <Calendar className="h-3 w-3" />
-                      {new Date(request.created_at).toLocaleDateString('pt-AO')}
-                    </div>
+                    {signedUrls[request.id] ? (
+                      <Button 
+                        variant="link" 
+                        className="p-0 h-auto text-emerald-600 hover:text-emerald-700 text-xs font-bold flex items-center gap-1"
+                        onClick={() => window.open(signedUrls[request.id], '_blank')}
+                      >
+                        <ExternalLink className="h-3 w-3" />
+                        Ver comprovativo
+                      </Button>
+                    ) : (
+                      <span className="text-xs text-slate-400">Sem comprovativo</span>
+                    )}
                   </div>
 
-                  <div className="p-4 flex gap-2 justify-end bg-gray-50/50">
+                  <div className="p-4 flex items-center justify-end gap-2">
                     <Button 
-                      variant="outline" 
                       size="sm" 
-                      className="rounded-full h-10 border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
-                      onClick={() => handleProcess(request.id, 'REJECTED', 'Comprovativo inválido ou valor incorreto.')}
-                      disabled={!!processingId}
+                      variant="outline" 
+                      className="text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
+                      disabled={processingId === request.id}
+                      onClick={() => {
+                        const reason = prompt("Motivo da rejeição (opcional):");
+                        if (reason !== null) {
+                          handleProcess(request.id, 'REJECTED', reason || undefined);
+                        }
+                      }}
                     >
-                      {processingId === request.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <X className="h-4 w-4 mr-1" />}
+                      <X className="h-4 w-4 mr-1" />
                       Rejeitar
                     </Button>
                     <Button 
                       size="sm" 
-                      className="rounded-full h-10 px-6 font-bold"
+                      className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                      disabled={processingId === request.id}
                       onClick={() => handleProcess(request.id, 'APPROVED')}
-                      disabled={!!processingId}
                     >
-                      {processingId === request.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4 mr-1" />}
+                      {processingId === request.id ? (
+                        <Loader2 className="h-4 w-4 animate-spin mr-1" />
+                      ) : (
+                        <Check className="h-4 w-4 mr-1" />
+                      )}
                       Aprovar
                     </Button>
                   </div>
