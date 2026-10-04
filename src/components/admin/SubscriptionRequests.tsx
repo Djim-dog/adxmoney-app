@@ -24,7 +24,7 @@ const SubscriptionRequests = () => {
         .from('subscription_payments')
         .select(`
           *,
-          profiles:user_id (username, email)
+          profiles!fk_subscription_payments_profiles (username, email)
         `)
         .eq('status', 'PENDING')
         .order('created_at', { ascending: false });
