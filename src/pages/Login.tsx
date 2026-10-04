@@ -36,7 +36,6 @@ const Login: React.FC = () => {
     return <SplashScreen message="Verificando acesso..." />;
   }
 
-
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     const cleanEmail = email.trim();
@@ -52,148 +51,117 @@ const Login: React.FC = () => {
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
         email: cleanEmail,
-        password,
+        password: password,
       });
 
       if (error) {
-        console.error("[Login] Erro do Supabase Auth:", error);
-        toast.error(`Erro: ${error.message}`);
-        setIsLoggingIn(false);
+        console.error("[Login] Erro auth:", error);
+        toast.error("E-mail ou senha incorretos.");
         return;
       }
 
-      console.log("[Login] Sucesso:", data);
-      toast.success("Autenticação realizada com sucesso.");
-
-      // Consultar perfil na base de dados para garantir valor real de first_login e role
-      const { data: userProfile } = await supabase
-        .from("profiles")
-        .select("first_login, role")
-        .eq("id", data.user.id)
-        .maybeSingle();
-
-      const isFirstLogin = userProfile?.first_login ?? data.user?.user_metadata?.first_login;
-      const role = userProfile?.role || data.user?.user_metadata?.role || "user";
-
-      if (isFirstLogin) {
-        navigate("/account/setup", { replace: true });
-      } else if (role === "admin") {
-        navigate("/admin", { replace: true });
-      } else {
-        navigate("/app", { replace: true });
-      }
-    } catch (err: unknown) {
+      console.log("[Login] Sucesso:", data.user.id);
+      // O redirect será disparado pelo AuthContext/ProtectedRoute
+    } catch (err: any) {
       console.error("[Login] Erro inesperado:", err);
-      toast.error("Erro inesperado ao conectar ao servidor de autenticação.");
-      setIsLoggingIn(false);
+      toast.error("Ocorreu um erro ao entrar.");
     } finally {
       setIsLoggingIn(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex flex-col justify-center items-center bg-slate-50 px-4 py-8 text-slate-900 relative">
-      {/* FAQ no canto superior direito apenas com símbolo de interrogação */}
-      <div className="absolute top-5 right-5 z-10">
-        <button
+    <div className="min-h-screen bg-slate-50 flex flex-col justify-center items-center p-4 select-none">
+      <div className="w-full max-w-sm flex justify-end mb-2">
+        <Button
+          variant="ghost"
+          size="sm"
           onClick={() => setIsFaqOpen(true)}
-          title="Perguntas Frequentes"
-          className="w-10 h-10 rounded-2xl border border-slate-200 bg-white/90 backdrop-blur-md hover:bg-emerald-50 hover:border-emerald-300 text-emerald-600 flex items-center justify-center shadow-sm transition-all active:scale-95"
+          className="text-xs text-slate-500 hover:text-emerald-600 flex items-center gap-1.5 h-8 px-2.5 rounded-full hover:bg-slate-100 transition-colors"
         >
-          <HelpCircle className="w-5 h-5" />
-        </button>
+          <HelpCircle className="w-3.5 h-3.5 text-emerald-600" />
+          <span className="font-semibold">Ajuda & FAQ</span>
+        </Button>
       </div>
 
-      <div className="w-full max-w-sm">
-        <div className="text-center mb-6">
-          <img src="/logo.png" alt="ADXmoney Logo" className="h-20 mx-auto mb-3" />
-          <h1 className="text-2xl font-black text-slate-900 tracking-tight">ADXmoney</h1>
+      <div className="w-full max-w-sm text-center mb-3">
+        <div className="w-14 h-14 rounded-2xl bg-emerald-600 flex items-center justify-center mx-auto mb-2 shadow-lg shadow-emerald-500/20 overflow-hidden">
+          <img src="/logo.png" alt="ADXmoney" className="w-full h-full object-cover" />
         </div>
-
-        <Card className="bg-white border-slate-200 text-slate-900 shadow-xl shadow-slate-200/50 rounded-3xl overflow-hidden border-none">
-          <CardHeader className="space-y-1 pb-4 pt-6 text-center bg-white">
-            <CardTitle className="text-xl font-bold text-slate-900">Bem-vindo</CardTitle>
-            <CardDescription className="text-slate-500 text-xs">
-              Insira seus dados para acessar o seu painel de operador.
-            </CardDescription>
-          </CardHeader>
-          <form onSubmit={handleLogin}>
-            <CardContent className="space-y-5 px-8">
-              <div className="space-y-2">
-                <Label htmlFor="login-email" className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">E-mail de Operador</Label>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                  <Input
-                    id="login-email"
-                    type="email"
-                    placeholder="email@exemplo.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="pl-10 h-12 bg-slate-50 border-transparent focus:border-emerald-500 focus:bg-white text-slate-900 text-sm rounded-2xl transition-all"
-                    disabled={isLoggingIn}
-                    required
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="login-password" className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">Senha de Segurança</Label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                  <Input
-                    id="login-password"
-                    type="password"
-                    placeholder="••••••••"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="pl-10 h-12 bg-slate-50 border-transparent focus:border-emerald-500 focus:bg-white text-slate-900 text-sm rounded-2xl transition-all"
-                    disabled={isLoggingIn}
-                    required
-                  />
-                </div>
-              </div>
-            </CardContent>
-
-            <CardFooter className="pt-4 pb-10 px-8">
-              <Button
-                type="submit"
-                className="w-full h-12 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm rounded-2xl shadow-lg shadow-emerald-200 transition-all active:scale-[0.98]"
-                disabled={isLoggingIn}
-              >
-                {isLoggingIn ? <><Loader2 className="w-5 h-5 mr-2 animate-spin" /> Entrando...</> : "Entrar no Sistema"}
-              </Button>
-            </CardFooter>
-          </form>
-        </Card>
-
-        <p className="text-center mt-10 text-[10px] text-slate-400 font-medium uppercase tracking-tighter">
-          ADXmoney &copy; {new Date().getFullYear()} &bull; Plataforma Financeira Operacional
-        </p>
+        <h1 className="text-2xl font-black text-slate-900 tracking-tight">
+          ADX<span className="text-emerald-600">money</span>
+        </h1>
       </div>
 
-      {/* Modal FAQ / Perguntas Frequentes para Login */}
+      <Card className="w-full max-w-sm shadow-xl shadow-slate-200/50 border border-slate-200/80 bg-white rounded-3xl">
+        <CardHeader className="pt-4 pb-2 px-6 text-center">
+          <CardTitle className="text-base font-black text-slate-900 tracking-tight">
+            Aceda à sua conta
+          </CardTitle>
+        </CardHeader>
+        
+        <form onSubmit={handleLogin}>
+          <CardContent className="space-y-3 px-6 pb-2">
+            <div className="space-y-1">
+              <Label htmlFor="email" className="text-[11px] font-bold text-slate-700 uppercase">E-mail</Label>
+              <div className="relative">
+                <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="seu.email@exemplo.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  disabled={isLoggingIn}
+                  className="pl-10 h-10 bg-slate-50 border-slate-200 rounded-xl text-sm font-medium"
+                />
+              </div>
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="password" className="text-[11px] font-bold text-slate-700 uppercase">Senha</Label>
+              <div className="relative">
+                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <Input
+                  id="password"
+                  type="password"
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  disabled={isLoggingIn}
+                  className="pl-10 h-10 bg-slate-50 border-slate-200 rounded-xl text-sm font-medium"
+                />
+              </div>
+            </div>
+          </CardContent>
+          <CardFooter className="pt-2 pb-5 px-6 flex flex-col gap-3">
+            <Button
+              type="submit"
+              disabled={isLoggingIn}
+              className="w-full h-10 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-md shadow-emerald-600/20 text-sm"
+            >
+              {isLoggingIn ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                  Entrando...
+                </>
+              ) : (
+                "Entrar na Conta"
+              )}
+            </Button>
+          </CardFooter>
+        </form>
+      </Card>
+
       <Dialog open={isFaqOpen} onOpenChange={setIsFaqOpen}>
-        <DialogContent className="bg-white rounded-3xl border-none max-w-lg p-6">
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-xl font-black text-slate-900">Perguntas Frequentes (FAQ)</DialogTitle>
-            <DialogDescription className="text-xs text-slate-500">
-              Tire suas dúvidas antes de começar a operar na ADXmoney.
+            <DialogTitle>Ajuda e Suporte</DialogTitle>
+            <DialogDescription>
+              Se esqueceu a sua senha ou não tem acesso, por favor entre em contacto com o seu patrocinador ou administrador da plataforma.
             </DialogDescription>
           </DialogHeader>
-          <div className="py-4 max-h-[60vh] overflow-y-auto space-y-4">
-            <div className="p-3.5 rounded-2xl bg-slate-50 space-y-1">
-              <h4 className="text-xs font-black text-slate-900">Como obtenho meus dados de acesso?</h4>
-              <p className="text-[11px] text-slate-600">Os dados de acesso (e-mail e senha inicial) são fornecidos pelo administrador ou através do seu link de convite.</p>
-            </div>
-            <div className="p-3.5 rounded-2xl bg-slate-50 space-y-1">
-              <h4 className="text-xs font-black text-slate-900">Como começo a ganhar?</h4>
-              <p className="text-[11px] text-slate-600">Após fazer login e configurar sua conta, acesse as tarefas e campanhas para realizar as interações e acumular ganhos.</p>
-            </div>
-            <div className="p-3.5 rounded-2xl bg-slate-50 space-y-1">
-              <h4 className="text-xs font-black text-slate-900">Quanto tempo demoram os pagamentos?</h4>
-              <p className="text-[11px] text-slate-600">Os levantamentos são processados em até 24 horas úteis via Multicaixa Express ou transferência bancária.</p>
-            </div>
-          </div>
         </DialogContent>
       </Dialog>
     </div>
