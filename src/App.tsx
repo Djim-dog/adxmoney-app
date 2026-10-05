@@ -10,6 +10,7 @@ import AccountSetup from "./pages/AccountSetup";
 import AdminDashboardPage from "./pages/AdminDashboard";
 import UserAppPage from "./pages/UserApp";
 import SubscriptionPage from "./pages/SubscriptionPage";
+import EngagementOrderPage from "./pages/EngagementOrder";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -65,6 +66,14 @@ const App = () => (
               }
             />
             <Route path="/subscribe" element={<SubscriptionPage />} />
+            <Route
+              path="/engagement/order"
+              element={
+                <ProtectedRoute>
+                  <EngagementOrderPage />
+                </ProtectedRoute>
+              }
+            />
             <Route path="/dashboard" element={<Navigate to="/app" replace />} />
 
             {/* Página 404 */}
