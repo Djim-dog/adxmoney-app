@@ -25,13 +25,15 @@ import {
   MessageSquare,
   X,
   Eye,
-  EyeOff
+  EyeOff,
+  ShoppingCart
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import EngagementComponent from "@/components/user/EngagementComponent";
 import { toast } from "sonner";
 
 import { UserCampaignsHub } from "@/components/user/UserCampaignsHub";
@@ -48,8 +50,8 @@ export default function UserAppPage() {
   const { user, profile, signOut, refreshProfile } = useAuth();
   const navigate = useNavigate();
 
-  // Navigation Tabs: "tasks" | "campaigns" | "affiliate" | "wallet"
-  const [activeTab, setActiveTab] = useState<"tasks" | "campaigns" | "affiliate" | "wallet">("tasks");
+  // Navigation Tabs: "tasks" | "campaigns" | "affiliate" | "wallet" | "engagement"
+  const [activeTab, setActiveTab] = useState<"tasks" | "campaigns" | "affiliate" | "wallet" | "engagement">("tasks");
   const [tasksSubTab, setTasksSubTab] = useState<"community" | "financial">("community");
 
   const [loading, setLoading] = useState(true);
@@ -570,6 +572,11 @@ export default function UserAppPage() {
               </div>
             </div>
           </div>
+        )}
+
+        {/* ABA: ENGAJAMENTO (COMPRA & HISTORICO) */}
+        {activeTab === "engagement" && (
+          <EngagementComponent />
         )}
 
         {/* 4. ABA: CARTEIRA */}
@@ -1222,6 +1229,18 @@ export default function UserAppPage() {
               <Gift className="w-5 h-5" />
             </div>
             <span className="text-[9px] mt-1 font-black uppercase tracking-tighter">Afiliado</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab("engagement")}
+            className={`flex flex-col items-center justify-center transition-all w-20 ${
+              activeTab === "engagement" ? "text-emerald-600 scale-110" : "text-slate-400"
+            }`}
+          >
+            <div className={`p-1.5 rounded-xl transition-all ${activeTab === "engagement" ? "bg-emerald-600 text-white shadow-lg shadow-emerald-200" : "text-slate-400"}`}>
+              <Plus className="w-5 h-5" />
+            </div>
+            <span className="text-[9px] mt-1 font-black uppercase tracking-tighter">Engajamento</span>
           </button>
 
           <button
