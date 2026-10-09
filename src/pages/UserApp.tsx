@@ -861,7 +861,6 @@ export default function UserAppPage() {
                   </div>
                 )
               )}
-              )}
             </div>
           </div>
         )}
