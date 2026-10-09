@@ -16,7 +16,8 @@ import {
   Loader2,
   ArrowRight,
   ArrowLeft,
-  ShoppingBag
+  ShoppingBag,
+  Coins
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -42,13 +43,14 @@ export const EngagementComponent: React.FC = () => {
   // Principal Mode: "menu" | "solicitar" | "consultar"
   const [mode, setMode] = useState<"menu" | "solicitar" | "consultar">("menu");
 
-  // Wizard Steps (1: Pedido + Cálculo, 2: Confirmação, 3: Pagamento, 4: Finalização)
+  // Wizard Steps (1: Moeda + Pedido + Cálculo, 2: Confirmação, 3: Pagamento, 4: Finalização)
   const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
 
+  const [currency, setCurrency] = useState<"USD" | "AOA" | "EUR" | "BRL">("USD");
   const [platform, setPlatform] = useState<"TikTok" | "Instagram" | "YouTube">("TikTok");
   const [serviceType, setServiceType] = useState<"Seguidores" | "Gostos" | "Comentários">("Seguidores");
   const [targetLink, setTargetLink] = useState("");
-  const [quantity, setQuantity] = useState<number>(100);
+  const [quantity, setQuantity] = useState<number>(0);
   
   const [method, setMethod] = useState<"MULTICAIXA" | "UNITEL" | "IBAN">("MULTICAIXA");
   const [file, setFile] = useState<File | null>(null);
@@ -62,20 +64,32 @@ export const EngagementComponent: React.FC = () => {
   const [userOrders, setUserOrders] = useState<EngagementOrder[]>([]);
   const [loadingList, setLoadingList] = useState(false);
 
-  const getUnitPrice = (plat: string, srv: string): number => {
-    if (plat === "TikTok" || plat === "Instagram") {
-      if (srv === "Seguidores") return 29;
-      return 25;
-    }
-    if (plat === "YouTube") {
-      if (srv === "Seguidores") return 35;
-      return 30;
-    }
-    return 29;
+  // Taxas de câmbio de referência (Base USD)
+  // 1 USD = 920 AOA (exemplo padrão do app) | 1 USD = 0.92 EUR | 1 USD = 5.00 BRL
+  const exchangeRates = {
+    USD: 1.00,
+    AOA: 920.00,
+    EUR: 0.92,
+    BRL: 5.00,
   };
 
-  const unitPrice = getUnitPrice(platform, serviceType);
-  const totalPrice = unitPrice * (quantity || 0);
+  // Preço unitário base em USD (Ex: Seguidores TikTok = $0.03, Likes = $0.025, etc.)
+  const getUnitUSD = (plat: string, srv: string): number => {
+    if (plat === "TikTok" || plat === "Instagram") {
+      if (srv === "Seguidores") return 0.0315; // ~29 AOA
+      return 0.027; // ~25 AOA
+    }
+    if (plat === "YouTube") {
+      if (srv === "Seguidores") return 0.038; // ~35 AOA
+      return 0.032; // ~30 AOA
+    }
+    return 0.0315;
+  };
+
+  const unitUSD = getUnitUSD(platform, serviceType);
+  const unitPriceInSelectedCurrency = unitUSD * exchangeRates[currency];
+  const safeQuantity = Math.max(0, quantity || 0);
+  const totalPrice = unitPriceInSelectedCurrency * safeQuantity;
 
   const fetchUserOrders = async () => {
     if (!user) return;
@@ -125,6 +139,10 @@ export const EngagementComponent: React.FC = () => {
   const handleFinalSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user || !file) return;
+    if (safeQuantity <= 0) {
+      toast.error("Informe uma quantidade válida.");
+      return;
+    }
     setSubmitting(true);
     try {
       const fileExt = file.name.split(".").pop();
@@ -139,9 +157,9 @@ export const EngagementComponent: React.FC = () => {
           platform,
           service_type: serviceType,
           target_link: targetLink.trim(),
-          quantity,
+          quantity: safeQuantity,
           total_price: totalPrice,
-          currency: "AOA",
+          currency,
           method,
           proof_url: fileName,
           status: "PENDING",
@@ -207,7 +225,6 @@ export const EngagementComponent: React.FC = () => {
       {mode === "menu" && (
         <div className="space-y-4 pt-2">
           <div className="grid grid-cols-2 gap-3">
-            {/* Botão SOLICITAR */}
             <button
               onClick={() => {
                 setMode("solicitar");
@@ -224,7 +241,6 @@ export const EngagementComponent: React.FC = () => {
               </div>
             </button>
 
-            {/* Botão CONSULTAR */}
             <button
               onClick={() => setMode("consultar")}
               className="bg-white border border-slate-200/80 p-5 rounded-2xl text-left shadow-sm hover:border-indigo-600 hover:shadow-md transition-all flex flex-col justify-between gap-4 group"
@@ -239,7 +255,6 @@ export const EngagementComponent: React.FC = () => {
             </button>
           </div>
 
-          {/* Lista rápida de últimos pedidos na home da aba */}
           <div className="bg-white border border-slate-200/80 rounded-2xl p-4 shadow-sm space-y-3">
             <div className="flex items-center justify-between">
               <span className="text-xs font-black uppercase tracking-wider text-slate-700">Histórico Recente</span>
@@ -282,9 +297,31 @@ export const EngagementComponent: React.FC = () => {
               </div>
             </div>
 
-            {/* ETAPA 1 COM CÁLCULO AUTOMÁTICO INCLUÍDO */}
+            {/* ETAPA 1: ESCOLHA DE MOEDA, REDE, SERVIÇO, QUANTIDADE E CÁLCULO PROFISSIONAL */}
             {step === 1 && (
               <div className="space-y-4">
+                {/* Seleção de Moeda */}
+                <div className="space-y-1.5">
+                  <Label className="text-[11px] font-bold uppercase text-slate-500 flex items-center gap-1">
+                    <Coins className="w-3.5 h-3.5 text-emerald-600" /> Moeda de Pagamento
+                  </Label>
+                  <div className="grid grid-cols-4 gap-2">
+                    {(["USD", "AOA", "EUR", "BRL"] as const).map((curr) => (
+                      <button
+                        key={curr}
+                        type="button"
+                        onClick={() => setCurrency(curr)}
+                        className={`p-2 rounded-xl border text-xs font-bold transition-all ${
+                          currency === curr ? "border-emerald-600 bg-emerald-50 text-emerald-900 shadow-sm" : "border-slate-200 text-slate-600 bg-white"
+                        }`}
+                      >
+                        {curr}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Rede Social */}
                 <div className="space-y-1.5">
                   <Label className="text-[11px] font-bold uppercase text-slate-500">Rede Social</Label>
                   <div className="grid grid-cols-3 gap-2">
@@ -303,6 +340,7 @@ export const EngagementComponent: React.FC = () => {
                   </div>
                 </div>
 
+                {/* Serviço */}
                 <div className="space-y-1.5">
                   <Label className="text-[11px] font-bold uppercase text-slate-500">Serviço</Label>
                   <div className="grid grid-cols-3 gap-2">
@@ -325,6 +363,7 @@ export const EngagementComponent: React.FC = () => {
                   </div>
                 </div>
 
+                {/* Link */}
                 <div className="space-y-1.5">
                   <Label className="text-[11px] font-bold uppercase text-slate-500">Link do Perfil ou Post</Label>
                   <Input
@@ -335,24 +374,28 @@ export const EngagementComponent: React.FC = () => {
                   />
                 </div>
 
+                {/* Quantidade (começa em 0) */}
                 <div className="space-y-1.5">
                   <Label className="text-[11px] font-bold uppercase text-slate-500">Quantidade</Label>
                   <Input
                     type="number"
+                    min={0}
                     value={quantity}
-                    onChange={(e) => setQuantity(parseInt(e.target.value) || 0)}
+                    onChange={(e) => setQuantity(Math.max(0, parseInt(e.target.value) || 0))}
                     className="h-10 text-xs rounded-xl font-mono font-bold"
                   />
                 </div>
 
-                {/* CÁLCULO AUTOMÁTICO VISÍVEL NO PASSO 1 */}
+                {/* CÁLCULO PROFISSIONAL EM TEMPO REAL */}
                 <div className="bg-emerald-50/70 border border-emerald-200/80 p-3.5 rounded-xl flex items-center justify-between">
                   <div>
-                    <span className="text-[10px] text-emerald-700 font-bold uppercase tracking-wider block">Cálculo Automático</span>
-                    <span className="text-[11px] text-slate-500">{quantity} un × {unitPrice} Kz/un</span>
+                    <span className="text-[10px] text-emerald-700 font-bold uppercase tracking-wider block">Cálculo Automático ({currency})</span>
+                    <span className="text-[11px] text-slate-500">
+                      {safeQuantity} un × {unitPriceInSelectedCurrency.toFixed(2)} {currency}/un
+                    </span>
                   </div>
                   <span className="text-lg font-black text-emerald-900 font-mono">
-                    {totalPrice.toLocaleString("pt-AO")} Kz
+                    {totalPrice.toLocaleString("pt-AO", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {currency}
                   </span>
                 </div>
 
@@ -362,8 +405,8 @@ export const EngagementComponent: React.FC = () => {
                       toast.error("Insira o link.");
                       return;
                     }
-                    if (quantity < 10) {
-                      toast.error("Quantidade mínima é 10.");
+                    if (safeQuantity < 10) {
+                      toast.error("A quantidade mínima é 10.");
                       return;
                     }
                     setStep(2);
@@ -380,6 +423,10 @@ export const EngagementComponent: React.FC = () => {
               <div className="space-y-4">
                 <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-2 text-xs">
                   <div className="flex justify-between">
+                    <span className="text-slate-500">Moeda:</span>
+                    <span className="font-bold text-slate-900">{currency}</span>
+                  </div>
+                  <div className="flex justify-between">
                     <span className="text-slate-500">Rede:</span>
                     <span className="font-bold text-slate-900">{platform}</span>
                   </div>
@@ -389,11 +436,13 @@ export const EngagementComponent: React.FC = () => {
                   </div>
                   <div className="flex justify-between">
                     <span className="text-slate-500">Quantidade:</span>
-                    <span className="font-bold font-mono">{quantity}</span>
+                    <span className="font-bold font-mono">{safeQuantity}</span>
                   </div>
                   <div className="pt-2 border-t border-slate-200 flex justify-between text-sm font-black">
                     <span>Total:</span>
-                    <span className="font-mono text-emerald-600">{totalPrice.toLocaleString()} Kz</span>
+                    <span className="font-mono text-emerald-600">
+                      {totalPrice.toLocaleString("pt-AO", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {currency}
+                    </span>
                   </div>
                 </div>
 
@@ -432,7 +481,7 @@ export const EngagementComponent: React.FC = () => {
 
                 <div className="p-3 bg-slate-50 rounded-xl text-[11px] text-slate-600 space-y-1">
                   <p>Ref: <strong className="font-mono">924 555 888</strong> ({method})</p>
-                  <p>Valor: <strong className="font-mono">{totalPrice.toLocaleString()} Kz</strong></p>
+                  <p>Valor Exato: <strong className="font-mono">{totalPrice.toLocaleString("pt-AO", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {currency}</strong></p>
                 </div>
 
                 <div
