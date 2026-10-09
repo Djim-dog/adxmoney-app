@@ -1242,7 +1242,7 @@ export default function UserAppPage() {
             <div className={`p-1.5 rounded-xl transition-all ${activeTab === "engagement" ? "bg-emerald-600 text-white shadow-lg shadow-emerald-200" : "text-slate-400"}`}>
               <TrendingUp className="w-5 h-5" />
             </div>
-            <span className="text-[9px] mt-1 font-black uppercase tracking-tighter">Lo</span>
+            <span className="text-[9px] mt-1 font-black uppercase tracking-tighter">Loja</span>
           </button>
 
           <button

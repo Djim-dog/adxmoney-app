@@ -140,10 +140,10 @@ export const UserCampaignsHub: React.FC<UserCampaignsHubProps> = ({ userId }) =>
             </div>
 
             <CardTitle className="text-base font-black text-slate-900 mt-4">
-              Monetização em Grupo
+              Campanhas Coletivas
             </CardTitle>
             <CardDescription className="text-xs text-slate-500 leading-relaxed font-medium">
-              Iniciativas com metas coletivas e engajamento sincronizado entre os membros da rede.
+              Ações coletivas sincronizadas entre todos os membros da rede.
             </CardDescription>
           </CardHeader>
 
@@ -151,7 +151,7 @@ export const UserCampaignsHub: React.FC<UserCampaignsHubProps> = ({ userId }) =>
             <div className="bg-slate-50 p-3 rounded-2xl border border-slate-100 text-[10px] text-slate-500 flex items-start gap-2 font-bold uppercase tracking-tight">
               <Sparkles className="w-4 h-4 text-lime-600 shrink-0" />
               <span>
-                Trabalho em rede para maximizar resultados.
+                Campanhas e metas sincronizadas em rede.
               </span>
             </div>
           </CardContent>
