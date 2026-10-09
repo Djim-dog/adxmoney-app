@@ -12,20 +12,10 @@ import {
   CheckCircle2,
   Clock,
   XCircle,
-  Copy,
-  ExternalLink,
-  Upload,
   RefreshCw,
-  Sparkles,
-  Heart,
-  UserPlus,
-  MessageCircle,
-  FileCheck,
   Loader2,
   ArrowRight,
   ArrowLeft,
-  Check,
-  Hash,
   ShoppingBag
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
@@ -52,7 +42,7 @@ export const EngagementComponent: React.FC = () => {
   // Principal Mode: "menu" | "solicitar" | "consultar"
   const [mode, setMode] = useState<"menu" | "solicitar" | "consultar">("menu");
 
-  // Wizard Steps (1: Pedido, 2: Confirmação, 3: Pagamento, 4: Finalização)
+  // Wizard Steps (1: Pedido + Cálculo, 2: Confirmação, 3: Pagamento, 4: Finalização)
   const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
 
   const [platform, setPlatform] = useState<"TikTok" | "Instagram" | "YouTube">("TikTok");
@@ -105,11 +95,6 @@ export const EngagementComponent: React.FC = () => {
   useEffect(() => {
     if (user) fetchUserOrders();
   }, [user]);
-
-  const copyToClipboard = (text: string, label: string) => {
-    navigator.clipboard.writeText(text);
-    toast.success(`${label} copiado!`);
-  };
 
   const handleSearchOrder = async (codeToSearch?: string) => {
     const code = codeToSearch || searchCode;
@@ -282,7 +267,7 @@ export const EngagementComponent: React.FC = () => {
         </div>
       )}
 
-      {/* WIZARD DE SOLICITAÇÃO (4 ETAPAS COMPACTAS) */}
+      {/* WIZARD DE SOLICITAÇÃO */}
       {mode === "solicitar" && (
         <Card className="rounded-2xl border-slate-200 shadow-sm bg-white">
           <CardContent className="p-5 space-y-4">
@@ -297,7 +282,7 @@ export const EngagementComponent: React.FC = () => {
               </div>
             </div>
 
-            {/* ETAPA 1 */}
+            {/* ETAPA 1 COM CÁLCULO AUTOMÁTICO INCLUÍDO */}
             {step === 1 && (
               <div className="space-y-4">
                 <div className="space-y-1.5">
@@ -360,10 +345,25 @@ export const EngagementComponent: React.FC = () => {
                   />
                 </div>
 
+                {/* CÁLCULO AUTOMÁTICO VISÍVEL NO PASSO 1 */}
+                <div className="bg-emerald-50/70 border border-emerald-200/80 p-3.5 rounded-xl flex items-center justify-between">
+                  <div>
+                    <span className="text-[10px] text-emerald-700 font-bold uppercase tracking-wider block">Cálculo Automático</span>
+                    <span className="text-[11px] text-slate-500">{quantity} un × {unitPrice} Kz/un</span>
+                  </div>
+                  <span className="text-lg font-black text-emerald-900 font-mono">
+                    {totalPrice.toLocaleString("pt-AO")} Kz
+                  </span>
+                </div>
+
                 <Button
                   onClick={() => {
                     if (!targetLink.trim()) {
                       toast.error("Insira o link.");
+                      return;
+                    }
+                    if (quantity < 10) {
+                      toast.error("Quantidade mínima é 10.");
                       return;
                     }
                     setStep(2);
