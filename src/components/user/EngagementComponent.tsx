@@ -7,9 +7,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import {
-  TrendingUp,
-  ShoppingBag,
-  History,
+  Search,
+  PlusCircle,
   CheckCircle2,
   Clock,
   XCircle,
@@ -25,7 +24,11 @@ import {
   MessageCircle,
   FileCheck,
   Loader2,
-  AlertCircle
+  ArrowRight,
+  ArrowLeft,
+  Check,
+  Hash,
+  HelpCircle
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -47,22 +50,35 @@ interface EngagementOrder {
 
 export const EngagementComponent: React.FC = () => {
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState<"buy" | "history">("buy");
+  
+  // Principal Mode: "menu" | "solicitar" | "consultar"
+  const [mode, setMode] = useState<"menu" | "solicitar" | "consultar">("menu");
 
-  // Form State
+  // --- FLUXO DE SOLICITAÇÃO (4 ETAPAS) ---
+  // Etapa 1: Pedido (Plataforma, Serviço, Link, Quantidade)
+  // Etapa 2: Confirmação (Resumo dos valores, regras)
+  // Etapa 3: Pagamento (Método, Dados bancários, Upload de Comprovativo)
+  // Etapa 4: Finalização (Código gerado, sucesso)
+  const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
+
   const [platform, setPlatform] = useState<"TikTok" | "Instagram" | "YouTube">("TikTok");
   const [serviceType, setServiceType] = useState<"Seguidores" | "Gostos" | "Comentários">("Seguidores");
   const [targetLink, setTargetLink] = useState("");
   const [quantity, setQuantity] = useState<number>(100);
+  
   const [method, setMethod] = useState<"MULTICAIXA" | "UNITEL" | "IBAN">("MULTICAIXA");
   const [file, setFile] = useState<File | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [createdOrderCode, setCreatedOrderCode] = useState<string>("");
 
-  // History State
-  const [orders, setOrders] = useState<EngagementOrder[]>([]);
-  const [loadingHistory, setLoadingHistory] = useState(false);
+  // --- FLUXO DE CONSULTA ---
+  const [searchCode, setSearchCode] = useState("");
+  const [searchedOrder, setSearchedOrder] = useState<EngagementOrder | null>(null);
+  const [searching, setSearching] = useState(false);
+  const [userOrders, setUserOrders] = useState<EngagementOrder[]>([]);
+  const [loadingList, setLoadingList] = useState(false);
 
-  // Unit pricing based on backend rules
+  // Tabela de preços interna oficial
   const getUnitPrice = (plat: string, srv: string): number => {
     if (plat === "TikTok" || plat === "Instagram") {
       if (srv === "Seguidores") return 29;
@@ -78,12 +94,9 @@ export const EngagementComponent: React.FC = () => {
   const unitPrice = getUnitPrice(platform, serviceType);
   const totalPrice = unitPrice * (quantity || 0);
 
-  // Quick quantity presets
-  const quantityPresets = [100, 250, 500, 1000, 2000];
-
-  const fetchOrders = async () => {
+  const fetchUserOrders = async () => {
     if (!user) return;
-    setLoadingHistory(true);
+    setLoadingList(true);
     try {
       const { data, error } = await supabase
         .from("engagement_orders")
@@ -92,45 +105,67 @@ export const EngagementComponent: React.FC = () => {
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      setOrders((data as EngagementOrder[]) || []);
+      setUserOrders((data as EngagementOrder[]) || []);
     } catch (err: any) {
-      console.error("Erro ao carregar histórico:", err);
-      toast.error("Não foi possível carregar o histórico de pedidos.");
+      console.error("Erro ao carregar pedidos:", err);
     } finally {
-      setLoadingHistory(false);
+      setLoadingList(false);
     }
   };
 
   useEffect(() => {
-    if (activeTab === "history") {
-      fetchOrders();
+    if (user) {
+      fetchUserOrders();
     }
-  }, [activeTab, user]);
+  }, [user]);
 
   const copyToClipboard = (text: string, label: string) => {
     navigator.clipboard.writeText(text);
     toast.success(`${label} copiado com sucesso!`);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSearchOrder = async (codeToSearch?: string) => {
+    const code = codeToSearch || searchCode;
+    if (!code.trim()) {
+      toast.error("Informe o código do pedido (ou ID) para consultar.");
+      return;
+    }
+
+    setSearching(true);
+    setSearchedOrder(null);
+    try {
+      const cleanCode = code.trim();
+      // Buscar por ID exato ou prefixo
+      const { data, error } = await supabase
+        .from("engagement_orders")
+        .select("*")
+        .ilike("id", `%${cleanCode}%`)
+        .limit(1);
+
+      if (error) throw error;
+
+      if (data && data.length > 0) {
+        setSearchedOrder(data[0] as EngagementOrder);
+        toast.success("Pedido encontrado com sucesso!");
+      } else {
+        toast.error("Nenhum pedido encontrado com este código.");
+      }
+    } catch (err: any) {
+      console.error("Erro na consulta:", err);
+      toast.error("Erro ao buscar pedido.");
+    } finally {
+      setSearching(false);
+    }
+  };
+
+  const handleFinalSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) {
-      toast.error("Você precisa estar autenticado.");
+      toast.error("Usuário não autenticado.");
       return;
     }
-
-    if (!targetLink.trim()) {
-      toast.error("Por favor, informe o link do perfil ou publicação.");
-      return;
-    }
-
-    if (!quantity || quantity < 10) {
-      toast.error("A quantidade mínima para pedido é 10.");
-      return;
-    }
-
     if (!file) {
-      toast.error("Por favor, anexe o comprovativo de transferência ou pagamento.");
+      toast.error("Anexe o comprovativo de pagamento para finalizar.");
       return;
     }
 
@@ -139,7 +174,6 @@ export const EngagementComponent: React.FC = () => {
       const fileExt = file.name.split(".").pop();
       const fileName = `${user.id}/eng_${Date.now()}.${fileExt}`;
 
-      // Upload proof to storage
       const { error: uploadError } = await supabase.storage
         .from("subscription-proofs")
         .upload(fileName, file, {
@@ -151,20 +185,10 @@ export const EngagementComponent: React.FC = () => {
         throw new Error(`Falha no upload do comprovativo: ${uploadError.message}`);
       }
 
-      // Call submit_engagement_order RPC
-      const { error: rpcError } = await supabase.rpc("submit_engagement_order", {
-        p_platform: platform,
-        p_service_type: serviceType,
-        p_target_link: targetLink.trim(),
-        p_quantity: quantity,
-        p_currency: "AOA",
-        p_method: method,
-        p_proof_url: fileName,
-      });
-
-      if (rpcError) {
-        // Fallback: direct insert if RPC has permission restriction
-        const { error: insertError } = await supabase.from("engagement_orders").insert({
+      // Inserir pedido diretamente
+      const { data, error: insertError } = await supabase
+        .from("engagement_orders")
+        .insert({
           user_id: user.id,
           platform,
           service_type: serviceType,
@@ -175,20 +199,22 @@ export const EngagementComponent: React.FC = () => {
           method,
           proof_url: fileName,
           status: "PENDING",
-        });
+        })
+        .select("id")
+        .single();
 
-        if (insertError) throw insertError;
-      }
+      if (insertError) throw insertError;
 
-      toast.success("Pedido de engajamento enviado com sucesso! Aguarde a validação.");
-      setTargetLink("");
-      setFile(null);
-      setQuantity(100);
-      setActiveTab("history");
-      fetchOrders();
+      const generatedId = data?.id || "";
+      const shortCode = generatedId.substring(0, 8).toUpperCase();
+      setCreatedOrderCode(shortCode);
+
+      toast.success("Pedido de engajamento submetido com sucesso!");
+      setStep(4); // Ir para etapa de finalização
+      fetchUserOrders();
     } catch (err: any) {
-      console.error("Erro ao enviar pedido de engajamento:", err);
-      toast.error(err.message || "Erro ao processar o seu pedido.");
+      console.error("Erro ao submeter pedido:", err);
+      toast.error(err.message || "Erro ao processar o pedido.");
     } finally {
       setSubmitting(false);
     }
@@ -198,23 +224,23 @@ export const EngagementComponent: React.FC = () => {
     switch (status) {
       case "APPROVED":
         return (
-          <Badge className="bg-emerald-500/15 text-emerald-700 hover:bg-emerald-500/25 border-emerald-200 flex items-center gap-1 font-bold">
+          <Badge className="bg-emerald-500/15 text-emerald-700 border-emerald-200 flex items-center gap-1 font-bold">
             <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-            Aprovado
+            Aprovado / Concluído
           </Badge>
         );
       case "REJECTED":
         return (
-          <Badge className="bg-rose-500/15 text-rose-700 hover:bg-rose-500/25 border-rose-200 flex items-center gap-1 font-bold">
+          <Badge className="bg-rose-500/15 text-rose-700 border-rose-200 flex items-center gap-1 font-bold">
             <XCircle className="w-3.5 h-3.5 text-rose-600" />
             Rejeitado
           </Badge>
         );
       default:
         return (
-          <Badge className="bg-amber-500/15 text-amber-700 hover:bg-amber-500/25 border-amber-200 flex items-center gap-1 font-bold">
+          <Badge className="bg-amber-500/15 text-amber-700 border-amber-200 flex items-center gap-1 font-bold">
             <Clock className="w-3.5 h-3.5 text-amber-600" />
-            Pendente
+            Pendente de Análise
           </Badge>
         );
     }
@@ -229,478 +255,620 @@ export const EngagementComponent: React.FC = () => {
           <div className="space-y-1">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-xs font-semibold">
               <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
-              Impulsionamento de Redes Sociais
+              Central de Impulsionamento Social
             </div>
             <h1 className="text-2xl font-black tracking-tight text-white mt-1">
-              Serviços de Engajamento
+              Engajamento & Crescimento
             </h1>
             <p className="text-sm text-slate-300">
-              Aumente seguidores, curtidas e comentários reais com a comunidade ADX Money.
+              Gerencie seus pedidos de seguidores, curtidas e consulte o andamento por código em tempo real.
             </p>
           </div>
 
-          <div className="flex bg-slate-800/80 p-1 rounded-2xl border border-slate-700/60 backdrop-blur-md self-start md:self-auto">
-            <button
-              onClick={() => setActiveTab("buy")}
-              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${
-                activeTab === "buy"
-                  ? "bg-emerald-600 text-white shadow-md shadow-emerald-900/40"
-                  : "text-slate-400 hover:text-white"
-              }`}
+          {mode !== "menu" && (
+            <Button
+              onClick={() => {
+                setMode("menu");
+                setStep(1);
+                setSearchedOrder(null);
+                setSearchCode("");
+              }}
+              variant="outline"
+              className="bg-slate-800/80 border-slate-700 text-white hover:bg-slate-700 text-xs font-bold rounded-xl"
             >
-              <ShoppingBag className="w-4 h-4" />
-              Comprar
-            </button>
-            <button
-              onClick={() => setActiveTab("history")}
-              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${
-                activeTab === "history"
-                  ? "bg-emerald-600 text-white shadow-md shadow-emerald-900/40"
-                  : "text-slate-400 hover:text-white"
-              }`}
-            >
-              <History className="w-4 h-4" />
-              Histórico
-              {orders.length > 0 && (
-                <span className="ml-1 bg-white/20 text-white text-[10px] px-1.5 py-0.5 rounded-full">
-                  {orders.length}
-                </span>
-              )}
-            </button>
-          </div>
+              <ArrowLeft className="w-4 h-4 mr-1.5" /> Voltar ao Menu
+            </Button>
+          )}
         </div>
       </div>
 
-      {/* TAB 1: COMPRA DE ENGAJAMENTO */}
-      {activeTab === "buy" && (
-        <div className="grid gap-6 md:grid-cols-12">
-          {/* Main Purchase Form */}
-          <div className="md:col-span-8">
-            <Card className="rounded-3xl border-slate-200/80 shadow-md">
-              <CardHeader className="pb-4">
-                <CardTitle className="text-lg font-black text-slate-900 flex items-center gap-2">
-                  <TrendingUp className="w-5 h-5 text-emerald-600" />
-                  Configurar Pedido de Engajamento
-                </CardTitle>
-                <CardDescription className="text-xs text-slate-500">
-                  Selecione a plataforma, serviço e anexe o comprovativo do pagamento para ativação.
-                </CardDescription>
-              </CardHeader>
+      {/* TELA INICIAL: MENU COM 2 BOTÕES PRINCIPAIS (SOLICITAR / CONSULTAR) */}
+      {mode === "menu" && (
+        <div className="grid md:grid-cols-2 gap-6">
+          {/* Botão SOLICITAR */}
+          <Card 
+            onClick={() => {
+              setMode("solicitar");
+              setStep(1);
+            }}
+            className="rounded-[28px] border-slate-200/80 shadow-xl shadow-slate-100 hover:border-emerald-500 hover:shadow-2xl transition-all cursor-pointer group bg-white p-8 relative overflow-hidden"
+          >
+            <div className="absolute right-0 top-0 w-32 h-32 bg-emerald-50 rounded-bl-full transition-all group-hover:scale-110 pointer-events-none" />
+            <div className="relative z-10 space-y-4">
+              <div className="w-14 h-14 rounded-2xl bg-emerald-600 text-white flex items-center justify-center shadow-lg shadow-emerald-200 group-hover:scale-105 transition-all">
+                <PlusCircle className="w-7 h-7" />
+              </div>
+              <div className="space-y-1">
+                <h3 className="text-xl font-black text-slate-900 group-hover:text-emerald-600 transition-colors">
+                  Solicitar Engajamento
+                </h3>
+                <p className="text-xs text-slate-500 leading-relaxed">
+                  Inicie um novo pedido de seguidores, curtidas ou comentários para o TikTok, Instagram ou YouTube em 4 etapas guiadas.
+                </p>
+              </div>
+              <div className="pt-2 flex items-center gap-2 text-xs font-bold text-emerald-600">
+                <span>Criar Novo Pedido</span>
+                <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+              </div>
+            </div>
+          </Card>
 
-              <CardContent>
-                <form onSubmit={handleSubmit} className="space-y-6">
-                  {/* Platform Selection */}
-                  <div className="space-y-2">
-                    <Label className="text-xs font-bold uppercase tracking-wider text-slate-600">
-                      1. Plataforma
-                    </Label>
-                    <div className="grid grid-cols-3 gap-3">
-                      {(["TikTok", "Instagram", "YouTube"] as const).map((plat) => (
-                        <button
-                          key={plat}
-                          type="button"
-                          onClick={() => setPlatform(plat)}
-                          className={`p-3.5 rounded-2xl border text-center transition-all flex flex-col items-center justify-center gap-1.5 ${
-                            platform === plat
-                              ? "border-emerald-600 bg-emerald-50/70 text-emerald-900 shadow-sm"
-                              : "border-slate-200 hover:border-slate-300 text-slate-600 bg-white"
-                          }`}
-                        >
-                          <span className="text-sm font-bold">{plat}</span>
-                          <span className="text-[10px] text-slate-400">
-                            {plat === "YouTube" ? "A partir de 30 Kz" : "A partir de 25 Kz"}
-                          </span>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Service Type Selection */}
-                  <div className="space-y-2">
-                    <Label className="text-xs font-bold uppercase tracking-wider text-slate-600">
-                      2. Tipo de Engajamento
-                    </Label>
-                    <div className="grid grid-cols-3 gap-3">
-                      {[
-                        { id: "Seguidores", label: platform === "YouTube" ? "Inscritos" : "Seguidores", icon: UserPlus },
-                        { id: "Gostos", label: "Gostos / Likes", icon: Heart },
-                        { id: "Comentários", label: "Comentários", icon: MessageCircle },
-                      ].map((srv) => {
-                        const Icon = srv.icon;
-                        const isSelected = serviceType === srv.id;
-                        return (
-                          <button
-                            key={srv.id}
-                            type="button"
-                            onClick={() => setServiceType(srv.id as any)}
-                            className={`p-3 rounded-2xl border text-center transition-all flex flex-col items-center justify-center gap-1.5 ${
-                              isSelected
-                                ? "border-emerald-600 bg-emerald-50/70 text-emerald-900 shadow-sm"
-                                : "border-slate-200 hover:border-slate-300 text-slate-600 bg-white"
-                            }`}
-                          >
-                            <Icon className={`w-4 h-4 ${isSelected ? "text-emerald-600" : "text-slate-400"}`} />
-                            <span className="text-xs font-bold">{srv.label}</span>
-                            <span className="text-[10px] text-slate-400">
-                              {getUnitPrice(platform, srv.id)} Kz/un
-                            </span>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  {/* Target Link */}
-                  <div className="space-y-2">
-                    <Label className="text-xs font-bold uppercase tracking-wider text-slate-600">
-                      3. Link de Destino ({serviceType === "Seguidores" ? "Perfil" : "Publicação / Vídeo"})
-                    </Label>
-                    <Input
-                      type="url"
-                      placeholder={
-                        serviceType === "Seguidores"
-                          ? `https://www.${platform.toLowerCase()}.com/@seu_perfil`
-                          : `https://www.${platform.toLowerCase()}.com/p/sua_publicacao`
-                      }
-                      value={targetLink}
-                      onChange={(e) => setTargetLink(e.target.value)}
-                      className="rounded-xl border-slate-200 h-11 text-sm"
-                      required
-                    />
-                    <p className="text-[11px] text-slate-400">
-                      Certifique-se de que o seu perfil ou postagem está em modo público.
-                    </p>
-                  </div>
-
-                  {/* Quantity & Presets */}
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <Label className="text-xs font-bold uppercase tracking-wider text-slate-600">
-                        4. Quantidade Desejada
-                      </Label>
-                      <span className="text-xs font-semibold text-emerald-600 font-mono">
-                        {quantity.toLocaleString()} interações
-                      </span>
-                    </div>
-
-                    <Input
-                      type="number"
-                      min={10}
-                      step={10}
-                      value={quantity}
-                      onChange={(e) => setQuantity(Math.max(0, parseInt(e.target.value) || 0))}
-                      className="rounded-xl border-slate-200 h-11 text-base font-bold font-mono"
-                      required
-                    />
-
-                    <div className="flex flex-wrap gap-2 pt-1">
-                      {quantityPresets.map((preset) => (
-                        <button
-                          key={preset}
-                          type="button"
-                          onClick={() => setQuantity(preset)}
-                          className={`text-xs px-3 py-1.5 rounded-lg border font-bold transition-all ${
-                            quantity === preset
-                              ? "bg-slate-900 text-white border-slate-900"
-                              : "bg-slate-100 hover:bg-slate-200 text-slate-600 border-transparent"
-                          }`}
-                        >
-                          +{preset.toLocaleString()}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Payment Method */}
-                  <div className="space-y-2">
-                    <Label className="text-xs font-bold uppercase tracking-wider text-slate-600">
-                      5. Método de Pagamento
-                    </Label>
-                    <div className="grid grid-cols-3 gap-3">
-                      {[
-                        { id: "MULTICAIXA", label: "Multicaixa Express" },
-                        { id: "IBAN", label: "Transferência IBAN" },
-                        { id: "UNITEL", label: "Unitel Money" },
-                      ].map((m) => (
-                        <button
-                          key={m.id}
-                          type="button"
-                          onClick={() => setMethod(m.id as any)}
-                          className={`p-3 rounded-2xl border text-center transition-all ${
-                            method === m.id
-                              ? "border-emerald-600 bg-emerald-50/70 text-emerald-900 font-bold"
-                              : "border-slate-200 text-slate-600 font-medium bg-white"
-                          }`}
-                        >
-                          <span className="text-xs">{m.label}</span>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Upload Receipt */}
-                  <div className="space-y-2">
-                    <Label className="text-xs font-bold uppercase tracking-wider text-slate-600">
-                      6. Comprovativo de Pagamento
-                    </Label>
-                    <div
-                      onClick={() => document.getElementById("engagement-file-upload")?.click()}
-                      className={`border-2 border-dashed rounded-2xl p-5 text-center cursor-pointer transition-all ${
-                        file
-                          ? "border-emerald-500 bg-emerald-50/40"
-                          : "border-slate-300 hover:border-slate-400 bg-slate-50/60"
-                      }`}
-                    >
-                      <input
-                        id="engagement-file-upload"
-                        type="file"
-                        accept="image/*,.pdf"
-                        className="hidden"
-                        onChange={(e) => {
-                          if (e.target.files && e.target.files[0]) {
-                            setFile(e.target.files[0]);
-                          }
-                        }}
-                      />
-                      {file ? (
-                        <div className="flex flex-col items-center gap-1 text-emerald-700">
-                          <FileCheck className="w-8 h-8 text-emerald-600" />
-                          <p className="text-xs font-bold">{file.name}</p>
-                          <p className="text-[10px] text-slate-500">
-                            {(file.size / 1024).toFixed(1)} KB • Clique para substituir
-                          </p>
-                        </div>
-                      ) : (
-                        <div className="flex flex-col items-center gap-1 text-slate-500">
-                          <Upload className="w-8 h-8 text-slate-400" />
-                          <p className="text-xs font-bold text-slate-700">
-                            Clique para anexar o comprovativo
-                          </p>
-                          <p className="text-[10px] text-slate-400">
-                            Imagens PNG, JPG ou PDF (Máx. 5MB)
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Summary & Submit */}
-                  <div className="pt-2 border-t border-slate-100 space-y-4">
-                    <div className="bg-slate-50 p-4 rounded-2xl flex items-center justify-between border border-slate-200/60">
-                      <div>
-                        <span className="text-xs text-slate-500 block font-medium">Valor Total a Pagar</span>
-                        <span className="text-xs text-slate-400">
-                          {quantity.toLocaleString()} un × {unitPrice} Kz
-                        </span>
-                      </div>
-                      <span className="text-2xl font-black text-slate-900 font-mono">
-                        {totalPrice.toLocaleString("pt-AO", { minimumFractionDigits: 2 })}{" "}
-                        <span className="text-sm font-normal text-slate-500">Kz</span>
-                      </span>
-                    </div>
-
-                    <Button
-                      type="submit"
-                      disabled={submitting || !file}
-                      className="w-full h-12 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm shadow-lg shadow-emerald-200 flex items-center justify-center gap-2"
-                    >
-                      {submitting ? (
-                        <>
-                          <Loader2 className="w-4 h-4 animate-spin" />
-                          Processando Pedido...
-                        </>
-                      ) : (
-                        <>
-                          <CheckCircle2 className="w-4 h-4" />
-                          Confirmar e Enviar Pedido
-                        </>
-                      )}
-                    </Button>
-                  </div>
-                </form>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Payment Details & Instructions */}
-          <div className="md:col-span-4 space-y-4">
-            <Card className="rounded-3xl border-slate-200/80 shadow-md bg-white">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-sm font-black text-slate-900 flex items-center gap-2">
-                  <DollarSign className="w-4 h-4 text-emerald-600" />
-                  Instruções de Pagamento
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4 text-xs">
-                <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-100 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-slate-500 font-medium">Multicaixa Express:</span>
-                    <button
-                      onClick={() => copyToClipboard("924555888", "Número Express")}
-                      className="text-emerald-600 hover:text-emerald-700 flex items-center gap-1 font-bold"
-                    >
-                      <Copy className="w-3 h-3" /> 924 555 888
-                    </button>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-slate-500 font-medium">Unitel Money:</span>
-                    <button
-                      onClick={() => copyToClipboard("924555888", "Unitel Money")}
-                      className="text-emerald-600 hover:text-emerald-700 flex items-center gap-1 font-bold"
-                    >
-                      <Copy className="w-3 h-3" /> 924 555 888
-                    </button>
-                  </div>
-                  <div className="pt-2 border-t border-slate-200">
-                    <span className="text-slate-500 font-medium block mb-1">IBAN BAI / BFA:</span>
-                    <div className="flex items-center justify-between bg-white p-2 rounded-xl border border-slate-200">
-                      <span className="font-mono text-[10px] text-slate-800 break-all select-all font-semibold">
-                        AO06 0040 0000 8976 5432 1014 9
-                      </span>
-                      <button
-                        onClick={() => copyToClipboard("AO06004000008976543210149", "IBAN")}
-                        className="text-slate-500 hover:text-slate-800 p-1"
-                      >
-                        <Copy className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-                  </div>
-                  <p className="text-[11px] text-slate-400 mt-1">
-                    Titular: <strong>ADX Money Digital Services Lda</strong>
-                  </p>
-                </div>
-
-                <div className="bg-amber-50/80 border border-amber-200/80 rounded-2xl p-3.5 space-y-1.5 text-amber-800">
-                  <div className="flex items-center gap-1.5 font-bold">
-                    <AlertCircle className="w-4 h-4 text-amber-600 flex-shrink-0" />
-                    <span>Como funciona a ativação?</span>
-                  </div>
-                  <p className="text-[11px] leading-relaxed text-amber-700">
-                    Após confirmação do pagamento pelos administradores, o pedido é distribuído diretamente aos usuários da plataforma cadastrados como tarefas ativas.
-                  </p>
-                </div>
-
-                <div className="border border-slate-100 rounded-2xl p-3 flex items-center gap-2 text-slate-500">
-                  <ShieldCheck className="w-4 h-4 text-emerald-600 flex-shrink-0" />
-                  <span className="text-[11px]">Garantia de entrega e visualizações 100% orgânicas.</span>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+          {/* Botão CONSULTAR */}
+          <Card 
+            onClick={() => setMode("consultar")}
+            className="rounded-[28px] border-slate-200/80 shadow-xl shadow-slate-100 hover:border-indigo-500 hover:shadow-2xl transition-all cursor-pointer group bg-white p-8 relative overflow-hidden"
+          >
+            <div className="absolute right-0 top-0 w-32 h-32 bg-indigo-50 rounded-bl-full transition-all group-hover:scale-110 pointer-events-none" />
+            <div className="relative z-10 space-y-4">
+              <div className="w-14 h-14 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-lg shadow-indigo-200 group-hover:scale-105 transition-all">
+                <Search className="w-7 h-7" />
+              </div>
+              <div className="space-y-1">
+                <h3 className="text-xl font-black text-slate-900 group-hover:text-indigo-600 transition-colors">
+                  Consultar por Código
+                </h3>
+                <p className="text-xs text-slate-500 leading-relaxed">
+                  Digite o código único gerado na compra para verificar o status em tempo real da entrega e o histórico de execuções.
+                </p>
+              </div>
+              <div className="pt-2 flex items-center gap-2 text-xs font-bold text-indigo-600">
+                <span>Consultar Pedido</span>
+                <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+              </div>
+            </div>
+          </Card>
         </div>
       )}
 
-      {/* TAB 2: HISTÓRICO DE PEDIDOS */}
-      {activeTab === "history" && (
-        <Card className="rounded-3xl border-slate-200/80 shadow-md">
-          <CardHeader className="flex flex-row items-center justify-between pb-4">
-            <div>
-              <CardTitle className="text-lg font-black text-slate-900 flex items-center gap-2">
-                <History className="w-5 h-5 text-emerald-600" />
-                Histórico de Pedidos de Engajamento
-              </CardTitle>
-              <CardDescription className="text-xs text-slate-500">
-                Acompanhe o status e a entrega dos seus pedidos solicitados
-              </CardDescription>
+      {/* FLUXO DE SOLICITAÇÃO (ETAPAS 1 A 4) */}
+      {mode === "solicitar" && (
+        <Card className="rounded-[28px] border-slate-200/80 shadow-xl bg-white">
+          <CardHeader className="border-b border-slate-100 pb-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-lg font-black text-slate-900">
+                  Nova Solicitação de Engajamento
+                </CardTitle>
+                <CardDescription className="text-xs text-slate-500 mt-0.5">
+                  Etapa {step} de 4: {
+                    step === 1 ? "Dados do Pedido" :
+                    step === 2 ? "Confirmação e Valores" :
+                    step === 3 ? "Pagamento e Comprovativo" : "Finalização"
+                  }
+                </CardDescription>
+              </div>
+
+              {/* Steps Progress Indicator */}
+              <div className="flex items-center gap-1.5">
+                {[1, 2, 3, 4].map((s) => (
+                  <div
+                    key={s}
+                    className={`w-8 h-2 rounded-full transition-all ${
+                      step >= s ? "bg-emerald-600" : "bg-slate-200"
+                    }`}
+                  />
+                ))}
+              </div>
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={fetchOrders}
-              disabled={loadingHistory}
-              className="rounded-xl border-slate-200 text-xs font-bold gap-1.5 h-9"
-            >
-              <RefreshCw className={`w-3.5 h-3.5 ${loadingHistory ? "animate-spin" : ""}`} />
-              Atualizar
-            </Button>
           </CardHeader>
 
-          <CardContent>
-            {loadingHistory ? (
-              <div className="py-12 flex flex-col items-center justify-center text-slate-400 gap-2">
-                <Loader2 className="w-6 h-6 animate-spin text-emerald-600" />
-                <span className="text-xs font-semibold">Carregando pedidos...</span>
-              </div>
-            ) : orders.length === 0 ? (
-              <div className="py-12 flex flex-col items-center justify-center text-center text-slate-400 gap-3">
-                <div className="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center text-slate-400">
-                  <ShoppingBag className="w-6 h-6" />
-                </div>
-                <div>
-                  <p className="text-sm font-bold text-slate-700">Nenhum pedido realizado</p>
-                  <p className="text-xs text-slate-400">
-                    Você ainda não comprou engajamento. Crie seu primeiro pedido na aba "Comprar".
-                  </p>
-                </div>
-                <Button
-                  onClick={() => setActiveTab("buy")}
-                  className="rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold mt-2"
-                >
-                  Criar Pedido Agora
-                </Button>
-              </div>
-            ) : (
-              <div className="divide-y divide-slate-100">
-                {orders.map((order) => (
-                  <div
-                    key={order.id}
-                    className="py-4 flex flex-col md:flex-row md:items-center justify-between gap-4 transition-all hover:bg-slate-50/50 rounded-2xl px-3"
-                  >
-                    <div className="space-y-1.5">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        {getStatusBadge(order.status)}
-                        <Badge variant="outline" className="text-xs font-bold rounded-lg border-slate-200">
-                          {order.platform}
-                        </Badge>
-                        <Badge variant="secondary" className="text-xs font-bold rounded-lg bg-slate-100">
-                          {order.service_type}
-                        </Badge>
-                        <span className="text-[11px] text-slate-400 font-mono">
-                          {new Date(order.created_at).toLocaleDateString("pt-AO", {
-                            day: "2-digit",
-                            month: "short",
-                            year: "numeric",
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })}
+          <CardContent className="pt-6 space-y-6">
+            {/* ETAPA 1: PEDIDO */}
+            {step === 1 && (
+              <div className="space-y-6 animate-in fade-in duration-300">
+                {/* Plataforma */}
+                <div className="space-y-2">
+                  <Label className="text-xs font-bold uppercase tracking-wider text-slate-600">
+                    Selecione a Plataforma
+                  </Label>
+                  <div className="grid grid-cols-3 gap-3">
+                    {(["TikTok", "Instagram", "YouTube"] as const).map((plat) => (
+                      <button
+                        key={plat}
+                        type="button"
+                        onClick={() => setPlatform(plat)}
+                        className={`p-4 rounded-2xl border text-center transition-all flex flex-col items-center justify-center gap-1 ${
+                          platform === plat
+                            ? "border-emerald-600 bg-emerald-50/70 text-emerald-900 shadow-sm font-bold"
+                            : "border-slate-200 hover:border-slate-300 text-slate-600 bg-white"
+                        }`}
+                      >
+                        <span className="text-sm">{plat}</span>
+                        <span className="text-[10px] text-slate-400">
+                          {plat === "YouTube" ? "A partir de 30 Kz" : "A partir de 25 Kz"}
                         </span>
-                      </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
 
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs text-slate-500 font-medium">Destino:</span>
-                        <a
-                          href={order.target_link}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="text-xs text-emerald-600 hover:text-emerald-700 hover:underline flex items-center gap-1 font-semibold max-w-[280px] md:max-w-md truncate"
+                {/* Tipo de Serviço */}
+                <div className="space-y-2">
+                  <Label className="text-xs font-bold uppercase tracking-wider text-slate-600">
+                    Tipo de Serviço
+                  </Label>
+                  <div className="grid grid-cols-3 gap-3">
+                    {[
+                      { id: "Seguidores", label: platform === "YouTube" ? "Inscritos" : "Seguidores", icon: UserPlus },
+                      { id: "Gostos", label: "Gostos / Likes", icon: Heart },
+                      { id: "Comentários", label: "Comentários", icon: MessageCircle },
+                    ].map((srv) => {
+                      const Icon = srv.icon;
+                      const isSelected = serviceType === srv.id;
+                      return (
+                        <button
+                          key={srv.id}
+                          type="button"
+                          onClick={() => setServiceType(srv.id as any)}
+                          className={`p-3.5 rounded-2xl border text-center transition-all flex flex-col items-center justify-center gap-1.5 ${
+                            isSelected
+                              ? "border-emerald-600 bg-emerald-50/70 text-emerald-900 shadow-sm font-bold"
+                              : "border-slate-200 hover:border-slate-300 text-slate-600 bg-white"
+                          }`}
                         >
-                          {order.target_link}
-                          <ExternalLink className="w-3 h-3 flex-shrink-0" />
-                        </a>
-                      </div>
+                          <Icon className={`w-4 h-4 ${isSelected ? "text-emerald-600" : "text-slate-400"}`} />
+                          <span className="text-xs">{srv.label}</span>
+                          <span className="text-[10px] text-slate-400 font-mono">
+                            {getUnitPrice(platform, srv.id)} Kz / un
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
 
-                      {order.rejection_reason && (
-                        <p className="text-xs text-rose-600 bg-rose-50 p-2 rounded-xl border border-rose-100 font-medium">
-                          Motivo da rejeição: {order.rejection_reason}
-                        </p>
-                      )}
+                {/* Link de Destino */}
+                <div className="space-y-2">
+                  <Label className="text-xs font-bold uppercase tracking-wider text-slate-600">
+                    Link de Destino ({serviceType === "Seguidores" ? "Perfil" : "Publicação / Vídeo"})
+                  </Label>
+                  <Input
+                    type="url"
+                    placeholder={`https://www.${platform.toLowerCase()}.com/...`}
+                    value={targetLink}
+                    onChange={(e) => setTargetLink(e.target.value)}
+                    className="rounded-xl border-slate-200 h-11 text-sm"
+                    required
+                  />
+                </div>
+
+                {/* Quantidade */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-xs font-bold uppercase tracking-wider text-slate-600">
+                      Quantidade
+                    </Label>
+                    <span className="text-xs font-bold text-emerald-600 font-mono">
+                      {quantity.toLocaleString()} interações
+                    </span>
+                  </div>
+                  <Input
+                    type="number"
+                    min={10}
+                    step={10}
+                    value={quantity}
+                    onChange={(e) => setQuantity(Math.max(0, parseInt(e.target.value) || 0))}
+                    className="rounded-xl border-slate-200 h-11 text-base font-bold font-mono"
+                  />
+                  <div className="flex flex-wrap gap-2 pt-1">
+                    {[100, 250, 500, 1000, 2000].map((p) => (
+                      <button
+                        key={p}
+                        type="button"
+                        onClick={() => setQuantity(p)}
+                        className={`text-xs px-3 py-1.5 rounded-lg border font-bold transition-all ${
+                          quantity === p
+                            ? "bg-slate-900 text-white border-slate-900"
+                            : "bg-slate-100 hover:bg-slate-200 text-slate-600 border-transparent"
+                        }`}
+                      >
+                        +{p.toLocaleString()}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="pt-4 flex justify-end">
+                  <Button
+                    onClick={() => {
+                      if (!targetLink.trim()) {
+                        toast.error("Informe o link de destino.");
+                        return;
+                      }
+                      if (quantity < 10) {
+                        toast.error("A quantidade mínima é 10.");
+                        return;
+                      }
+                      setStep(2);
+                    }}
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl h-11 px-6 text-xs gap-2"
+                  >
+                    Avançar para Confirmação <ArrowRight className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {/* ETAPA 2: CONFIRMAÇÃO */}
+            {step === 2 && (
+              <div className="space-y-6 animate-in fade-in duration-300">
+                <div className="bg-slate-50 p-6 rounded-3xl border border-slate-100 space-y-4">
+                  <h4 className="text-sm font-black text-slate-900 uppercase tracking-wider">
+                    Resumo do Pedido
+                  </h4>
+
+                  <div className="grid grid-cols-2 gap-4 text-xs">
+                    <div>
+                      <span className="text-slate-400 block font-medium">Plataforma</span>
+                      <span className="font-bold text-slate-900 text-sm">{platform}</span>
                     </div>
-
-                    <div className="flex md:flex-col items-center md:items-end justify-between md:justify-center border-t md:border-t-0 pt-2 md:pt-0 border-slate-100">
-                      <span className="text-base font-black text-slate-900 font-mono">
-                        {order.total_price.toLocaleString("pt-AO", { minimumFractionDigits: 2 })}{" "}
-                        <span className="text-xs text-slate-400 font-normal">Kz</span>
-                      </span>
-                      <span className="text-[11px] text-slate-400 font-medium">
-                        {order.quantity.toLocaleString()} interações • {order.method}
-                      </span>
+                    <div>
+                      <span className="text-slate-400 block font-medium">Serviço</span>
+                      <span className="font-bold text-slate-900 text-sm">{serviceType}</span>
+                    </div>
+                    <div className="col-span-2">
+                      <span className="text-slate-400 block font-medium">Link de Destino</span>
+                      <span className="font-bold text-emerald-600 break-all">{targetLink}</span>
+                    </div>
+                    <div>
+                      <span className="text-slate-400 block font-medium">Quantidade</span>
+                      <span className="font-bold text-slate-900 font-mono">{quantity.toLocaleString()} un</span>
+                    </div>
+                    <div>
+                      <span className="text-slate-400 block font-medium">Preço Unitário</span>
+                      <span className="font-bold text-slate-900 font-mono">{unitPrice} Kz</span>
                     </div>
                   </div>
-                ))}
+
+                  <div className="pt-4 border-t border-slate-200 flex items-center justify-between">
+                    <span className="text-sm font-bold text-slate-700">Total a Pagar:</span>
+                    <span className="text-2xl font-black text-slate-900 font-mono">
+                      {totalPrice.toLocaleString("pt-AO", { minimumFractionDigits: 2 })} <span className="text-sm font-normal text-slate-500">Kz</span>
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between pt-4">
+                  <Button
+                    variant="outline"
+                    onClick={() => setStep(1)}
+                    className="border-slate-200 text-slate-600 rounded-xl h-11 px-6 text-xs font-bold gap-2"
+                  >
+                    <ArrowLeft className="w-4 h-4" /> Voltar
+                  </Button>
+                  <Button
+                    onClick={() => setStep(3)}
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl h-11 px-6 text-xs gap-2"
+                  >
+                    Avançar para Pagamento <ArrowRight className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {/* ETAPA 3: PAGAMENTO */}
+            {step === 3 && (
+              <form onSubmit={handleFinalSubmit} className="space-y-6 animate-in fade-in duration-300">
+                <div className="space-y-2">
+                  <Label className="text-xs font-bold uppercase tracking-wider text-slate-600">
+                    Método de Pagamento
+                  </Label>
+                  <div className="grid grid-cols-3 gap-3">
+                    {[
+                      { id: "MULTICAIXA", label: "Multicaixa Express" },
+                      { id: "IBAN", label: "Transferência IBAN" },
+                      { id: "UNITEL", label: "Unitel Money" },
+                    ].map((m) => (
+                      <button
+                        key={m.id}
+                        type="button"
+                        onClick={() => setMethod(m.id as any)}
+                        className={`p-3.5 rounded-2xl border text-center transition-all ${
+                          method === m.id
+                            ? "border-emerald-600 bg-emerald-50/70 text-emerald-900 font-bold"
+                            : "border-slate-200 text-slate-600 font-medium bg-white"
+                        }`}
+                      >
+                        <span className="text-xs">{m.label}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Dados de Transferência */}
+                <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 space-y-2 text-xs">
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-500 font-medium">Multicaixa / Unitel Express:</span>
+                    <button
+                      type="button"
+                      onClick={() => copyToClipboard("924555888", "Número")}
+                      className="text-emerald-600 font-bold flex items-center gap-1"
+                    >
+                      <Copy className="w-3 h-3" /> 924 555 888
+                    </button>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-500 font-medium">IBAN BAI / BFA:</span>
+                    <button
+                      type="button"
+                      onClick={() => copyToClipboard("AO06004000008976543210149", "IBAN")}
+                      className="text-emerald-600 font-bold flex items-center gap-1 font-mono text-[11px]"
+                    >
+                      <Copy className="w-3 h-3" /> AO06 0040 0000 8976 5432 1014 9
+                    </button>
+                  </div>
+                  <p className="text-[11px] text-slate-400 pt-1">
+                    Titular: <strong>ADX Money Digital Services Lda</strong> • Valor Exato: <strong className="text-slate-800">{totalPrice.toLocaleString("pt-AO")} Kz</strong>
+                  </p>
+                </div>
+
+                {/* Upload Comprovativo */}
+                <div className="space-y-2">
+                  <Label className="text-xs font-bold uppercase tracking-wider text-slate-600">
+                    Anexar Comprovativo de Pagamento *
+                  </Label>
+                  <div
+                    onClick={() => document.getElementById("wizard-file-upload")?.click()}
+                    className={`border-2 border-dashed rounded-2xl p-5 text-center cursor-pointer transition-all ${
+                      file ? "border-emerald-500 bg-emerald-50/40" : "border-slate-300 hover:border-slate-400 bg-slate-50/60"
+                    }`}
+                  >
+                    <input
+                      id="wizard-file-upload"
+                      type="file"
+                      accept="image/*,.pdf"
+                      className="hidden"
+                      onChange={(e) => e.target.files && setFile(e.target.files[0])}
+                    />
+                    {file ? (
+                      <div className="flex flex-col items-center gap-1 text-emerald-700">
+                        <FileCheck className="w-7 h-7 text-emerald-600" />
+                        <p className="text-xs font-bold">{file.name}</p>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-center gap-1 text-slate-500">
+                        <Upload className="w-7 h-7 text-slate-400" />
+                        <p className="text-xs font-bold text-slate-700">Clique para carregar o comprovativo</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between pt-4">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setStep(2)}
+                    className="border-slate-200 text-slate-600 rounded-xl h-11 px-6 text-xs font-bold gap-2"
+                  >
+                    <ArrowLeft className="w-4 h-4" /> Voltar
+                  </Button>
+                  <Button
+                    type="submit"
+                    disabled={submitting || !file}
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl h-11 px-6 text-xs gap-2"
+                  >
+                    {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+                    Finalizar e Submeter Pedido
+                  </Button>
+                </div>
+              </form>
+            )}
+
+            {/* ETAPA 4: FINALIZAÇÃO (CÓDIGO GERADO) */}
+            {step === 4 && (
+              <div className="space-y-6 text-center py-6 animate-in zoom-in-95 duration-300">
+                <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto shadow-lg shadow-emerald-100">
+                  <CheckCircle2 className="w-8 h-8" />
+                </div>
+
+                <div className="space-y-2">
+                  <h3 className="text-xl font-black text-slate-900">Pedido Submetido com Sucesso!</h3>
+                  <p className="text-xs text-slate-500 max-w-sm mx-auto">
+                    Seu pedido de engajamento foi enviado para análise administrativa. Guarde o seu código de rastreio para consultas futuras.
+                  </p>
+                </div>
+
+                <div className="p-6 bg-slate-50 rounded-3xl border border-slate-200 max-w-sm mx-auto space-y-2">
+                  <span className="text-[11px] text-slate-400 uppercase tracking-widest font-bold">Código do Pedido</span>
+                  <div className="flex items-center justify-center gap-2">
+                    <span className="text-3xl font-black text-slate-900 font-mono tracking-wider">{createdOrderCode}</span>
+                    <button
+                      type="button"
+                      onClick={() => copyToClipboard(createdOrderCode, "Código do Pedido")}
+                      className="p-2 rounded-xl bg-white border border-slate-200 text-slate-600 hover:text-emerald-600 shadow-sm"
+                    >
+                      <Copy className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+
+                <div className="pt-4 flex justify-center gap-3">
+                  <Button
+                    onClick={() => {
+                      setMode("consultar");
+                      setSearchCode(createdOrderCode);
+                      handleSearchOrder(createdOrderCode);
+                    }}
+                    className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl h-11 px-6 text-xs gap-2"
+                  >
+                    <Search className="w-4 h-4" /> Consultar Este Pedido Agora
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setMode("menu");
+                      setStep(1);
+                      setTargetLink("");
+                      setFile(null);
+                    }}
+                    className="border-slate-200 text-slate-700 rounded-xl h-11 px-6 text-xs font-bold"
+                  >
+                    Voltar ao Menu
+                  </Button>
+                </div>
               </div>
             )}
           </CardContent>
         </Card>
+      )}
+
+      {/* FLUXO DE CONSULTA POR CÓDIGO */}
+      {mode === "consultar" && (
+        <div className="space-y-6">
+          <Card className="rounded-[28px] border-slate-200/80 shadow-xl bg-white p-6">
+            <CardHeader className="px-0 pt-0 pb-4">
+              <CardTitle className="text-lg font-black text-slate-900 flex items-center gap-2">
+                <Search className="w-5 h-5 text-indigo-600" />
+                Consulta de Pedido por Código
+              </CardTitle>
+              <CardDescription className="text-xs text-slate-500">
+                Digite o código do pedido (ex: B4C291FA) para verificar o status e detalhes.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="px-0 space-y-4">
+              <div className="flex gap-3">
+                <Input
+                  placeholder="Digite o código (ex: A1B2C3D4)..."
+                  value={searchCode}
+                  onChange={(e) => setSearchCode(e.target.value)}
+                  className="rounded-xl border-slate-200 h-12 text-sm font-mono uppercase"
+                />
+                <Button
+                  onClick={() => handleSearchOrder()}
+                  disabled={searching}
+                  className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold h-12 px-6 rounded-xl text-xs gap-2 flex-shrink-0"
+                >
+                  {searching ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
+                  Consultar
+                </Button>
+              </div>
+
+              {searchedOrder && (
+                <Card className="rounded-2xl border border-indigo-100 bg-indigo-50/40 p-6 mt-4 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Hash className="w-4 h-4 text-indigo-600" />
+                      <span className="font-mono font-bold text-slate-900 text-sm">
+                        ID: {searchedOrder.id.substring(0, 8).toUpperCase()}
+                      </span>
+                    </div>
+                    {getStatusBadge(searchedOrder.status)}
+                  </div>
+
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs bg-white p-4 rounded-xl border border-indigo-100/60">
+                    <div>
+                      <span className="text-slate-400 block font-semibold">Plataforma</span>
+                      <span className="font-bold text-slate-900">{searchedOrder.platform}</span>
+                    </div>
+                    <div>
+                      <span className="text-slate-400 block font-semibold">Serviço</span>
+                      <span className="font-bold text-slate-900">{searchedOrder.service_type}</span>
+                    </div>
+                    <div>
+                      <span className="text-slate-400 block font-semibold">Quantidade</span>
+                      <span className="font-mono font-bold text-slate-900">{searchedOrder.quantity?.toLocaleString()} un</span>
+                    </div>
+                    <div>
+                      <span className="text-slate-400 block font-semibold">Valor Total</span>
+                      <span className="font-mono font-bold text-slate-900">{searchedOrder.total_price?.toLocaleString("pt-AO")} Kz</span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 text-xs">
+                    <span className="text-slate-500 font-semibold">Link de Destino:</span>
+                    <a
+                      href={searchedOrder.target_link}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-indigo-600 font-semibold truncate hover:underline flex items-center gap-1"
+                    >
+                      {searchedOrder.target_link}
+                      <ExternalLink className="w-3 h-3" />
+                    </a>
+                  </div>
+
+                  {searchedOrder.rejection_reason && (
+                    <p className="text-xs text-rose-600 bg-rose-50 p-3 rounded-xl border border-rose-100 font-medium">
+                      Motivo da rejeição: {searchedOrder.rejection_reason}
+                    </p>
+                  )}
+                </Card>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Histórico completo do usuário para consulta rápida */}
+          <Card className="rounded-[28px] border-slate-200/80 shadow-xl bg-white p-6">
+            <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+              <h3 className="text-base font-black text-slate-900">Seus Pedidos Recentes</h3>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={fetchUserOrders}
+                disabled={loadingList}
+                className="rounded-xl border-slate-200 text-xs font-bold gap-1"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 ${loadingList ? "animate-spin" : ""}`} />
+                Atualizar
+              </Button>
+            </div>
+
+            <div className="divide-y divide-slate-100 pt-2">
+              {userOrders.length === 0 ? (
+                <p className="text-xs text-slate-400 text-center py-8">Nenhum pedido registrado.</p>
+              ) : (
+                userOrders.map((order) => (
+                  <div key={order.id} className="py-3.5 flex items-center justify-between gap-4">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-xs font-bold text-slate-900 bg-slate-100 px-2 py-0.5 rounded-lg">
+                          #{order.id.substring(0, 8).toUpperCase()}
+                        </span>
+                        {getStatusBadge(order.status)}
+                      </div>
+                      <p className="text-xs text-slate-500">
+                        {order.platform} • {order.service_type} ({order.quantity} un)
+                      </p>
+                    </div>
+
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        setSearchCode(order.id.substring(0, 8).toUpperCase());
+                        setSearchedOrder(order);
+                      }}
+                      className="rounded-xl border-slate-200 text-xs font-bold"
+                    >
+                      Ver Detalhes
+                    </Button>
+                  </div>
+                ))
+              )}
+            </div>
+          </Card>
+        </div>
       )}
     </div>
   );
