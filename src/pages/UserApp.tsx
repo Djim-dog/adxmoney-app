@@ -570,7 +570,6 @@ export default function UserAppPage() {
                 <Users className="w-6 h-6 text-emerald-600" />
               </div>
             </div>
-            </div>
           </div>
         )}
 
