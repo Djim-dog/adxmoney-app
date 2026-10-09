@@ -37,7 +37,7 @@ interface EngagementOrder {
   created_at: string;
 }
 
-export const EngagementComponent: React.FC = () => {
+export const LoComponent: React.FC = () => {
   const { user } = useAuth();
   
   // Principal Mode: "menu" | "solicitar" | "consultar"
@@ -557,4 +557,4 @@ export const EngagementComponent: React.FC = () => {
   );
 };
 
-export default EngagementComponent;
+export default LoComponent;

@@ -35,7 +35,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import EngagementComponent from "@/components/user/EngagementComponent";
+import LoComponent from "@/components/user/EngagementComponent"; // Lo (Ex-Engajamento)
 import { toast } from "sonner";
 
 import { UserCampaignsHub } from "@/components/user/UserCampaignsHub";
@@ -576,7 +576,7 @@ export default function UserAppPage() {
           </div>
         )}
 
-        {/* ABA: ENGAJAMENTO (COMPRA & HISTORICO) */}
+        {/* ABA: LO (COMPRA & HISTORICO) */}
         {activeTab === "engagement" && (
           <EngagementComponent />
         )}
@@ -1242,7 +1242,7 @@ export default function UserAppPage() {
             <div className={`p-1.5 rounded-xl transition-all ${activeTab === "engagement" ? "bg-emerald-600 text-white shadow-lg shadow-emerald-200" : "text-slate-400"}`}>
               <TrendingUp className="w-5 h-5" />
             </div>
-            <span className="text-[9px] mt-1 font-black uppercase tracking-tighter">Engajamento</span>
+            <span className="text-[9px] mt-1 font-black uppercase tracking-tighter">Lo</span>
           </button>
 
           <button
