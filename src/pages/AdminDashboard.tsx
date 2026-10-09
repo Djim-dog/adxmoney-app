@@ -43,7 +43,10 @@ import {
   Phone,
   Mail,
   Lock,
-  DollarSign
+  DollarSign,
+  TrendingUp,
+  ShoppingBag,
+  ExternalLink
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -66,6 +69,7 @@ export const AdminDashboardPage: React.FC = () => {
     | "subscriptions"
     | "campaigns"
     | "campaignRequests"
+    | "engagementOrders"
     | "participations"
     | "affiliates"
     | "withdrawals"
@@ -102,6 +106,7 @@ export const AdminDashboardPage: React.FC = () => {
     totalTaskReports: 0,
     activeAffiliatesCount: 0,
     pendingSubscriptions: 0,
+    pendingEngagementOrders: 0,
   });
 
   // Data Lists
@@ -114,6 +119,10 @@ export const AdminDashboardPage: React.FC = () => {
   const [activityLogs, setActivityLogs] = useState<any[]>([]);
   const [communityTasksList, setCommunityTasksList] = useState<any[]>([]);
   const [taskReportsList, setTaskReportsList] = useState<any[]>([]);
+  const [engagementOrdersList, setEngagementOrdersList] = useState<any[]>([]);
+  const [selectedEngagementOrder, setSelectedEngagementOrder] = useState<any | null>(null);
+  const [isEngagementDetailsOpen, setIsEngagementDetailsOpen] = useState(false);
+  const [rejectionReasonInput, setRejectionReasonInput] = useState("");
 
   // Modals visibility states
   const [isCreateUserOpen, setIsCreateUserOpen] = useState(false);
@@ -253,6 +262,14 @@ export const AdminDashboardPage: React.FC = () => {
         .select("*", { count: 'exact', head: true })
         .eq('status', 'PENDING');
 
+      // 11. Engagement Orders
+      const { data: engOrdersData } = await supabase
+        .from("engagement_orders")
+        .select("*, profiles:user_id(name, email, phone)")
+        .order("created_at", { ascending: false });
+      setEngagementOrdersList(engOrdersData || []);
+      const pendingEngCount = (engOrdersData || []).filter((o: any) => o.status === "PENDING").length;
+
       // Calculate Stats
       const totalU = users.length;
       const activeU = users.filter((u) => u.is_active !== false).length;
@@ -283,6 +300,7 @@ export const AdminDashboardPage: React.FC = () => {
         totalTaskReports: (reportsData || []).length,
         activeAffiliatesCount: activeAffCount,
         pendingSubscriptions: pendingSubs || 0,
+        pendingEngagementOrders: pendingEngCount,
       });
     } catch (err) {
       console.error("Erro ao carregar dados do administrador:", err);
@@ -439,6 +457,88 @@ export const AdminDashboardPage: React.FC = () => {
       await loadAdminData();
     } catch (err: any) {
       toast.error("Erro ao atualizar solicitação.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleUpdateEngagementOrderStatus = async (
+    orderId: string,
+    status: "APPROVED" | "REJECTED",
+    reason?: string
+  ) => {
+    setSubmitting(true);
+    try {
+      const updatePayload: any = {
+        status,
+        updated_at: new Date().toISOString(),
+      };
+      if (reason) {
+        updatePayload.rejection_reason = reason;
+      }
+
+      const { error } = await supabase
+        .from("engagement_orders")
+        .update(updatePayload)
+        .eq("id", orderId);
+
+      if (error) throw error;
+
+      toast.success(
+        status === "APPROVED"
+          ? "Pedido de engajamento aprovado com sucesso!"
+          : "Pedido de engajamento rejeitado."
+      );
+      setIsEngagementDetailsOpen(false);
+      setRejectionReasonInput("");
+      await loadAdminData();
+    } catch (err: any) {
+      console.error("Erro ao atualizar pedido:", err);
+      toast.error(err.message || "Erro ao atualizar status do pedido.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleLaunchEngagementAsCommunityTask = async (order: any) => {
+    setSubmitting(true);
+    try {
+      // Platform formatting
+      const plat = order.platform.toLowerCase();
+      const validPlat = ["tiktok", "instagram", "youtube"].includes(plat) ? plat : "other";
+
+      // Task type formatting
+      let taskType = "follow";
+      if (order.service_type === "Gostos") taskType = "like";
+      if (order.service_type === "Comentários") taskType = "comment";
+
+      const desc = `${order.service_type} em ${order.platform} (${order.target_link})`;
+
+      const { error: insertError } = await supabase.from("community_tasks").insert({
+        platform: validPlat,
+        task_type: taskType,
+        profile_url: order.target_link,
+        description: desc,
+        total_target: order.quantity || 100,
+        completions_count: 0,
+        status: "active",
+        created_by: order.user_id,
+      });
+
+      if (insertError) throw insertError;
+
+      // Mark order as APPROVED
+      await supabase
+        .from("engagement_orders")
+        .update({ status: "APPROVED", updated_at: new Date().toISOString() })
+        .eq("id", order.id);
+
+      toast.success("Pedido aprovado e tarefa lançada na Comunidade com sucesso!");
+      setIsEngagementDetailsOpen(false);
+      await loadAdminData();
+    } catch (err: any) {
+      console.error("Erro ao lançar tarefa:", err);
+      toast.error(err.message || "Erro ao lançar tarefa comunitária.");
     } finally {
       setSubmitting(false);
     }
@@ -650,6 +750,7 @@ export const AdminDashboardPage: React.FC = () => {
             { id: "subscriptions", label: "Assinaturas", icon: <CreditCard className="w-4 h-4" />, badge: stats.pendingSubscriptions },
             { id: "campaigns", label: "Campanhas", icon: <Layers className="w-4 h-4" />, badge: stats.activeCampaigns },
             { id: "campaignRequests", label: "Solicitações", icon: <Megaphone className="w-4 h-4" />, badge: stats.pendingCampaignRequests },
+            { id: "engagementOrders", label: "Engajamento", icon: <TrendingUp className="w-4 h-4" />, badge: stats.pendingEngagementOrders },
             { id: "participations", label: "Participações", icon: <CheckCircle2 className="w-4 h-4" />, badge: stats.pendingParticipations },
             { id: "affiliates", label: "Afiliados", icon: <Share2 className="w-4 h-4" />, badge: stats.activeAffiliatesCount },
             { id: "withdrawals", label: "Levantamentos", icon: <ArrowUpRight className="w-4 h-4" />, badge: stats.pendingWithdrawals },
@@ -970,6 +1071,99 @@ export const AdminDashboardPage: React.FC = () => {
                     </div>
                   </Card>
                 ))}
+              </div>
+            </div>
+          )}
+
+          {/* 4.5. SOLICITAÇÕES DE ENGAJAMENTO */}
+          {activeSection === "engagementOrders" && (
+            <div className="space-y-6 animate-in fade-in duration-300">
+              <div className="px-1">
+                <h2 className="text-xl font-black text-slate-900 tracking-tight">Solicitações de Engajamento</h2>
+                <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mt-1">Pedidos de seguidores, curtidas e comentários enviados por usuários</p>
+              </div>
+
+              <div className="grid gap-4">
+                {engagementOrdersList.length === 0 ? (
+                  <Card className="bg-white border-none shadow-xl shadow-slate-100 rounded-3xl p-12 text-center text-slate-400">
+                    <p className="text-sm font-bold text-slate-600">Nenhum pedido de engajamento encontrado</p>
+                  </Card>
+                ) : (
+                  engagementOrdersList.map((order) => (
+                    <Card key={order.id} className="bg-white border-none shadow-xl shadow-slate-100 rounded-3xl p-6 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-3 flex-wrap">
+                          <Badge className={`text-[8px] font-black uppercase tracking-widest border-none px-2 py-0.5 ${order.status === "PENDING" ? "bg-amber-100 text-amber-700" : order.status === "APPROVED" ? "bg-emerald-100 text-emerald-700" : "bg-rose-100 text-rose-700"}`}>
+                            {order.status}
+                          </Badge>
+                          <Badge variant="outline" className="text-[9px] font-bold uppercase border-slate-200">
+                            {order.platform}
+                          </Badge>
+                          <Badge variant="secondary" className="text-[9px] font-bold uppercase bg-slate-100">
+                            {order.service_type}
+                          </Badge>
+                          <span className="text-xs text-slate-400 font-semibold">
+                            {order.profiles?.name || "Usuário"} ({order.profiles?.phone || "Sem tel"})
+                          </span>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-slate-500 font-medium">Destino:</span>
+                          <a
+                            href={order.target_link}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="text-xs text-emerald-600 hover:underline flex items-center gap-1 font-semibold max-w-md truncate"
+                          >
+                            {order.target_link}
+                            <ExternalLink className="w-3 h-3 flex-shrink-0" />
+                          </a>
+                        </div>
+
+                        <p className="text-xs text-slate-500 font-mono">
+                          Quantidade: <strong>{order.quantity?.toLocaleString()}</strong> • Total: <strong className="text-slate-900">{order.total_price?.toLocaleString("pt-AO", { minimumFractionDigits: 2 })} Kz</strong> via {order.method}
+                        </p>
+                      </div>
+
+                      <div className="flex items-center gap-3">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setSelectedEngagementOrder(order);
+                            setIsEngagementDetailsOpen(true);
+                          }}
+                          className="border-slate-200 text-slate-600 rounded-xl text-[10px] font-black uppercase tracking-widest h-10 px-4"
+                        >
+                          Detalhes & Comprovativo
+                        </Button>
+
+                        {order.status === "PENDING" && (
+                          <>
+                            <Button
+                              size="sm"
+                              onClick={() => handleLaunchEngagementAsCommunityTask(order)}
+                              className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-[10px] font-black uppercase tracking-widest h-10 px-4"
+                            >
+                              Aprovar & Lançar Tarefa
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => {
+                                setSelectedEngagementOrder(order);
+                                setIsEngagementDetailsOpen(true);
+                              }}
+                              className="border-slate-200 text-slate-400 hover:text-rose-600 rounded-xl text-[10px] font-black uppercase tracking-widest h-10 px-4"
+                            >
+                              Rejeitar
+                            </Button>
+                          </>
+                        )}
+                      </div>
+                    </Card>
+                  ))
+                )}
               </div>
             </div>
           )}
@@ -1646,6 +1840,116 @@ export const AdminDashboardPage: React.FC = () => {
               <Send className="w-4 h-4 mr-2" /> Enviar Relatório WhatsApp
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      {/* DIALOG DE DETALHES DE ENGAJAMENTO */}
+      <Dialog open={isEngagementDetailsOpen} onOpenChange={setIsEngagementDetailsOpen}>
+        <DialogContent className="max-w-xl bg-white border border-slate-200 shadow-2xl rounded-[28px] p-8 max-h-[85vh] overflow-y-auto">
+          <DialogHeader className="space-y-2">
+            <DialogTitle className="text-xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+              <TrendingUp className="w-5 h-5 text-emerald-600" />
+              Detalhes do Pedido de Engajamento
+            </DialogTitle>
+            <DialogDescription className="text-xs text-slate-500 font-medium">
+              Avalie as informações e o comprovativo enviado pelo usuário.
+            </DialogDescription>
+          </DialogHeader>
+
+          {selectedEngagementOrder && (
+            <div className="space-y-6 pt-4">
+              <div className="grid grid-cols-2 gap-4 bg-slate-50 p-4 rounded-2xl border border-slate-100 text-xs">
+                <div>
+                  <span className="text-slate-400 block font-semibold">Usuário</span>
+                  <span className="font-bold text-slate-900 text-sm">
+                    {selectedEngagementOrder.profiles?.name || "Desconhecido"}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-slate-400 block font-semibold">Telefone</span>
+                  <span className="font-mono font-bold text-slate-900 text-sm">
+                    {selectedEngagementOrder.profiles?.phone || "Não informado"}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-slate-400 block font-semibold">Plataforma / Serviço</span>
+                  <span className="font-bold text-slate-900">
+                    {selectedEngagementOrder.platform} • {selectedEngagementOrder.service_type}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-slate-400 block font-semibold">Quantidade & Valor</span>
+                  <span className="font-mono font-bold text-slate-900">
+                    {selectedEngagementOrder.quantity?.toLocaleString()} un • {selectedEngagementOrder.total_price?.toLocaleString("pt-AO", { minimumFractionDigits: 2 })} Kz
+                  </span>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-xs font-bold uppercase tracking-wider text-slate-600">Link de Destino</Label>
+                <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between gap-2">
+                  <a
+                    href={selectedEngagementOrder.target_link}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-xs text-emerald-600 font-semibold truncate hover:underline"
+                  >
+                    {selectedEngagementOrder.target_link}
+                  </a>
+                  <ExternalLink className="w-4 h-4 text-slate-400 flex-shrink-0" />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-xs font-bold uppercase tracking-wider text-slate-600">Comprovativo de Pagamento</Label>
+                <div className="border border-slate-200 rounded-2xl p-4 bg-slate-50 flex flex-col items-center justify-center gap-3">
+                  <span className="text-xs text-slate-500 font-mono break-all text-center">
+                    Caminho: {selectedEngagementOrder.proof_url}
+                  </span>
+                  <a
+                    href={`https://wznepehesjmhpateaoby.supabase.co/storage/v1/object/public/subscription-proofs/${selectedEngagementOrder.proof_url}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-900 text-white text-xs font-bold hover:bg-slate-800 transition-all"
+                  >
+                    <ExternalLink className="w-3.5 h-3.5" />
+                    Abrir Comprovativo em Nova Aba
+                  </a>
+                </div>
+              </div>
+
+              {selectedEngagementOrder.status === "PENDING" && (
+                <div className="space-y-4 pt-4 border-t border-slate-100">
+                  <div className="space-y-2">
+                    <Label className="text-xs font-bold uppercase tracking-wider text-slate-600">Motivo de Rejeição (caso rejeite)</Label>
+                    <Input
+                      placeholder="Ex: Comprovativo ilegível ou valor incorreto"
+                      value={rejectionReasonInput}
+                      onChange={(e) => setRejectionReasonInput(e.target.value)}
+                      className="rounded-xl border-slate-200 text-xs h-10"
+                    />
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <Button
+                      onClick={() => handleLaunchEngagementAsCommunityTask(selectedEngagementOrder)}
+                      disabled={submitting}
+                      className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold h-11 rounded-xl text-xs shadow-lg shadow-emerald-200"
+                    >
+                      Aprovar & Lançar Tarefa
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => handleUpdateEngagementOrderStatus(selectedEngagementOrder.id, "REJECTED", rejectionReasonInput || "Rejeitado pela administração")}
+                      disabled={submitting}
+                      className="flex-1 border-rose-200 text-rose-600 hover:bg-rose-50 font-bold h-11 rounded-xl text-xs"
+                    >
+                      Rejeitar Pedido
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </div>

@@ -26,7 +26,9 @@ import {
   X,
   Eye,
   EyeOff,
-  ShoppingCart
+  ShoppingCart,
+  TrendingUp,
+  Sparkles
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -1238,7 +1240,7 @@ export default function UserAppPage() {
             }`}
           >
             <div className={`p-1.5 rounded-xl transition-all ${activeTab === "engagement" ? "bg-emerald-600 text-white shadow-lg shadow-emerald-200" : "text-slate-400"}`}>
-              <Plus className="w-5 h-5" />
+              <TrendingUp className="w-5 h-5" />
             </div>
             <span className="text-[9px] mt-1 font-black uppercase tracking-tighter">Engajamento</span>
           </button>
