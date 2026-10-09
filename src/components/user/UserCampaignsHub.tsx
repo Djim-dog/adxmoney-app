@@ -1,18 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import {
-  Megaphone,
   Users2,
-  Share2,
+  ChevronRight,
+  Sparkles,
+  Layers,
   PlusCircle,
   Clock,
   CheckCircle2,
   XCircle,
-  ChevronRight,
-  Info,
-  Layers,
-  Sparkles,
-  ShieldCheck,
 } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -32,7 +28,7 @@ interface UserCampaignsHubProps {
 
 export const UserCampaignsHub: React.FC<UserCampaignsHubProps> = ({ userId }) => {
   const [isRequestModalOpen, setIsRequestModalOpen] = useState(false);
-  const [viewCampaignsType, setViewCampaignsType] = useState<"afiliados" | "monetizacao_coletiva" | null>(null);
+  const [viewCampaignsType, setViewCampaignsType] = useState<"monetizacao_coletiva" | null>(null);
   const [userRequests, setUserRequests] = useState<any[]>([]);
   const [loadingRequests, setLoadingRequests] = useState(false);
 
@@ -126,36 +122,6 @@ export const UserCampaignsHub: React.FC<UserCampaignsHubProps> = ({ userId }) =>
         </CardFooter>
       </Card>
 
-      {/* ÁREA 3: SOLICITAR CAMPANHA */}
-      <Card className="bg-emerald-700 rounded-3xl border-none shadow-xl shadow-emerald-100 relative overflow-hidden">
-        <div className="absolute right-0 bottom-0 p-6 opacity-10 pointer-events-none">
-          <Megaphone className="w-48 h-48 text-white rotate-12" />
-        </div>
-        <CardHeader className="pb-4">
-          <div className="w-fit mb-2">
-            <Badge className="bg-emerald-600/50 text-white border-none text-[10px] font-black uppercase tracking-widest py-1 px-3">
-              NOVA PROPOSTA
-            </Badge>
-          </div>
-          <CardTitle className="text-xl font-black text-white">
-            Seja um Parceiro ADX
-          </CardTitle>
-          <CardDescription className="text-sm text-emerald-100 leading-relaxed font-medium">
-            Tem um projeto ou campanha? Envie os detalhes e nossa gestão avaliará a viabilidade operacional.
-          </CardDescription>
-        </CardHeader>
-
-        <CardContent className="pt-2 pb-8">
-          <Button
-            onClick={() => setIsRequestModalOpen(true)}
-            className="w-full bg-white hover:bg-slate-50 text-emerald-700 font-black text-xs h-14 rounded-2xl shadow-xl shadow-emerald-800/20 gap-3"
-          >
-            <PlusCircle className="w-5 h-5" />
-            SOLICITAR MINHA CAMPANHA
-          </Button>
-        </CardContent>
-      </Card>
-
       {/* Minhas Solicitações */}
       {userRequests.length > 0 && (
         <div className="space-y-4 pt-4">
@@ -173,7 +139,7 @@ export const UserCampaignsHub: React.FC<UserCampaignsHubProps> = ({ userId }) =>
                     <div className="flex items-center gap-3 flex-wrap">
                       <span className="text-sm font-black text-slate-900">{req.title}</span>
                       <Badge className="text-[9px] font-black uppercase tracking-widest border-none bg-slate-100 text-slate-400">
-                        {req.type === "afiliados" ? "Afiliados" : "Coletiva"}
+                        Coletiva
                       </Badge>
                     </div>
                     <p className="text-[10px] text-slate-400 font-bold uppercase mt-1">
@@ -243,13 +209,8 @@ export const UserCampaignsHub: React.FC<UserCampaignsHubProps> = ({ userId }) =>
               }}
               className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black h-12 rounded-2xl shadow-lg shadow-emerald-100 gap-2 uppercase text-xs tracking-widest"
             >
-              SOLICITAR CAMPANHA (10 USD)
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
               <PlusCircle className="w-4 h-4" />
-              SOLICITAR CAMPANHA
+              SOLICITAR CAMPANHA (10 USD)
             </Button>
             <Button
               type="button"
