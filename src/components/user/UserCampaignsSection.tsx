@@ -1,101 +1,235 @@
-import React from "react";
-import { CheckCircle2, Loader2, PlayCircle, Target, Info } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import {
+  Users2,
+  ChevronRight,
+  Sparkles,
+  Layers,
+  PlusCircle,
+  Clock,
+  CheckCircle2,
+  XCircle,
+  PlayCircle,
+  History,
+  TrendingUp,
+  Award
+} from "lucide-react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { CampaignRequestModal } from "./CampaignRequestModal";
 
-interface UserCampaignsSectionProps {
-  campaigns: any[];
-  confirmingId: string | null;
-  executingId: string | null;
-  onExecuteCampaign: (campaign: any) => void;
-  onConfirmCompletion: (campaign: any) => void;
+interface UserCampaignsHubProps {
+  userId: string;
 }
 
-export const UserCampaignsSection: React.FC<UserCampaignsSectionProps> = ({
-  campaigns,
-  confirmingId,
-  executingId,
-  onExecuteCampaign,
-  onConfirmCompletion,
-}) => {
+export const UserCampaignsSection: React.FC<UserCampaignsHubProps> = ({ userId }) => {
+  const [isRequestModalOpen, setIsRequestModalOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<"online" | "historico">("online");
+  const [onlineCampaigns, setOnlineCampaigns] = useState<any[]>([]);
+  const [completedCampaigns, setCompletedCampaigns] = useState<any[]>([]);
+  const [userRequests, setUserRequests] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  const loadData = async () => {
+    if (!userId) return;
+    setLoading(true);
+    try {
+      // Carregar campanhas ativas/online
+      const { data: activeData } = await supabase
+        .from("campaigns")
+        .select("*")
+        .eq("status", "ACTIVE")
+        .order("created_at", { ascending: false });
+
+      setOnlineCampaigns(activeData || []);
+
+      // Simular histórico ou buscar campanhas finalizadas
+      const { data: compData } = await supabase
+        .from("campaigns")
+        .select("*")
+        .in("status", ["COMPLETED", "ended"])
+        .order("created_at", { ascending: false });
+
+      setCompletedCampaigns(compData || []);
+
+      // Minhas solicitações
+      const { data: reqData } = await supabase
+        .from("campaign_requests")
+        .select("*")
+        .eq("user_id", userId)
+        .order("created_at", { ascending: false });
+
+      setUserRequests(reqData || []);
+    } catch (err) {
+      console.error("Erro ao carregar dados de campanhas:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadData();
+  }, [userId]);
+
   return (
-    <div className="space-y-8">
-      <div className="px-1">
-        <h2 className="text-2xl font-black text-slate-900 tracking-tight">Hub de Operações</h2>
-        <p className="text-xs text-slate-500 font-medium uppercase tracking-widest mt-1">Gerencie e execute suas tarefas em tempo real</p>
+    <div className="space-y-5 pb-12">
+      {/* HEADER NATIVO APP */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-lg font-black text-slate-900 tracking-tight">Campanhas Coletivas</h1>
+          <p className="text-[11px] text-slate-500 font-medium">Engajamento sincronizado em rede</p>
+        </div>
+        <Button
+          onClick={() => setIsRequestModalOpen(true)}
+          className="bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs h-10 px-4 rounded-2xl shadow-md shadow-emerald-100 gap-1.5"
+        >
+          <PlusCircle className="w-4 h-4" />
+          Nova Campanha (10$)
+        </Button>
       </div>
 
-      {campaigns.length === 0 ? (
-        <Card className="bg-white border-dashed border-2 border-slate-200 p-16 text-center rounded-3xl shadow-sm">
-          <p className="text-xs text-slate-400 font-black uppercase tracking-widest">
-            Sem tarefas disponíveis na sua fila.<br/>Aguarde as próximas instruções da gestão.
-          </p>
-        </Card>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {campaigns.map((c) => {
-            const isDone = c.assignment_status === "COMPLETED";
-            const isConfirming = confirmingId === c.id;
+      {/* TABS NATIVAS APP (ONLINE vs HISTÓRICO) */}
+      <div className="bg-slate-100 p-1 rounded-2xl flex gap-1">
+        <button
+          onClick={() => setActiveTab("online")}
+          className={`flex-1 py-2.5 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-2 ${
+            activeTab === "online"
+              ? "bg-white text-slate-900 shadow-sm"
+              : "text-slate-500 hover:text-slate-800"
+          }`}
+        >
+          <PlayCircle className="w-4 h-4 text-emerald-600" />
+          Campanhas Online ({onlineCampaigns.length})
+        </button>
+        <button
+          onClick={() => setActiveTab("historico")}
+          className={`flex-1 py-2.5 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-2 ${
+            activeTab === "historico"
+              ? "bg-white text-slate-900 shadow-sm"
+              : "text-slate-500 hover:text-slate-800"
+          }`}
+        >
+          <History className="w-4 h-4 text-slate-400" />
+          Histórico / Concluídas ({completedCampaigns.length})
+        </button>
+      </div>
 
-            return (
-              <Card key={c.id} className={`bg-white border-none shadow-xl shadow-slate-100 rounded-3xl overflow-hidden group transition-all ${isDone ? "opacity-70 grayscale-[0.5]" : "hover:shadow-2xl hover:shadow-slate-200/50"}`}>
-                <CardHeader className="pb-4 pt-6 px-6">
-                  <div className="flex justify-between items-center mb-2">
-                    <Badge className="text-[9px] font-black uppercase tracking-widest bg-slate-100 text-slate-500 border-none group-hover:bg-emerald-50 group-hover:text-emerald-600 transition-colors">
-                      {c.platform}
+      {/* CONTEÚDO DA ABA ATIVA */}
+      {activeTab === "online" ? (
+        <div className="space-y-3">
+          {onlineCampaigns.length === 0 ? (
+            <div className="bg-white rounded-3xl p-8 text-center border border-slate-100 shadow-sm space-y-3">
+              <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center mx-auto">
+                <Sparkles className="w-6 h-6" />
+              </div>
+              <p className="text-xs font-black text-slate-800 uppercase tracking-tight">Nenhuma campanha online neste momento</p>
+              <p className="text-[11px] text-slate-400 max-w-xs mx-auto">
+                As campanhas ativas aparecerão aqui para interações e recompensas coletivas.
+              </p>
+              <Button
+                onClick={() => setIsRequestModalOpen(true)}
+                variant="outline"
+                className="h-10 px-4 rounded-xl text-xs font-bold border-slate-200 mt-2"
+              >
+                Criar a primeira campanha
+              </Button>
+            </div>
+          ) : (
+            onlineCampaigns.map((camp) => (
+              <div key={camp.id} className="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm space-y-3">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <Badge className="bg-emerald-50 text-emerald-700 border-none text-[9px] font-black uppercase tracking-widest mb-1.5">
+                      {camp.platform || "Plataforma"}
                     </Badge>
-                    <span className="text-sm font-black text-emerald-600 font-mono">
-                      +{c.reward_amount.toLocaleString("pt-AO")} Kz
-                    </span>
+                    <h3 className="text-xs font-black text-slate-900">{camp.title}</h3>
                   </div>
-                  <CardTitle className="text-base font-black text-slate-900 tracking-tight leading-tight">{c.title}</CardTitle>
-                  <CardDescription className="text-[11px] text-slate-400 font-medium mt-1 uppercase tracking-tight">{c.description}</CardDescription>
-                </CardHeader>
-                <CardContent className="pt-0 px-6 pb-6 space-y-4">
-                  <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 flex gap-3">
-                    <div className="mt-0.5">
-                       <Info className="w-4 h-4 text-emerald-500" />
-                    </div>
-                    <p className="text-[11px] text-slate-600 font-medium leading-relaxed">
-                      {c.instructions}
-                    </p>
-                  </div>
-                  
-                  {isDone ? (
-                    <div className="flex items-center justify-center gap-2 text-xs text-emerald-600 bg-emerald-50 py-3 rounded-2xl font-black uppercase tracking-widest">
-                      <CheckCircle2 className="w-4 h-4" /> RECOMPENSA CREDITADA
-                    </div>
-                  ) : isConfirming ? (
-                    <Button
-                      size="sm"
-                      onClick={() => onConfirmCompletion(c)}
-                      disabled={executingId === c.id}
-                      className="w-full bg-amber-600 hover:bg-amber-700 text-white text-[10px] font-black uppercase tracking-widest h-11 rounded-2xl shadow-lg shadow-amber-100 animate-pulse gap-2"
-                    >
-                      {executingId === c.id ? <Loader2 className="w-4 h-4 animate-spin" /> : (
-                        <>
-                          <Target className="w-4 h-4" />
-                          Confirmar Operação
-                        </>
-                      )}
-                    </Button>
-                  ) : (
-                    <Button
-                      size="sm"
-                      onClick={() => onExecuteCampaign(c)}
-                      className="w-full bg-slate-900 hover:bg-emerald-600 text-white text-[10px] font-black uppercase tracking-widest h-11 rounded-2xl shadow-lg shadow-slate-200 transition-all active:scale-95 gap-2"
-                    >
-                      <PlayCircle className="w-4 h-4" />
-                      Iniciar Fluxo
-                    </Button>
-                  )}
-                </CardContent>
-              </Card>
-            );
-          })}
+                  <span className="text-xs font-black text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-xl">
+                    +{camp.reward_amount} Kz
+                  </span>
+                </div>
+                <p className="text-[11px] text-slate-500 line-clamp-2 font-medium">{camp.description}</p>
+                <div className="pt-2 border-t border-slate-50 flex items-center justify-between">
+                  <span className="text-[10px] text-slate-400 font-bold uppercase">Ativa na rede</span>
+                  <Button
+                    size="sm"
+                    className="bg-slate-900 hover:bg-slate-800 text-white font-bold text-[10px] h-8 rounded-xl px-4"
+                    onClick={() => window.open(camp.target_url, "_blank")}
+                  >
+                    Participar
+                  </Button>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {completedCampaigns.length === 0 ? (
+            <div className="bg-white rounded-3xl p-8 text-center border border-slate-100 shadow-sm space-y-3">
+              <div className="w-12 h-12 rounded-2xl bg-slate-50 text-slate-400 flex items-center justify-center mx-auto">
+                <History className="w-6 h-6" />
+              </div>
+              <p className="text-xs font-black text-slate-800 uppercase tracking-tight">Sem histórico de campanhas concluídas</p>
+              <p className="text-[11px] text-slate-400 max-w-xs mx-auto">
+                As campanhas que já atingiram as metas e encerraram serão listadas aqui como arquivo.
+              </p>
+            </div>
+          ) : (
+            completedCampaigns.map((camp) => (
+              <div key={camp.id} className="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm opacity-75 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-black text-slate-700">{camp.title}</span>
+                  <Badge className="bg-slate-100 text-slate-500 border-none text-[9px] font-black uppercase">
+                    Concluída
+                  </Badge>
+                </div>
+                <p className="text-[11px] text-slate-400">{camp.description}</p>
+              </div>
+            ))
+          )}
         </div>
       )}
+
+      {/* MINHAS SOLICITAÇÕES PENDENTES OU APROVADAS */}
+      {userRequests.length > 0 && (
+        <div className="space-y-3 pt-4">
+          <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest px-1">Minhas Propostas Submetidas</h3>
+          <div className="space-y-2">
+            {userRequests.map((req) => (
+              <div key={req.id} className="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm flex items-center justify-between">
+                <div>
+                  <span className="text-xs font-black text-slate-900 block">{req.title}</span>
+                  <span className="text-[10px] text-slate-400 font-bold uppercase">{new Date(req.created_at).toLocaleDateString()}</span>
+                </div>
+                <Badge className={
+                  req.status === "aprovada" ? "bg-emerald-50 text-emerald-600 border-none text-[9px] font-black" :
+                  req.status === "rejeitada" ? "bg-rose-50 text-rose-500 border-none text-[9px] font-black" :
+                  "bg-amber-50 text-amber-600 border-none text-[9px] font-black"
+                }>
+                  {req.status.toUpperCase()}
+                </Badge>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Solicitação */}
+      <CampaignRequestModal
+        isOpen={isRequestModalOpen}
+        onClose={() => setIsRequestModalOpen(false)}
+        onSuccess={loadData}
+        userId={userId}
+      />
     </div>
   );
 };

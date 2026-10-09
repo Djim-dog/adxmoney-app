@@ -38,7 +38,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import LoComponent from "@/components/user/EngagementComponent"; // Lo (Ex-Engajamento)
 import { toast } from "sonner";
 
-import { UserCampaignsHub } from "@/components/user/UserCampaignsHub";
+import { UserCampaignsHub } from "@/components/user/UserCampaignsSection";
 import { CommunityTasksSection } from "@/components/user/CommunityTasksSection";
 import {
   Video as TiktokIcon,
@@ -130,6 +130,7 @@ export default function UserAppPage() {
   const [remitlyCurrency, setRemitlyCurrency] = useState("Kz (AOA)");
   
   const [isRequestingWithdraw, setIsRequestingWithdraw] = useState(false);
+  const [hideTransactions, setHideTransactions] = useState(false);
 
   const handleRemitlyCountryChange = (country: RemitlyCountryKey) => {
     setRemitlyCountry(country);
@@ -477,101 +478,98 @@ export default function UserAppPage() {
         {/* 2. ABA: CAMPANHAS */}
         {activeTab === "campaigns" && user && (
           <div className="space-y-6">
-            <UserCampaignsHub userId={user.id} />
+            <UserCampaignsSection userId={user.id} />
           </div>
         )}
 
-        {/* 3. ABA: AFILIADO */}
+        {/* 3. ABA: AFILIADOS (DESIGN APP NATIVO) */}
         {activeTab === "affiliate" && (
-          <div className="space-y-6">
-            <div className="bg-emerald-600 rounded-3xl p-6 text-white shadow-xl shadow-emerald-100 relative overflow-hidden">
-               <div className="absolute top-0 right-0 p-8 opacity-10">
-                  <Gift size={120} />
-               </div>
-               <div className="relative z-10">
-                  <div className="grid grid-cols-2 gap-6">
-                    <div>
-                      <p className="text-[10px] font-black uppercase tracking-widest text-emerald-200">Indicações Totais</p>
-                      <p className="text-3xl font-black mt-1 font-mono">{affiliate?.total_referrals || 0}</p>
-                    </div>
-                    <div>
-                      <p className="text-[10px] font-black uppercase tracking-widest text-emerald-200">Ganhos em Comissões</p>
-                      <p className="text-3xl font-black mt-1 font-mono">
-                        {Number(affiliate?.total_earned || 0).toLocaleString()} <span className="text-sm">Kz</span>
-                      </p>
-                    </div>
-                  </div>
-               </div>
-            </div>
-
-            {/* Bloco do Código */}
-            <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm space-y-5">
-              <div className="space-y-2">
-                <Label className="text-[10px] font-black uppercase text-slate-400 tracking-widest">Seu Código Exclusivo</Label>
-                <div className="flex gap-3">
-                  <div className="flex-1 h-14 bg-slate-50 border border-slate-100 rounded-2xl flex items-center justify-center font-mono text-xl font-black text-emerald-600 tracking-widest">
-                    {profile?.referral_code || "---"}
-                  </div>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => copyToClipboard(profile?.referral_code || "", "Código")}
-                    className="h-14 w-14 border-slate-200 bg-white text-slate-600 rounded-2xl hover:bg-slate-50 transition-all shadow-sm"
-                  >
-                    <Copy className="w-5 h-5" />
-                  </Button>
+          <div className="space-y-4 animate-in fade-in duration-200">
+            {/* Card Principal / Saldo de Afiliado */}
+            <div className="bg-gradient-to-br from-emerald-600 via-emerald-700 to-teal-800 rounded-3xl p-6 text-white shadow-xl shadow-emerald-200/50 relative overflow-hidden">
+              <div className="relative z-10 space-y-4">
+                <div className="flex items-center justify-between">
+                  <Badge className="bg-white/20 text-white border-none text-[10px] font-black uppercase tracking-widest px-3 py-1 backdrop-blur-md">
+                    Programa de Indicação
+                  </Badge>
+                  <Gift className="w-5 h-5 text-emerald-200" />
                 </div>
-              </div>
 
-              <Button 
-                onClick={() => copyToClipboard(getReferralLink(), "Link de Indicação")}
-                className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black h-14 rounded-2xl shadow-lg shadow-emerald-100 transition-all flex items-center justify-center gap-2"
-              >
-                COPIAR LINK DE CONVITE <ArrowUpRight className="w-5 h-5" />
-              </Button>
-            </div>
-
-            <div className="bg-lime-100/50 border border-lime-200 rounded-3xl p-6 space-y-3">
-              <h4 className="text-sm font-black text-slate-900 uppercase">Como funcionam os ganhos?</h4>
-              <p className="text-xs text-slate-600 leading-relaxed font-medium">
-                Ao compartilhar seu link, você recebe <span className="text-emerald-700 font-bold">500 Kz</span> por cada novo membro que se cadastrar através da sua indicação. Além disso, você recebe uma comissão automática por cada tarefa paga que seus afiliados concluírem na plataforma.
-              </p>
-            </div>
-
-            {/* Simulador de Ganhos */}
-            <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm space-y-6">
-              <div className="space-y-2">
-                <h4 className="text-sm font-black text-slate-900 uppercase">Simulador de Ganhos ADX</h4>
-                <p className="text-[11px] text-slate-500 font-medium">Arraste a barra e verifique quanto podes ganhar com indicações ADX</p>
-              </div>
-
-              <div className="space-y-8 py-2">
-                <div className="relative pt-6">
-                  <input
-                    type="range"
-                    min="1"
-                    max="50000"
-                    step="1"
-                    value={simulatorValue}
-                    onChange={(e) => setSimulatorValue(parseInt(e.target.value))}
-                    className="w-full h-2 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-emerald-600"
-                  />
-                  <div className="flex justify-between mt-4 text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                    <span>1 Usuário</span>
-                    <span>50.000 Usuários</span>
+                <div className="grid grid-cols-2 gap-4 pt-1">
+                  <div>
+                    <span className="text-[10px] font-bold text-emerald-200 uppercase tracking-widest block">Minha Rede</span>
+                    <span className="text-2xl font-black tracking-tight text-white mt-0.5 block">{affiliate?.total_referrals || 0} <span className="text-xs font-medium text-emerald-200">membros</span></span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-bold text-emerald-200 uppercase tracking-widest block">Comissões Acumuladas</span>
+                    <span className="text-2xl font-black tracking-tight text-white mt-0.5 block">
+                      {Number(affiliate?.total_earned || 0).toLocaleString("pt-AO")} <span className="text-xs font-medium text-emerald-200">Kz</span>
+                    </span>
                   </div>
                 </div>
 
-                <div className="bg-emerald-50 rounded-2xl p-5 border border-emerald-100 flex flex-col items-center justify-center text-center">
-                  <p className="text-[10px] font-black uppercase text-emerald-600 tracking-widest mb-1">Potencial de Ganho Estimado</p>
-                  <p className="text-3xl font-black text-slate-900 font-mono">
-                    {(simulatorValue * EARNING_PER_MEMBER).toLocaleString("pt-AO")} <span className="text-sm">Kz</span>
-                  </p>
-                  <p className="text-[11px] text-slate-400 mt-2 font-medium">
-                    Baseado em {simulatorValue.toLocaleString()} indicações diretas
-                  </p>
+                {/* Bloco de Código e Link Nativo */}
+                <div className="bg-black/20 backdrop-blur-md p-3.5 rounded-2xl border border-white/10 space-y-2">
+                  <span className="text-[10px] text-emerald-200 font-bold uppercase block">Seu Link de Convite Nativo</span>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      readOnly
+                      value={getReferralLink()}
+                      className="bg-transparent text-xs font-mono font-bold text-white flex-1 outline-none truncate"
+                    />
+                    <Button
+                      onClick={() => copyToClipboard(getReferralLink(), "Link de Indicação")}
+                      className="h-8 px-3 bg-white text-emerald-800 hover:bg-emerald-50 font-black text-[10px] rounded-xl shadow-sm shrink-0 uppercase tracking-wider"
+                    >
+                      Copiar
+                    </Button>
+                  </div>
                 </div>
               </div>
+              <Gift className="absolute -right-6 -bottom-6 w-36 h-36 text-white/10 pointer-events-none rotate-12" />
+            </div>
+
+            {/* Banner de Funcionamento Estilo App */}
+            <div className="bg-white rounded-2xl p-4 border border-slate-100 shadow-sm flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+                <Users className="w-5 h-5" />
+              </div>
+              <div className="space-y-0.5">
+                <span className="text-xs font-black text-slate-900 block">Comissão Direta de 500 Kz</span>
+                <p className="text-[11px] text-slate-500 font-medium">Ganhe por cada novo membro cadastrado com o seu link.</p>
+              </div>
+            </div>
+
+            {/* Simulador Estilo Mobile */}
+            <div className="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm space-y-4">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-black text-slate-900 uppercase tracking-tight">Simulador de Rendimentos</span>
+                <span className="text-xs font-black text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-xl">
+                  {simulatorValue.toLocaleString()} membros
+                </span>
+              </div>
+
+              <input
+                type="range"
+                min="1"
+                max="5000"
+                step="5"
+                value={simulatorValue}
+                onChange={(e) => setSimulatorValue(parseInt(e.target.value))}
+                className="w-full accent-emerald-600 cursor-pointer h-2 bg-slate-100 rounded-lg"
+              />
+
+              <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 flex items-center justify-between">
+                <div>
+                  <span className="text-[10px] font-bold text-slate-400 uppercase block">Rendimento Estimado</span>
+                  <span className="text-xl font-black text-slate-900 font-mono">
+                    {(simulatorValue * EARNING_PER_MEMBER).toLocaleString("pt-AO")} Kz
+                  </span>
+                </div>
+                <Users className="w-6 h-6 text-emerald-600" />
+              </div>
+            </div>
             </div>
           </div>
         )}
@@ -810,38 +808,60 @@ export default function UserAppPage() {
               </form>
             </div>
 
-            {/* Histórico */}
+            {/* Histórico com Ocultar Movimentações */}
             <div className="space-y-4">
-              <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest px-1">Extrato de Movimentações</h3>
+              <div className="flex items-center justify-between px-1">
+                <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest">Extrato de Movimentações</h3>
+                <button
+                  type="button"
+                  onClick={() => setHideTransactions(!hideTransactions)}
+                  className="flex items-center gap-1.5 text-[11px] font-bold text-slate-500 hover:text-emerald-600 bg-slate-100 hover:bg-slate-200/80 px-2.5 py-1 rounded-xl transition-all"
+                >
+                  {hideTransactions ? (
+                    <>
+                      <Eye className="w-3.5 h-3.5 text-emerald-600" />
+                      <span>Mostrar Movimentação</span>
+                    </>
+                  ) : (
+                    <>
+                      <EyeOff className="w-3.5 h-3.5 text-slate-400" />
+                      <span>Ocultar Movimentação</span>
+                    </>
+                  )}
+                </button>
+              </div>
               
-              {transactions.length === 0 ? (
-                <div className="bg-white border border-slate-200 rounded-3xl p-10 text-center text-xs text-slate-400 font-medium">
-                  Nenhuma movimentação registrada.
-                </div>
-              ) : (
-                <div className="bg-white border border-slate-200 rounded-3xl overflow-hidden divide-y divide-slate-50 shadow-sm">
-                  {transactions.map((tx) => (
-                    <div key={tx.id} className="p-5 flex items-center justify-between hover:bg-slate-50 transition-colors">
-                      <div className="flex gap-4">
-                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${tx.amount > 0 ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-500'}`}>
-                          {tx.amount > 0 ? <Plus className="w-5 h-5" /> : <ArrowUpRight className="w-5 h-5" />}
+              {!hideTransactions && (
+                transactions.length === 0 ? (
+                  <div className="bg-white border border-slate-200 rounded-3xl p-10 text-center text-xs text-slate-400 font-medium">
+                    Nenhuma movimentação registrada.
+                  </div>
+                ) : (
+                  <div className="bg-white border border-slate-200 rounded-3xl overflow-hidden divide-y divide-slate-50 shadow-sm">
+                    {transactions.map((tx) => (
+                      <div key={tx.id} className="p-5 flex items-center justify-between hover:bg-slate-50 transition-colors">
+                        <div className="flex gap-4">
+                          <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${tx.amount > 0 ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-500'}`}>
+                            {tx.amount > 0 ? <Plus className="w-5 h-5" /> : <ArrowUpRight className="w-5 h-5" />}
+                          </div>
+                          <div>
+                            <p className="text-sm font-black text-slate-900">{tx.description || tx.type}</p>
+                            <p className="text-[11px] text-slate-400 font-bold uppercase tracking-tighter">{new Date(tx.created_at).toLocaleString()}</p>
+                          </div>
                         </div>
-                        <div>
-                          <p className="text-sm font-black text-slate-900">{tx.description || tx.type}</p>
-                          <p className="text-[11px] text-slate-400 font-bold uppercase tracking-tighter">{new Date(tx.created_at).toLocaleString()}</p>
+                        <div className="text-right">
+                          <p className={`text-sm font-black font-mono ${tx.amount > 0 ? 'text-emerald-600' : 'text-red-500'}`}>
+                            {tx.amount > 0 ? '+' : ''}{tx.amount.toLocaleString()} Kz
+                          </p>
+                          <Badge variant="outline" className="text-[8px] font-black uppercase tracking-widest border-slate-200 text-slate-400 px-2 mt-1">
+                            {tx.status}
+                          </Badge>
                         </div>
                       </div>
-                      <div className="text-right">
-                        <p className={`text-sm font-black font-mono ${tx.amount > 0 ? 'text-emerald-600' : 'text-red-500'}`}>
-                          {tx.amount > 0 ? '+' : ''}{tx.amount.toLocaleString()} Kz
-                        </p>
-                        <Badge variant="outline" className="text-[8px] font-black uppercase tracking-widest border-slate-200 text-slate-400 px-2 mt-1">
-                          {tx.status}
-                        </Badge>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                )
+              )}
               )}
             </div>
           </div>
