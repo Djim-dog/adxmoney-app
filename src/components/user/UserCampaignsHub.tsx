@@ -84,89 +84,47 @@ export const UserCampaignsHub: React.FC<UserCampaignsHubProps> = ({ userId }) =>
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       
-      <div className="grid gap-6 sm:grid-cols-2">
-        {/* ÁREA 1: CAMPANHAS PARA AFILIADOS */}
-        <Card className="bg-white border-slate-100 relative overflow-hidden transition-all hover:shadow-xl hover:shadow-slate-200/50 rounded-3xl border-none shadow-md">
-          <CardHeader className="pb-4">
-            <div className="flex items-center justify-between gap-2">
-              <div className="w-10 h-10 rounded-2xl bg-emerald-50 flex items-center justify-center text-emerald-600 border border-emerald-100">
-                <Share2 className="w-5 h-5" />
-              </div>
-              <Badge className="text-[10px] font-black uppercase tracking-widest border-none text-emerald-700 bg-emerald-100 px-3 py-1 rounded-full">
-                AFILIADOS
-              </Badge>
+      {/* ÁREA ÚNICA LIMPA: CAMPANHAS COLETIVAS */}
+      <Card className="bg-white border-slate-100 relative overflow-hidden transition-all hover:shadow-xl hover:shadow-slate-200/50 rounded-3xl border-none shadow-md">
+        <CardHeader className="pb-4">
+          <div className="flex items-center justify-between gap-2">
+            <div className="w-10 h-10 rounded-2xl bg-emerald-50 flex items-center justify-center text-emerald-600 border border-emerald-100">
+              <Users2 className="w-5 h-5" />
             </div>
+            <Badge className="text-[10px] font-black uppercase tracking-widest border-none text-emerald-800 bg-emerald-100 px-3 py-1 rounded-full">
+              CAMPANHAS COLETIVAS
+            </Badge>
+          </div>
 
-            <CardTitle className="text-base font-black text-slate-900 mt-4">
-              Campanhas Externas
-            </CardTitle>
-            <CardDescription className="text-xs text-slate-500 leading-relaxed font-medium">
-              Ações dedicadas para partilha e expansão de marca. Ganhe bônus por cada conversão validada.
-            </CardDescription>
-          </CardHeader>
+          <CardTitle className="text-base font-black text-slate-900 mt-4">
+            Campanhas Coletivas da Comunidade
+          </CardTitle>
+          <CardDescription className="text-xs text-slate-500 leading-relaxed font-medium">
+            Iniciativas e metas sincronizadas com todos os membros ativos da rede ADXmoney.
+          </CardDescription>
+        </CardHeader>
 
-          <CardContent className="pt-0 pb-4">
-            <div className="bg-slate-50 p-3 rounded-2xl border border-slate-100 text-[10px] text-slate-500 flex items-start gap-2 font-bold uppercase tracking-tight">
-              <Info className="w-4 h-4 text-emerald-600 shrink-0" />
-              <span>
-                Recompensas creditadas após verificação manual.
-              </span>
-            </div>
-          </CardContent>
+        <CardContent className="pt-0 pb-4">
+          <div className="bg-slate-50 p-3.5 rounded-2xl border border-slate-100 text-[11px] text-slate-600 flex items-center gap-2.5 font-medium">
+            <Sparkles className="w-4 h-4 text-emerald-600 shrink-0" />
+            <span>
+              As novas campanhas aprovadas pela administração são exibidas aqui para cumprimento em rede.
+            </span>
+          </div>
+        </CardContent>
 
-          <CardFooter className="pt-0 pb-6">
-            <Button
-              onClick={() => setViewCampaignsType("afiliados")}
-              className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs h-12 rounded-2xl shadow-lg shadow-emerald-100 transition-all gap-2"
-            >
-              EXPLORAR CAMPANHAS
-              <ChevronRight className="w-4 h-4" />
-            </Button>
-          </CardFooter>
-        </Card>
-
-        {/* ÁREA 2: MONETIZAÇÃO COLETIVA */}
-        <Card className="bg-white border-slate-100 relative overflow-hidden transition-all hover:shadow-xl hover:shadow-slate-200/50 rounded-3xl border-none shadow-md">
-          <CardHeader className="pb-4">
-            <div className="flex items-center justify-between gap-2">
-              <div className="w-10 h-10 rounded-2xl bg-lime-50 flex items-center justify-center text-lime-700 border border-lime-100">
-                <Users2 className="w-5 h-5" />
-              </div>
-              <Badge className="text-[10px] font-black uppercase tracking-widest border-none text-lime-800 bg-lime-200 px-3 py-1 rounded-full">
-                COLETIVA
-              </Badge>
-            </div>
-
-            <CardTitle className="text-base font-black text-slate-900 mt-4">
-              Campanhas Coletivas
-            </CardTitle>
-            <CardDescription className="text-xs text-slate-500 leading-relaxed font-medium">
-              Ações coletivas sincronizadas entre todos os membros da rede.
-            </CardDescription>
-          </CardHeader>
-
-          <CardContent className="pt-0 pb-4">
-            <div className="bg-slate-50 p-3 rounded-2xl border border-slate-100 text-[10px] text-slate-500 flex items-start gap-2 font-bold uppercase tracking-tight">
-              <Sparkles className="w-4 h-4 text-lime-600 shrink-0" />
-              <span>
-                Campanhas e metas sincronizadas em rede.
-              </span>
-            </div>
-          </CardContent>
-
-          <CardFooter className="pt-0 pb-6">
-            <Button
-              onClick={() => setViewCampaignsType("monetizacao_coletiva")}
-              className="w-full bg-slate-900 hover:bg-slate-800 text-white font-black text-xs h-12 rounded-2xl shadow-lg shadow-slate-200 transition-all gap-2"
-            >
-              VER OPORTUNIDADES
-              <ChevronRight className="w-4 h-4" />
-            </Button>
-          </CardFooter>
-        </Card>
-      </div>
+        <CardFooter className="pt-0 pb-6">
+          <Button
+            onClick={() => setViewCampaignsType("monetizacao_coletiva")}
+            className="w-full bg-slate-900 hover:bg-slate-800 text-white font-black text-xs h-12 rounded-2xl shadow-lg shadow-slate-200 transition-all gap-2"
+          >
+            VER OPORTUNIDADES ATIVAS
+            <ChevronRight className="w-4 h-4" />
+          </Button>
+        </CardFooter>
+      </Card>
 
       {/* ÁREA 3: SOLICITAR CAMPANHA */}
       <Card className="bg-emerald-700 rounded-3xl border-none shadow-xl shadow-emerald-100 relative overflow-hidden">
@@ -252,26 +210,13 @@ export const UserCampaignsHub: React.FC<UserCampaignsHubProps> = ({ userId }) =>
         <DialogContent className="max-w-md bg-white border-none sm:rounded-3xl p-8 shadow-2xl">
           <DialogHeader>
             <DialogTitle className="text-lg font-black text-slate-900 flex items-center gap-3">
-              {viewCampaignsType === "afiliados" ? (
-                <>
-                  <div className="w-10 h-10 rounded-2xl bg-emerald-50 flex items-center justify-center text-emerald-600">
-                    <Share2 className="w-5 h-5" />
-                  </div>
-                  <span>Campanhas de Afiliados</span>
-                </>
-              ) : (
-                <>
-                  <div className="w-10 h-10 rounded-2xl bg-lime-50 flex items-center justify-center text-lime-600">
-                    <Users2 className="w-5 h-5" />
-                  </div>
-                  <span>Monetização Coletiva</span>
-                </>
-              )}
+              <div className="w-10 h-10 rounded-2xl bg-emerald-50 flex items-center justify-center text-emerald-600">
+                <Users2 className="w-5 h-5" />
+              </div>
+              <span>Campanhas Coletivas</span>
             </DialogTitle>
             <DialogDescription className="text-sm text-slate-500 font-medium pt-2">
-              {viewCampaignsType === "afiliados"
-                ? "Ganhe bônus por cada nova conversão validada pelo sistema operacional ADXmoney."
-                : "Participe de ações coordenadas com a comunidade para desbloquear novos patamares de ganhos."}
+              Participe de ações coordenadas com a comunidade para cumprir metas e desbloquear resultados em rede.
             </DialogDescription>
           </DialogHeader>
 
@@ -284,7 +229,7 @@ export const UserCampaignsHub: React.FC<UserCampaignsHubProps> = ({ userId }) =>
                 Em Preparação
               </p>
               <p className="text-xs text-slate-400 mt-2 font-medium max-w-xs mx-auto">
-                Novas oportunidades estão sendo estruturadas pela nossa equipe e estarão disponíveis em breve.
+                Novas campanhas coletivas aprovadas pela moderação serão sincronizadas nesta área.
               </p>
             </div>
           </div>
@@ -298,6 +243,11 @@ export const UserCampaignsHub: React.FC<UserCampaignsHubProps> = ({ userId }) =>
               }}
               className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-black h-12 rounded-2xl shadow-lg shadow-emerald-100 gap-2 uppercase text-xs tracking-widest"
             >
+              SOLICITAR CAMPANHA (10 USD)
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
               <PlusCircle className="w-4 h-4" />
               SOLICITAR CAMPANHA
             </Button>

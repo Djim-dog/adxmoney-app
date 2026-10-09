@@ -20,6 +20,8 @@ import {
   Coins
 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { CampaignRequestModal } from "./CampaignRequestModal";
+import { Megaphone } from "lucide-react";
 
 interface EngagementOrder {
   id: string;
@@ -63,6 +65,9 @@ export const LoComponent: React.FC = () => {
   const [searching, setSearching] = useState(false);
   const [userOrders, setUserOrders] = useState<EngagementOrder[]>([]);
   const [loadingList, setLoadingList] = useState(false);
+
+  // Modal para Solicitar Campanha Coletiva (10 USD)
+  const [isCampaignModalOpen, setIsCampaignModalOpen] = useState(false);
 
   // Taxas de câmbio de referência (Base USD)
   // 1 USD = 920 AOA (exemplo padrão do app) | 1 USD = 0.92 EUR | 1 USD = 5.00 BRL
@@ -200,8 +205,8 @@ export const LoComponent: React.FC = () => {
             <ShoppingBag className="w-4 h-4" />
           </div>
           <div>
-            <h2 className="text-base font-black text-slate-900 tracking-tight">Engajamento</h2>
-            <p className="text-[10px] text-slate-400">Impulsione suas redes sociais</p>
+            <h2 className="text-base font-black text-slate-900 tracking-tight">Loja</h2>
+            <p className="text-[10px] text-slate-400">Impulsione suas redes e solicite campanhas</p>
           </div>
         </div>
 
@@ -222,8 +227,31 @@ export const LoComponent: React.FC = () => {
       </div>
 
       {/* TELA INICIAL: 2 BOTÕES AO LADO DO OUTRO */}
+      {/* TELA INICIAL: 2 BOTÕES AO LADO DO OUTRO + CARD DE CAMPANHA COLETIVA */}
       {mode === "menu" && (
         <div className="space-y-4 pt-2">
+          {/* Card em destaque para Solicitar Campanha Coletiva (10 USD) */}
+          <div className="bg-gradient-to-r from-emerald-700 to-teal-800 rounded-3xl p-5 text-white shadow-lg relative overflow-hidden flex items-center justify-between gap-4">
+            <div className="space-y-1 z-10">
+              <div className="inline-flex items-center gap-1.5 bg-white/20 backdrop-blur-md px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider text-emerald-100">
+                <Megaphone className="w-3 h-3 text-white" />
+                Campanha Coletiva
+              </div>
+              <h3 className="text-sm font-black text-white">Solicitar Campanha (10 USD)</h3>
+              <p className="text-[11px] text-emerald-100/90 leading-tight max-w-[240px]">
+                Formulário em etapas com estimativas e validação prévia da administração.
+              </p>
+            </div>
+            <Button
+              type="button"
+              onClick={() => setIsCampaignModalOpen(true)}
+              className="z-10 bg-white hover:bg-slate-50 text-emerald-800 font-black text-xs h-10 px-4 rounded-xl shadow-md shrink-0 uppercase tracking-wider"
+            >
+              Criar
+            </Button>
+            <Megaphone className="absolute -right-4 -bottom-4 w-28 h-28 text-white/10 pointer-events-none rotate-12" />
+          </div>
+
           <div className="grid grid-cols-2 gap-3">
             <button
               onClick={() => {
@@ -236,8 +264,8 @@ export const LoComponent: React.FC = () => {
                 <PlusCircle className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="text-sm font-black text-slate-900">Solicitar</h3>
-                <p className="text-[11px] text-slate-400 mt-0.5">Novo pedido de tráfego</p>
+                <h3 className="text-sm font-black text-slate-900">Comprar Impulso</h3>
+                <p className="text-[11px] text-slate-400 mt-0.5">Seguidores e Likes</p>
               </div>
             </button>
 
@@ -553,6 +581,16 @@ export const LoComponent: React.FC = () => {
           </CardContent>
         </Card>
       )}
+
+      {/* Modal de Solicitação de Campanha Coletiva (10 USD) */}
+      <CampaignRequestModal
+        isOpen={isCampaignModalOpen}
+        onClose={() => setIsCampaignModalOpen(false)}
+        onSuccess={() => {
+          toast.success("Solicitação enviada para a administração!");
+        }}
+        userId={user?.id || ""}
+      />
     </div>
   );
 };
