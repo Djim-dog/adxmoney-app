@@ -38,7 +38,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import LoComponent from "@/components/user/EngagementComponent"; // Lo (Ex-Engajamento)
 import { toast } from "sonner";
 
-import { UserCampaignsHub } from "@/components/user/UserCampaignsSection";
+import { UserCampaignsSection } from "@/components/user/UserCampaignsSection";
 import { CommunityTasksSection } from "@/components/user/CommunityTasksSection";
 import {
   Video as TiktokIcon,
