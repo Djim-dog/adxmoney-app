@@ -327,9 +327,21 @@ export default function UserAppPage() {
     }
   };
 
-  const copyToClipboard = (text: string, label: string) => {
+  const copyToClipboard = async (text: string, label: string) => {
+    if (navigator.share && label.toLowerCase().includes("indicação")) {
+      try {
+        await navigator.share({
+          title: "ADXmoney",
+          text: "Junte-se à minha rede na ADXmoney e comece a rentabilizar suas redes sociais!",
+          url: text,
+        });
+        return;
+      } catch (e) {
+        // Fallback caso o usuário cancele a partilha nativa
+      }
+    }
     navigator.clipboard.writeText(text);
-    toast.success(`${label} copiado com sucesso!`);
+    toast.success(`${label} copiado para a área de transferência!`);
   };
 
   const getReferralLink = () => {
@@ -521,9 +533,10 @@ export default function UserAppPage() {
                     />
                     <Button
                       onClick={() => copyToClipboard(getReferralLink(), "Link de Indicação")}
-                      className="h-8 px-3 bg-white text-emerald-800 hover:bg-emerald-50 font-black text-[10px] rounded-xl shadow-sm shrink-0 uppercase tracking-wider"
+                      className="h-8 px-3 bg-white text-emerald-800 hover:bg-emerald-50 active:scale-95 transition-all font-black text-[10px] rounded-xl shadow-sm shrink-0 uppercase tracking-wider flex items-center gap-1"
                     >
-                      Copiar
+                      <Share2 className="w-3.5 h-3.5" />
+                      Partilhar
                     </Button>
                   </div>
                 </div>
