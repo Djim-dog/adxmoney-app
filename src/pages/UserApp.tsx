@@ -578,7 +578,7 @@ export default function UserAppPage() {
 
         {/* ABA: LO (COMPRA & HISTORICO) */}
         {activeTab === "engagement" && (
-          <EngagementComponent />
+          <LoComponent />
         )}
 
         {/* 4. ABA: CARTEIRA */}
